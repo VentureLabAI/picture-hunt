@@ -446,3 +446,56 @@ html, body {
   font-size: 1.1rem !important;
   padding: 12px 32px !important;
 }
+
+/* Result Buttons */
+.result-msg {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.result-msg.success { color: #43e97b; }
+.result-msg.fail { color: #ff6b6b; }
+
+.result-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.5rem 0;
+}
+
+.result-btn {
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+.result-btn:active { transform: scale(0.92); }
+
+.result-green {
+  background: #2ecc71;
+  width: 90px;
+  height: 90px;
+}
+.result-red {
+  background: #e74c3c;
+  width: 70px;
+  height: 70px;
+}
+.result-yellow {
+  background: #f39c12;
+  width: 70px;
+  height: 70px;
+}
+
+.result-icon {
+  font-size: 2.5rem;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+}
+.result-red .result-icon { font-size: 2rem; }
+.result-yellow .result-icon { font-size: 2rem; }

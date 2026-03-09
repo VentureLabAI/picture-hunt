@@ -417,26 +417,17 @@ async function handlePhoto(input) {
     loadingOverlay.classList.add('hidden');
 
     if (matched) {
-      showFeedback('🎉 You found it!', 'success');
+      showResultButtons('found');
       fireConfetti(1500);
-      speak('You found it! Great job!', () => {
-        setTimeout(advanceItem, 800);
-      });
+      speak('You found it! Great job!');
     } else {
-      showFeedback('🤔 Hmm, try again!', 'fail');
+      showResultButtons('notfound');
       speak('Hmm, try again!');
-      // Re-enable camera
-      cameraLabel.style.pointerEvents = 'auto';
-      cameraLabel.style.opacity = '1';
-      cameraInput.value = '';
     }
   } catch (err) {
     console.error('Error:', err);
     loadingOverlay.classList.add('hidden');
-    showFeedback('😅 Oops! Try again!', 'fail');
-    cameraLabel.style.pointerEvents = 'auto';
-    cameraLabel.style.opacity = '1';
-    cameraInput.value = '';
+    showResultButtons('error');
   }
 }
 
@@ -511,6 +502,73 @@ function matchItem(detected, item) {
 // ── Feedback ──────────────────────────────────────────────────
 function showFeedback(text, type) {
   feedbackArea.innerHTML = `<div class="feedback ${type}">${text}</div>`;
+}
+
+function showResultButtons(result) {
+  // Hide camera button
+  cameraLabel.style.display = 'none';
+  document.querySelector('.skip-area').style.display = 'none';
+  
+  if (result === 'found') {
+    feedbackArea.innerHTML = `
+      <div class="result-msg success">🎉 You found it!</div>
+      <div class="result-buttons">
+        <button class="result-btn result-green" onclick="acceptResult()">
+          <span class="result-icon">✓</span>
+        </button>
+        <button class="result-btn result-yellow" onclick="retakePhoto()">
+          <span class="result-icon">↻</span>
+        </button>
+      </div>
+    `;
+  } else {
+    feedbackArea.innerHTML = `
+      <div class="result-msg fail">${result === 'error' ? '😅 Oops!' : '🤔 Not quite!'}</div>
+      <div class="result-buttons">
+        <button class="result-btn result-green" onclick="forceAccept()">
+          <span class="result-icon">✓</span>
+        </button>
+        <button class="result-btn result-red" onclick="dismissResult()">
+          <span class="result-icon">✗</span>
+        </button>
+        <button class="result-btn result-yellow" onclick="retakePhoto()">
+          <span class="result-icon">↻</span>
+        </button>
+      </div>
+    `;
+  }
+}
+
+function acceptResult() {
+  resetCameraUI();
+  advanceItem();
+}
+
+function forceAccept() {
+  // Parent override - accept even if AI said no
+  fireConfetti(1000);
+  speak('Great job!');
+  resetCameraUI();
+  setTimeout(advanceItem, 800);
+}
+
+function dismissResult() {
+  resetCameraUI();
+  speak('Try again!');
+}
+
+function retakePhoto() {
+  resetCameraUI();
+}
+
+function resetCameraUI() {
+  feedbackArea.innerHTML = '';
+  cameraLabel.style.display = '';
+  cameraLabel.style.pointerEvents = 'auto';
+  cameraLabel.style.opacity = '1';
+  cameraInput.value = '';
+  const skipArea = document.querySelector('.skip-area');
+  if (skipArea) skipArea.style.display = '';
 }
 
 // ── Confetti 🎊 ──────────────────────────────────────────────
