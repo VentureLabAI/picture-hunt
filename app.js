@@ -422,14 +422,14 @@ async function handlePhoto(input) {
         <img src="${dataUrl}" class="preview-img" alt="Your photo">
       </div>
       <div class="preview-buttons">
-        <button class="result-btn result-yellow" onclick="retakePreview()">
-          <span class="result-icon">↻</span>
+        <button class="preview-btn preview-retake" onclick="retakePreview()">
+          📷<br><span class="preview-label">Again</span>
         </button>
-        <button class="result-btn result-green" onclick="submitPhoto()">
-          <span class="result-icon">✓</span>
+        <button class="preview-btn preview-submit" onclick="submitPhoto()">
+          ✅<br><span class="preview-label">Yes!</span>
         </button>
-        <button class="result-btn result-red" onclick="cancelPreview()">
-          <span class="result-icon">✗</span>
+        <button class="preview-btn preview-cancel" onclick="cancelPreview()">
+          ❌<br><span class="preview-label">No</span>
         </button>
       </div>
     `;
