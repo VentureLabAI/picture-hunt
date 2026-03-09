@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Picture Hunt! 📸</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=9">
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash" class="screen active">
+    <div class="splash-content">
+      <h1 class="title-bounce">📸 Picture Hunt!</h1>
+      <p class="subtitle">Find the things!</p>
+      <div class="splash-buttons">
+        <button id="play-btn" class="big-btn play-btn" onclick="startGame()">
+          ▶️ Play!
+        </button>
+        <button id="setup-btn" class="big-btn setup-btn" onclick="openSetup()">
+          ⚙️ Setup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Screen -->
+  <div id="setup" class="screen">
+    <div class="setup-container">
+      <h1 class="setup-header">⚙️ Pick the items!</h1>
+      <div class="setup-toolbar">
+        <button id="select-all-btn" class="setup-tool-btn">✅ Select All</button>
+        <button id="clear-all-btn" class="setup-tool-btn">❌ Clear All</button>
+      </div>
+      <p id="setup-msg" class="setup-msg">0 items selected</p>
+      <div id="setup-grid" class="setup-grid"></div>
+      <button id="setup-done-btn" class="big-btn play-btn setup-done-btn">Done ✅</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game" class="screen">
+    <div class="progress-bar">
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+    <div id="target-area" class="target-area">
+      <div id="target-emoji" class="target-emoji"></div>
+      <div id="target-text" class="target-text"></div>
+    </div>
+    <div id="feedback-area" class="feedback-area"></div>
+    <div id="camera-area" class="camera-area">
+      <label id="camera-label" class="big-btn camera-btn">
+        📷 Take a Photo!
+        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)">
+      </label>
+    </div>
+    <div class="skip-area">
+      <button class="skip-btn" onclick="skipItem()">⏭️ Skip</button>
+    </div>
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Looking at your photo...</p>
+    </div>
+  </div>
+
+  <!-- Victory Screen -->
+  <div id="victory" class="screen">
+    <div class="victory-content">
+      <h1 class="victory-title">🎉 You Did It! 🎉</h1>
+      <div class="victory-emoji">⭐🏆⭐</div>
+      <p class="victory-sub">You found everything!</p>
+      <button class="big-btn play-btn" onclick="resetGame()">
+        🔄 Play Again!
+      </button>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <script src="app.js?v=9"></script>
+</body>
+</html>
