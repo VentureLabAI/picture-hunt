@@ -398,23 +398,74 @@ function showVictory() {
 }
 
 // ── Photo Handling ────────────────────────────────────────────
+let pendingBase64 = null;
+let pendingMimeType = null;
+
 async function handlePhoto(input) {
   const file = input.files?.[0];
   if (!file) return;
 
-  // Disable camera while processing
-  cameraLabel.style.pointerEvents = 'none';
-  cameraLabel.style.opacity = '0.5';
-  loadingOverlay.classList.remove('hidden');
+  // Convert to base64 and show preview
+  const reader = new FileReader();
+  reader.onload = function() {
+    const dataUrl = reader.result;
+    pendingBase64 = dataUrl.split(',')[1];
+    pendingMimeType = file.type || 'image/jpeg';
+    
+    // Hide camera and skip, show preview with 3 buttons
+    cameraLabel.style.display = 'none';
+    const skipArea = document.querySelector('.skip-area');
+    if (skipArea) skipArea.style.display = 'none';
+    
+    feedbackArea.innerHTML = `
+      <div class="photo-preview">
+        <img src="${dataUrl}" class="preview-img" alt="Your photo">
+      </div>
+      <div class="preview-buttons">
+        <button class="result-btn result-yellow" onclick="retakePreview()">
+          <span class="result-icon">↻</span>
+        </button>
+        <button class="result-btn result-green" onclick="submitPhoto()">
+          <span class="result-icon">✓</span>
+        </button>
+        <button class="result-btn result-red" onclick="cancelPreview()">
+          <span class="result-icon">✗</span>
+        </button>
+      </div>
+    `;
+  };
+  reader.readAsDataURL(file);
+}
+
+function retakePreview() {
+  pendingBase64 = null;
+  pendingMimeType = null;
+  resetCameraUI();
+  // Trigger camera again
+  cameraInput.value = '';
+  cameraInput.click();
+}
+
+function cancelPreview() {
+  pendingBase64 = null;
+  pendingMimeType = null;
+  resetCameraUI();
+}
+
+async function submitPhoto() {
+  if (!pendingBase64) return;
+
   feedbackArea.innerHTML = '';
+  loadingOverlay.classList.remove('hidden');
 
   try {
-    const base64 = await fileToBase64(file);
-    const response = await identifyObject(base64, file.type);
+    const response = await identifyObject(pendingBase64, pendingMimeType);
     const firstLine = response.split('\n')[0].toLowerCase().trim();
     const matched = firstLine.includes('yes');
 
     loadingOverlay.classList.add('hidden');
+    pendingBase64 = null;
+    pendingMimeType = null;
 
     if (matched) {
       showResultButtons('found');
@@ -428,6 +479,8 @@ async function handlePhoto(input) {
     console.error('Error:', err);
     loadingOverlay.classList.add('hidden');
     showResultButtons('error');
+    pendingBase64 = null;
+    pendingMimeType = null;
   }
 }
 

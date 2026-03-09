@@ -499,3 +499,22 @@ html, body {
 }
 .result-red .result-icon { font-size: 2rem; }
 .result-yellow .result-icon { font-size: 2rem; }
+
+/* Photo Preview */
+.photo-preview {
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
+.preview-img {
+  max-width: 70%;
+  max-height: 200px;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,0.3);
+  object-fit: cover;
+}
+.preview-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
