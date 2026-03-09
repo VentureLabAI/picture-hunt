@@ -6,14 +6,14 @@
 let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
 
 function showKeySetup() {
-  document.getElementById('splash').querySelector('.splash-content').innerHTML = \`
+  document.getElementById('splash').querySelector('.splash-content').innerHTML = `
     <h1 style="font-size:2.5rem;margin-bottom:1rem;">🔧 Parent Setup</h1>
     <p style="font-size:1.1rem;margin-bottom:1rem;color:rgba(255,255,255,0.7);">Paste your Gemini API key</p>
     <input type="text" id="key-input" placeholder="API key"
       style="width:80%;padding:14px;font-size:1rem;border-radius:12px;border:2px solid #555;background:#2a2a4a;color:white;margin-bottom:1rem;">
     <br>
     <button onclick="saveKey()" class="big-btn play-btn">Save & Play! 🎮</button>
-  \`;
+  `;
 }
 
 function saveKey() {
