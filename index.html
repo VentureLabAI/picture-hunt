@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <!-- Splash Screen -->
@@ -44,12 +44,14 @@
 
   <!-- Game Screen -->
   <div id="game" class="screen">
+    <button class="home-btn" onclick="goHome()">🏠</button>
     <div class="progress-bar">
       <div id="progress-fill" class="progress-fill"></div>
     </div>
     <div id="target-area" class="target-area">
       <div id="target-emoji" class="target-emoji"></div>
       <div id="target-text" class="target-text"></div>
+      <button class="repeat-btn" onclick="repeatPrompt()">🔊 Again</button>
     </div>
     <div id="feedback-area" class="feedback-area"></div>
     <div id="camera-area" class="camera-area">
@@ -82,6 +84,6 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

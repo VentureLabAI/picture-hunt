@@ -407,3 +407,42 @@ html, body {
   cursor: pointer;
 }
 .skip-btn:active { background: rgba(255,255,255,0.1); color: white; }
+
+/* Repeat Button */
+.repeat-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+.repeat-btn:active { background: rgba(255,255,255,0.3); }
+
+/* Home Button */
+.home-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  font-size: 1.5rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  z-index: 20;
+}
+.home-btn:active { background: rgba(255,255,255,0.3); }
+
+/* Continue & Start Over buttons */
+.continue-btn {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+.newgame-btn {
+  background: rgba(255,255,255,0.15) !important;
+  border: 2px solid rgba(255,255,255,0.3) !important;
+  font-size: 1.1rem !important;
+  padding: 12px 32px !important;
+}

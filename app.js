@@ -309,6 +309,7 @@ function shuffle(arr) {
 
 // ── Game Flow ─────────────────────────────────────────────────
 function startGame() {
+  localStorage.removeItem('PH_GAME_STATE');
   const selected = getSelectedItems();
   shuffledItems = shuffle(selected);
   currentIndex = 0;
@@ -318,7 +319,9 @@ function startGame() {
 
 function resetGame() {
   stopConfetti();
+  localStorage.removeItem('PH_GAME_STATE');
   showScreen('splash');
+  updateSplashButtons();
 }
 
 function showCurrentItem() {
@@ -335,6 +338,43 @@ function showCurrentItem() {
 
   // Speak the prompt
   speak(`Can you find a ${item.name}?`);
+}
+
+function repeatPrompt() {
+  const item = shuffledItems[currentIndex];
+  speak("Can you find a " + item.name + "?");
+}
+
+function goHome() {
+  // Save state for continue
+  localStorage.setItem('PH_GAME_STATE', JSON.stringify({
+    items: shuffledItems.map(i => i.name),
+    index: currentIndex
+  }));
+  showScreen('splash');
+  updateSplashButtons();
+}
+
+function continueGame() {
+  showScreen('game');
+  showCurrentItem();
+}
+
+function updateSplashButtons() {
+  const saved = localStorage.getItem('PH_GAME_STATE');
+  const playBtn = document.getElementById('play-btn');
+  const contBtn = document.getElementById('continue-btn');
+  const newBtn = document.getElementById('newgame-btn');
+  
+  if (saved && shuffledItems.length > 0 && currentIndex < shuffledItems.length) {
+    playBtn.style.display = 'none';
+    contBtn.style.display = '';
+    newBtn.style.display = '';
+  } else {
+    playBtn.style.display = '';
+    contBtn.style.display = 'none';
+    newBtn.style.display = 'none';
+  }
 }
 
 function skipItem() {
@@ -539,3 +579,19 @@ function stopConfetti() {
   }
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
+
+// Check for saved game on load
+window.addEventListener('DOMContentLoaded', function() {
+  const saved = localStorage.getItem('PH_GAME_STATE');
+  if (saved) {
+    try {
+      const state = JSON.parse(saved);
+      const selectedItems = getSelectedItems();
+      shuffledItems = state.items.map(name => selectedItems.find(i => i.name === name)).filter(Boolean);
+      currentIndex = state.index;
+      if (shuffledItems.length > 0 && currentIndex < shuffledItems.length) {
+        updateSplashButtons();
+      }
+    } catch(e) { localStorage.removeItem('PH_GAME_STATE'); }
+  }
+});
