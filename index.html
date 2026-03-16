@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <!-- Splash Screen -->
@@ -17,13 +17,10 @@
     <div class="splash-content">
       <h1 class="title-bounce">📸 Picture Hunt!</h1>
       <p class="subtitle">Find the things!</p>
-      <div class="splash-buttons">
-        <button id="play-btn" class="big-btn play-btn" onclick="startGame()">
-          ▶️ Play!
-        </button>
-        <button id="setup-btn" class="big-btn setup-btn" onclick="openSetup()">
-          ⚙️ Setup
-        </button>
+      <div id="category-grid" class="category-grid"></div>
+      <div class="splash-bottom">
+        <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()">⚙️</button>
+        <button id="sound-toggle" class="setup-icon-btn" onclick="toggleSound()">🔊</button>
       </div>
     </div>
   </div>
@@ -32,9 +29,10 @@
   <div id="setup" class="screen">
     <div class="setup-container">
       <h1 class="setup-header">⚙️ Pick the items!</h1>
+      <div id="category-tabs" class="category-tabs"></div>
       <div class="setup-toolbar">
-        <button id="select-all-btn" class="setup-tool-btn">✅ Select All</button>
-        <button id="clear-all-btn" class="setup-tool-btn">❌ Clear All</button>
+        <button id="select-all-btn" class="setup-tool-btn">✅ All</button>
+        <button id="clear-all-btn" class="setup-tool-btn">❌ Clear</button>
       </div>
       <p id="setup-msg" class="setup-msg">0 items selected</p>
       <div id="setup-grid" class="setup-grid"></div>
@@ -74,16 +72,22 @@
     <div class="victory-content">
       <h1 class="victory-title">🎉 You Did It! 🎉</h1>
       <div class="victory-emoji">⭐🏆⭐</div>
-      <p class="victory-sub">You found everything!</p>
-      <button class="big-btn play-btn" onclick="resetGame()">
-        🔄 Play Again!
-      </button>
+      <p id="victory-sub" class="victory-sub">You found everything!</p>
+      <div id="victory-stats" class="victory-stats"></div>
+      <div class="victory-buttons">
+        <button class="big-btn play-btn" onclick="startNewGame()">
+          🔄 Play Again!
+        </button>
+        <button class="big-btn setup-btn" onclick="resetGame()">
+          🏠 Home
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

@@ -2,7 +2,9 @@
 // Picture Hunt! — A visual scavenger hunt for toddlers
 // ============================================================
 
-// 🔑 Gemini API Key
+// ═══════════════════════════════════════════════════════════════
+// API KEY MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
 let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
 
 function showKeySetup() {
@@ -29,202 +31,375 @@ if (!GEMINI_API_KEY) {
   window.addEventListener('DOMContentLoaded', showKeySetup);
 }
 
-// ── Items & Synonyms ──────────────────────────────────────────
-const ITEMS = [
-  {
-    name: 'shoe',
-    emoji: '👟',
-    synonyms: ['shoe', 'shoes', 'sneaker', 'sneakers', 'boot', 'boots', 'footwear', 'sandal', 'sandals', 'slipper', 'slippers', 'loafer', 'flip flop', 'croc', 'crocs']
+// ═══════════════════════════════════════════════════════════════
+// CATEGORIES & ITEMS
+// ═══════════════════════════════════════════════════════════════
+const CATEGORIES = {
+  household: {
+    id: 'household',
+    name: 'Things',
+    emoji: '🏠',
+    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    speakPrompt: function(name) { return 'Can you find a ' + name + '?'; },
+    aiPrompt: function(name) {
+      return 'I am playing a scavenger hunt game with a young child. I am looking for: ' + name + '. Does this photo contain a ' + name + ' or something very similar? Reply with ONLY "yes" or "no" on the first line, then on the second line briefly say what you see.';
+    },
+    items: [
+      { name: 'shoe', emoji: '👟' },
+      { name: 'cup', emoji: '🥤' },
+      { name: 'ball', emoji: '⚽' },
+      { name: 'teddy bear', emoji: '🧸' },
+      { name: 'book', emoji: '📚' },
+      { name: 'spoon', emoji: '🥄' },
+      { name: 'pillow', emoji: '🛋️' },
+      { name: 'blanket', emoji: '🧶' },
+      { name: 'remote control', emoji: '🎛️' },
+      { name: 'toothbrush', emoji: '🪥' },
+      { name: 'chair', emoji: '🪑' },
+      { name: 'sock', emoji: '🧦' },
+      { name: 'hat', emoji: '🧢' },
+      { name: 'keys', emoji: '🔑' },
+      { name: 'water bottle', emoji: '💧' },
+      { name: 'crayon', emoji: '✏️' },
+      { name: 'plate', emoji: '🍽️' },
+      { name: 'towel', emoji: '🏖️' },
+      { name: 'lamp', emoji: '💡' },
+      { name: 'clock', emoji: '⏰' },
+      { name: 'fork', emoji: '🍴' },
+      { name: 'brush', emoji: '🪮' }
+    ]
   },
-  {
-    name: 'cup',
-    emoji: '🥤',
-    synonyms: ['cup', 'cups', 'mug', 'mugs', 'glass', 'tumbler', 'sippy cup', 'drinking glass', 'goblet', 'beaker', 'chalice']
+  shapes: {
+    id: 'shapes',
+    name: 'Shapes',
+    emoji: '🔷',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    speakPrompt: function(name) { return 'Can you find a ' + name + '?'; },
+    aiPrompt: function(name) {
+      return 'I am playing a shape-finding game with a young child. We are looking for a ' + name + ' shape. Does this photo contain an object or feature that is shaped like a ' + name + '? Be generous - it does not have to be a perfect geometric shape. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly describe what you see.';
+    },
+    items: [
+      { name: 'circle', emoji: '⭕' },
+      { name: 'square', emoji: '🟧' },
+      { name: 'triangle', emoji: '🔺' },
+      { name: 'star', emoji: '⭐' },
+      { name: 'rectangle', emoji: '📱' },
+      { name: 'heart', emoji: '❤️' },
+      { name: 'diamond', emoji: '🔷' }
+    ]
   },
-  {
-    name: 'ball',
-    emoji: '⚽',
-    synonyms: ['ball', 'balls', 'sphere', 'basketball', 'soccer ball', 'football', 'tennis ball', 'bouncy ball', 'baseball']
-  },
-  {
-    name: 'teddy bear',
-    emoji: '🧸',
-    synonyms: ['teddy bear', 'teddy', 'bear', 'stuffed animal', 'stuffed bear', 'plush', 'plushie', 'soft toy', 'stuffed toy', 'cuddly toy']
-  },
-  {
-    name: 'book',
-    emoji: '📚',
-    synonyms: ['book', 'books', 'notebook', 'magazine', 'novel', 'textbook', 'picture book', 'storybook']
-  },
-  {
-    name: 'spoon',
-    emoji: '🥄',
-    synonyms: ['spoon', 'spoons', 'tablespoon', 'teaspoon', 'ladle', 'utensil', 'silverware', 'cutlery']
-  },
-  {
-    name: 'pillow',
-    emoji: '🛋️',
-    synonyms: ['pillow', 'pillows', 'cushion', 'cushions', 'throw pillow']
-  },
-  {
-    name: 'blanket',
-    emoji: '🧶',
-    synonyms: ['blanket', 'throw', 'comforter', 'quilt']
-  },
-  {
-    name: 'remote control',
-    emoji: '🎛️',
-    synonyms: ['remote', 'remote control', 'tv remote', 'controller']
-  },
-  {
-    name: 'toothbrush',
-    emoji: '🪥',
-    synonyms: ['toothbrush', 'tooth brush']
-  },
-  {
-    name: 'chair',
-    emoji: '🪑',
-    synonyms: ['chair', 'seat', 'stool', 'dining chair']
-  },
-  {
-    name: 'sock',
-    emoji: '🧦',
-    synonyms: ['sock', 'socks']
-  },
-  {
-    name: 'hat',
-    emoji: '🧢',
-    synonyms: ['hat', 'cap', 'beanie', 'bonnet']
-  },
-  {
-    name: 'keys',
-    emoji: '🔑',
-    synonyms: ['key', 'keys', 'keychain', 'key chain']
-  },
-  {
-    name: 'water bottle',
-    emoji: '💧',
-    synonyms: ['water bottle', 'bottle', 'sippy cup', 'drink']
-  },
-  {
-    name: 'crayon',
-    emoji: '✏️',
-    synonyms: ['crayon', 'crayons', 'marker', 'markers', 'colored pencil', 'pencil', 'pen']
-  },
-  {
-    name: 'plate',
-    emoji: '🍽️',
-    synonyms: ['plate', 'dish', 'saucer']
-  },
-  {
-    name: 'towel',
-    emoji: '🏖️',
-    synonyms: ['towel', 'washcloth', 'hand towel', 'bath towel']
-  },
-  {
-    name: 'lamp',
-    emoji: '💡',
-    synonyms: ['lamp', 'light', 'desk lamp', 'table lamp']
-  },
-  {
-    name: 'clock',
-    emoji: '⏰',
-    synonyms: ['clock', 'watch', 'timer', 'alarm clock']
-  },
-  {
-    name: 'fork',
-    emoji: '🍴',
-    synonyms: ['fork', 'forks']
-  },
-  {
-    name: 'brush',
-    emoji: '🪮',
-    synonyms: ['brush', 'hairbrush', 'hair brush', 'comb']
+  colors: {
+    id: 'colors',
+    name: 'Colors',
+    emoji: '🌈',
+    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 50%, #feca57 100%)',
+    speakPrompt: function(name) { return 'Can you find something ' + name + '?'; },
+    aiPrompt: function(name) {
+      return 'I am playing a color-finding game with a young child. We are looking for the color ' + name + '. Does this photo contain something that is clearly or predominantly ' + name + ' in color? Be generous with young children. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly describe what you see.';
+    },
+    items: [
+      { name: 'red', emoji: '🔴' },
+      { name: 'blue', emoji: '🔵' },
+      { name: 'green', emoji: '🟢' },
+      { name: 'yellow', emoji: '🟡' },
+      { name: 'orange', emoji: '🟠' },
+      { name: 'purple', emoji: '🟣' },
+      { name: 'pink', emoji: '🩷' },
+      { name: 'white', emoji: '⚪' },
+      { name: 'black', emoji: '⚫' },
+      { name: 'brown', emoji: '🟤' }
+    ]
   }
-];
-
-// ── Setup / Item Selection ────────────────────────────────────
-const STORAGE_KEY = 'PICTURE_HUNT_SELECTED';
-
-function getSelectedItems() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const names = JSON.parse(saved);
-      if (Array.isArray(names) && names.length >= 4) {
-        return ITEMS.filter(i => names.includes(i.name));
-      }
-    } catch (e) { /* fall through to default */ }
-  }
-  // Default: all selected
-  return [...ITEMS];
-}
-
-function getSelectedNames() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const names = JSON.parse(saved);
-      if (Array.isArray(names) && names.length >= 4) return names;
-    } catch (e) { /* fall through */ }
-  }
-  return ITEMS.map(i => i.name);
-}
-
-function saveSelectedNames(names) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(names));
-}
-
-// ── State ─────────────────────────────────────────────────────
-let currentIndex = 0;
-let shuffledItems = [];
-
-// ── DOM Refs ──────────────────────────────────────────────────
-const screens = {
-  splash: document.getElementById('splash'),
-  setup: document.getElementById('setup'),
-  game: document.getElementById('game'),
-  victory: document.getElementById('victory')
 };
-const targetEmoji = document.getElementById('target-emoji');
-const targetText = document.getElementById('target-text');
-const feedbackArea = document.getElementById('feedback-area');
-const progressFill = document.getElementById('progress-fill');
-const cameraInput = document.getElementById('camera-input');
-const cameraLabel = document.getElementById('camera-label');
-const loadingOverlay = document.getElementById('loading');
-const confettiCanvas = document.getElementById('confetti-canvas');
-const ctx = confettiCanvas.getContext('2d');
 
-// Setup DOM refs
-const setupGrid = document.getElementById('setup-grid');
-const setupMsg = document.getElementById('setup-msg');
-const selectAllBtn = document.getElementById('select-all-btn');
-const clearAllBtn = document.getElementById('clear-all-btn');
-const setupDoneBtn = document.getElementById('setup-done-btn');
+const CATEGORY_ORDER = ['household', 'shapes', 'colors'];
 
-// ── Screen Management ─────────────────────────────────────────
-function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  screens[name].classList.add('active');
+// ═══════════════════════════════════════════════════════════════
+// SOUND EFFECTS (Web Audio API)
+// ═══════════════════════════════════════════════════════════════
+let audioCtx = null;
+let soundEnabled = localStorage.getItem('PH_SOUND') !== 'off';
+
+function ensureAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
 }
 
-// ── Setup Screen ──────────────────────────────────────────────
-let setupSelection = new Set();
+function playTone(freq, duration, delay, type, vol) {
+  if (!soundEnabled) return;
+  try {
+    var ctx = ensureAudioCtx();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    var t = ctx.currentTime + (delay || 0);
+    gain.gain.setValueAtTime(vol || 0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + duration);
+  } catch(e) { /* audio not available */ }
+}
+
+function playSuccess() {
+  playTone(523, 0.25, 0, 'sine', 0.25);
+  playTone(659, 0.25, 0.1, 'sine', 0.25);
+  playTone(784, 0.35, 0.2, 'sine', 0.3);
+}
+
+function playMiss() {
+  if (!soundEnabled) return;
+  try {
+    var ctx = ensureAudioCtx();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(350, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+
+function playVictorySound() {
+  playTone(523, 0.3, 0, 'triangle', 0.3);
+  playTone(659, 0.3, 0.15, 'triangle', 0.3);
+  playTone(784, 0.3, 0.3, 'triangle', 0.3);
+  playTone(1047, 0.5, 0.45, 'triangle', 0.35);
+}
+
+function playClick() {
+  playTone(800, 0.06, 0, 'sine', 0.12);
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
+  var btn = document.getElementById('sound-toggle');
+  if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+  if (soundEnabled) playClick();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROGRESS TRACKING
+// ═══════════════════════════════════════════════════════════════
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem('PH_PROGRESS') || '{}'); }
+  catch(e) { return {}; }
+}
+
+function saveProgress(p) {
+  localStorage.setItem('PH_PROGRESS', JSON.stringify(p));
+}
+
+function recordProgress(catId, itemName) {
+  var p = getProgress();
+  if (!p[catId]) p[catId] = [];
+  if (p[catId].indexOf(itemName) === -1) {
+    p[catId].push(itemName);
+    saveProgress(p);
+  }
+}
+
+function getCategoryProgress(catId) {
+  var p = getProgress();
+  return (p[catId] || []).length;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ITEM SELECTION (per category)
+// ═══════════════════════════════════════════════════════════════
+function getSelectedNames(catId) {
+  try {
+    var all = JSON.parse(localStorage.getItem('PH_SELECTED') || '{}');
+    var names = all[catId];
+    if (Array.isArray(names) && names.length >= 3) return names;
+  } catch(e) {}
+  // Default: all items selected
+  return CATEGORIES[catId].items.map(function(i) { return i.name; });
+}
+
+function getSelectedItems(catId) {
+  var names = getSelectedNames(catId);
+  return CATEGORIES[catId].items.filter(function(i) { return names.indexOf(i.name) >= 0; });
+}
+
+function saveSelectedNames(catId, names) {
+  var all;
+  try { all = JSON.parse(localStorage.getItem('PH_SELECTED') || '{}'); }
+  catch(e) { all = {}; }
+  all[catId] = names;
+  localStorage.setItem('PH_SELECTED', JSON.stringify(all));
+}
+
+function migrateOldData() {
+  // Migrate old PICTURE_HUNT_SELECTED → PH_SELECTED.household
+  var old = localStorage.getItem('PICTURE_HUNT_SELECTED');
+  if (old) {
+    try {
+      var names = JSON.parse(old);
+      if (Array.isArray(names) && names.length > 0) {
+        saveSelectedNames('household', names);
+      }
+    } catch(e) {}
+    localStorage.removeItem('PICTURE_HUNT_SELECTED');
+  }
+  // Migrate old PH_GAME_STATE without category
+  var gs = localStorage.getItem('PH_GAME_STATE');
+  if (gs) {
+    try {
+      var state = JSON.parse(gs);
+      if (state && !state.category) {
+        state.category = 'household';
+        localStorage.setItem('PH_GAME_STATE', JSON.stringify(state));
+      }
+    } catch(e) {}
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+var currentCategory = null;
+var currentIndex = 0;
+var shuffledItems = [];
+
+// ═══════════════════════════════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════════════════════════════
+var screens = {};
+var targetEmoji, targetText, feedbackArea, progressFill;
+var cameraInput, cameraLabel, loadingOverlay;
+var confettiCanvas, ctx;
+var setupGrid, setupMsg, setupDoneBtn, selectAllBtn, clearAllBtn;
+
+function initDomRefs() {
+  screens = {
+    splash: document.getElementById('splash'),
+    setup: document.getElementById('setup'),
+    game: document.getElementById('game'),
+    victory: document.getElementById('victory')
+  };
+  targetEmoji = document.getElementById('target-emoji');
+  targetText = document.getElementById('target-text');
+  feedbackArea = document.getElementById('feedback-area');
+  progressFill = document.getElementById('progress-fill');
+  cameraInput = document.getElementById('camera-input');
+  cameraLabel = document.getElementById('camera-label');
+  loadingOverlay = document.getElementById('loading');
+  confettiCanvas = document.getElementById('confetti-canvas');
+  ctx = confettiCanvas.getContext('2d');
+  setupGrid = document.getElementById('setup-grid');
+  setupMsg = document.getElementById('setup-msg');
+  setupDoneBtn = document.getElementById('setup-done-btn');
+  selectAllBtn = document.getElementById('select-all-btn');
+  clearAllBtn = document.getElementById('clear-all-btn');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function showScreen(name) {
+  Object.values(screens).forEach(function(s) { s.classList.remove('active'); });
+  screens[name].classList.add('active');
+  if (name === 'splash') renderSplash();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SPLASH SCREEN
+// ═══════════════════════════════════════════════════════════════
+function renderSplash() {
+  var grid = document.getElementById('category-grid');
+  if (!grid) return;
+
+  var savedGame = null;
+  try { savedGame = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+
+  var html = '';
+  CATEGORY_ORDER.forEach(function(catId) {
+    var cat = CATEGORIES[catId];
+    var found = getCategoryProgress(catId);
+    var total = cat.items.length;
+    var hasContinue = savedGame && savedGame.category === catId;
+    var complete = found >= total;
+
+    html += '<button class="category-card' + (hasContinue ? ' has-continue' : '') + '" '
+      + 'style="background:' + cat.gradient + '" '
+      + 'onclick="playCategory(\'' + catId + '\')">'
+      + '<div class="cat-emoji">' + cat.emoji + '</div>'
+      + '<div class="cat-info">'
+      + '<div class="cat-name">' + cat.name + '</div>'
+      + '<div class="cat-progress">'
+      + (hasContinue ? '▶️ Continue!' : (complete ? '🏆 ' + found + '/' + total : found + '/' + total + ' ⭐'))
+      + '</div>'
+      + '</div>'
+      + '</button>';
+  });
+  grid.innerHTML = html;
+
+  // Update sound toggle
+  var btn = document.getElementById('sound-toggle');
+  if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETUP SCREEN
+// ═══════════════════════════════════════════════════════════════
+var setupCategory = 'household';
+var setupSelection = new Set();
 
 function openSetup() {
-  setupSelection = new Set(getSelectedNames());
+  setupCategory = 'household';
+  setupSelection = new Set(getSelectedNames(setupCategory));
+  renderSetupTabs();
   renderSetupGrid();
   showScreen('setup');
 }
 
+function renderSetupTabs() {
+  var tabsEl = document.getElementById('category-tabs');
+  if (!tabsEl) return;
+  var html = '';
+  CATEGORY_ORDER.forEach(function(catId) {
+    var cat = CATEGORIES[catId];
+    html += '<button class="cat-tab' + (catId === setupCategory ? ' active' : '') + '" '
+      + 'onclick="switchSetupTab(\'' + catId + '\')">'
+      + cat.emoji + ' ' + cat.name
+      + '</button>';
+  });
+  tabsEl.innerHTML = html;
+}
+
+function switchSetupTab(catId) {
+  // Save current selection before switching
+  if (setupSelection.size >= 3) {
+    saveSelectedNames(setupCategory, Array.from(setupSelection));
+  }
+  setupCategory = catId;
+  setupSelection = new Set(getSelectedNames(catId));
+  renderSetupTabs();
+  renderSetupGrid();
+}
+
 function renderSetupGrid() {
+  var cat = CATEGORIES[setupCategory];
   setupGrid.innerHTML = '';
-  ITEMS.forEach(item => {
-    const card = document.createElement('div');
+  cat.items.forEach(function(item) {
+    var card = document.createElement('div');
     card.className = 'setup-card' + (setupSelection.has(item.name) ? ' selected' : '');
-    card.innerHTML = `<span class="setup-card-emoji">${item.emoji}</span><span class="setup-card-name">${item.name}</span>`;
-    card.addEventListener('click', () => {
+    card.innerHTML = '<span class="setup-card-emoji">' + item.emoji + '</span>'
+      + '<span class="setup-card-name">' + item.name + '</span>';
+    card.addEventListener('click', function() {
+      playClick();
       if (setupSelection.has(item.name)) {
         setupSelection.delete(item.name);
       } else {
@@ -232,7 +407,7 @@ function renderSetupGrid() {
       }
       card.classList.toggle('selected');
       card.classList.add('bounce-tap');
-      setTimeout(() => card.classList.remove('bounce-tap'), 300);
+      setTimeout(function() { card.classList.remove('bounce-tap'); }, 300);
       updateSetupMsg();
     });
     setupGrid.appendChild(card);
@@ -241,143 +416,165 @@ function renderSetupGrid() {
 }
 
 function updateSetupMsg() {
-  const count = setupSelection.size;
-  if (count < 4) {
-    setupMsg.textContent = `Pick at least 4 items! (${count} selected)`;
+  var count = setupSelection.size;
+  if (count < 3) {
+    setupMsg.textContent = 'Pick at least 3! (' + count + ' selected)';
     setupMsg.classList.add('warn');
     setupDoneBtn.disabled = true;
   } else {
-    setupMsg.textContent = `${count} items selected`;
+    setupMsg.textContent = count + ' items selected';
     setupMsg.classList.remove('warn');
     setupDoneBtn.disabled = false;
   }
 }
 
 function setupSelectAll() {
-  setupSelection = new Set(ITEMS.map(i => i.name));
+  playClick();
+  setupSelection = new Set(CATEGORIES[setupCategory].items.map(function(i) { return i.name; }));
   renderSetupGrid();
 }
 
 function setupClearAll() {
+  playClick();
   setupSelection = new Set();
   renderSetupGrid();
 }
 
 function setupDone() {
-  if (setupSelection.size < 4) return;
-  saveSelectedNames([...setupSelection]);
+  if (setupSelection.size < 3) return;
+  playClick();
+  saveSelectedNames(setupCategory, Array.from(setupSelection));
+  // Clear saved game for this category since items may have changed
+  var gs = null;
+  try { gs = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+  if (gs && gs.category === setupCategory) {
+    localStorage.removeItem('PH_GAME_STATE');
+  }
   showScreen('splash');
 }
 
-// Wire up setup buttons
-selectAllBtn.addEventListener('click', setupSelectAll);
-clearAllBtn.addEventListener('click', setupClearAll);
-setupDoneBtn.addEventListener('click', setupDone);
-
-// ── Speech ────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// SPEECH
+// ═══════════════════════════════════════════════════════════════
 function speak(text, onEnd) {
-  if (!('speechSynthesis' in window)) { onEnd?.(); return; }
+  if (!soundEnabled || !('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
   window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
+  var utter = new SpeechSynthesisUtterance(text);
   utter.rate = 0.85;
   utter.pitch = 1.2;
   utter.volume = 1;
-  // Try to pick a friendly English voice
-  const voices = speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.name.includes('Samantha')) ||
-                    voices.find(v => v.lang.startsWith('en') && v.localService);
+  var voices = speechSynthesis.getVoices();
+  var preferred = voices.find(function(v) { return v.name.indexOf('Samantha') >= 0; }) ||
+                  voices.find(function(v) { return v.lang.indexOf('en') === 0 && v.localService; });
   if (preferred) utter.voice = preferred;
   if (onEnd) utter.onend = onEnd;
   speechSynthesis.speak(utter);
 }
 
-// Preload voices (Safari needs this)
 if ('speechSynthesis' in window) {
   speechSynthesis.getVoices();
-  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
 }
 
-// ── Shuffle ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// SHUFFLE
+// ═══════════════════════════════════════════════════════════════
 function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
   }
   return a;
 }
 
-// ── Game Flow ─────────────────────────────────────────────────
-function startGame() {
+// ═══════════════════════════════════════════════════════════════
+// GAME FLOW
+// ═══════════════════════════════════════════════════════════════
+function playCategory(catId) {
+  playClick();
+  currentCategory = catId;
+
+  // Check for saved game in this category
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+
+  if (saved && saved.category === catId) {
+    // Resume saved game
+    var catItems = CATEGORIES[catId].items;
+    shuffledItems = saved.items.map(function(name) {
+      return catItems.find(function(i) { return i.name === name; });
+    }).filter(Boolean);
+    currentIndex = saved.index;
+    if (shuffledItems.length > 0 && currentIndex < shuffledItems.length) {
+      showScreen('game');
+      showCurrentItem();
+      return;
+    }
+  }
+
+  // Start new game
+  startNewGame(catId);
+}
+
+function startNewGame(catId) {
   localStorage.removeItem('PH_GAME_STATE');
-  const selected = getSelectedItems();
+  currentCategory = catId || currentCategory;
+  var selected = getSelectedItems(currentCategory);
   shuffledItems = shuffle(selected);
   currentIndex = 0;
   showScreen('game');
   showCurrentItem();
 }
 
+function startGame() {
+  // Legacy — start household by default
+  playCategory('household');
+}
+
 function resetGame() {
   stopConfetti();
   localStorage.removeItem('PH_GAME_STATE');
   showScreen('splash');
-  updateSplashButtons();
 }
 
 function showCurrentItem() {
-  const item = shuffledItems[currentIndex];
+  var item = shuffledItems[currentIndex];
+  var cat = CATEGORIES[currentCategory];
   targetEmoji.textContent = item.emoji;
-  targetText.textContent = `Find a ${item.name}!`;
+  targetText.textContent = cat.speakPrompt(item.name);
   feedbackArea.innerHTML = '';
-  progressFill.style.width = `${(currentIndex / shuffledItems.length) * 100}%`;
+  progressFill.style.width = ((currentIndex / shuffledItems.length) * 100) + '%';
 
-  // Reset camera input so the same file can be re-selected
   cameraInput.value = '';
+  cameraLabel.style.display = '';
   cameraLabel.style.pointerEvents = 'auto';
   cameraLabel.style.opacity = '1';
+  var skipArea = document.querySelector('.skip-area');
+  if (skipArea) skipArea.style.display = '';
 
-  // Speak the prompt
-  speak(`Can you find a ${item.name}?`);
+  speak(cat.speakPrompt(item.name));
 }
 
 function repeatPrompt() {
-  const item = shuffledItems[currentIndex];
-  speak("Can you find a " + item.name + "?");
+  playClick();
+  var item = shuffledItems[currentIndex];
+  var cat = CATEGORIES[currentCategory];
+  speak(cat.speakPrompt(item.name));
 }
 
 function goHome() {
-  // Save state for continue
+  playClick();
   localStorage.setItem('PH_GAME_STATE', JSON.stringify({
-    items: shuffledItems.map(i => i.name),
+    category: currentCategory,
+    items: shuffledItems.map(function(i) { return i.name; }),
     index: currentIndex
   }));
   showScreen('splash');
-  updateSplashButtons();
-}
-
-function continueGame() {
-  showScreen('game');
-  showCurrentItem();
-}
-
-function updateSplashButtons() {
-  const saved = localStorage.getItem('PH_GAME_STATE');
-  const playBtn = document.getElementById('play-btn');
-  const contBtn = document.getElementById('continue-btn');
-  const newBtn = document.getElementById('newgame-btn');
-  
-  if (saved && shuffledItems.length > 0 && currentIndex < shuffledItems.length) {
-    playBtn.style.display = 'none';
-    contBtn.style.display = '';
-    newBtn.style.display = '';
-  } else {
-    playBtn.style.display = '';
-    contBtn.style.display = 'none';
-    newBtn.style.display = 'none';
-  }
 }
 
 function skipItem() {
+  playClick();
   speak("Let's try another one!");
   advanceItem();
 }
@@ -392,61 +589,75 @@ function advanceItem() {
 }
 
 function showVictory() {
+  localStorage.removeItem('PH_GAME_STATE');
+  var cat = CATEGORIES[currentCategory];
+  var found = getCategoryProgress(currentCategory);
+  var total = cat.items.length;
+  var complete = found >= total;
+
+  var subEl = document.getElementById('victory-sub');
+  var statsEl = document.getElementById('victory-stats');
+
+  subEl.textContent = complete
+    ? 'You\'re a ' + cat.name + ' champion!'
+    : 'You found everything!';
+
+  statsEl.innerHTML = '<div class="victory-stat">'
+    + cat.emoji + ' ' + found + '/' + total + ' unique ' + cat.name.toLowerCase() + ' found!'
+    + (complete ? ' 🏆' : '')
+    + '</div>';
+
   showScreen('victory');
   fireConfetti(4000);
-  speak('You did it! You found everything! Great job!');
+  playVictorySound();
+  speak(complete
+    ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
+    : 'You did it! You found everything! Great job!');
 }
 
-// ── Photo Handling ────────────────────────────────────────────
-let pendingBase64 = null;
-let pendingMimeType = null;
+// ═══════════════════════════════════════════════════════════════
+// PHOTO HANDLING
+// ═══════════════════════════════════════════════════════════════
+var pendingBase64 = null;
+var pendingMimeType = null;
 
-async function handlePhoto(input) {
-  const file = input.files?.[0];
+function handlePhoto(input) {
+  var file = input.files && input.files[0];
   if (!file) return;
 
-  // Convert to base64 and show preview
-  const reader = new FileReader();
+  var reader = new FileReader();
   reader.onload = function() {
-    const dataUrl = reader.result;
+    var dataUrl = reader.result;
     pendingBase64 = dataUrl.split(',')[1];
     pendingMimeType = file.type || 'image/jpeg';
-    
-    // Hide camera and skip, show preview with 3 buttons
+
     cameraLabel.style.display = 'none';
-    const skipArea = document.querySelector('.skip-area');
+    var skipArea = document.querySelector('.skip-area');
     if (skipArea) skipArea.style.display = 'none';
-    
-    feedbackArea.innerHTML = `
-      <div class="photo-preview">
-        <img src="${dataUrl}" class="preview-img" alt="Your photo">
-      </div>
-      <div class="preview-buttons">
-        <button class="preview-btn preview-retake" onclick="retakePreview()">
-          📷<br><span class="preview-label">Again</span>
-        </button>
-        <button class="preview-btn preview-submit" onclick="submitPhoto()">
-          ✅<br><span class="preview-label">Yes!</span>
-        </button>
-        <button class="preview-btn preview-cancel" onclick="cancelPreview()">
-          ❌<br><span class="preview-label">No</span>
-        </button>
-      </div>
-    `;
+
+    feedbackArea.innerHTML = '<div class="photo-preview">'
+      + '<img src="' + dataUrl + '" class="preview-img" alt="Your photo">'
+      + '</div>'
+      + '<div class="preview-buttons">'
+      + '<button class="preview-btn preview-retake" onclick="retakePreview()">📷<br><span class="preview-label">Again</span></button>'
+      + '<button class="preview-btn preview-submit" onclick="submitPhoto()">✅<br><span class="preview-label">Yes!</span></button>'
+      + '<button class="preview-btn preview-cancel" onclick="cancelPreview()">❌<br><span class="preview-label">No</span></button>'
+      + '</div>';
   };
   reader.readAsDataURL(file);
 }
 
 function retakePreview() {
+  playClick();
   pendingBase64 = null;
   pendingMimeType = null;
   resetCameraUI();
-  // Trigger camera again
   cameraInput.value = '';
   cameraInput.click();
 }
 
 function cancelPreview() {
+  playClick();
   pendingBase64 = null;
   pendingMimeType = null;
   resetCameraUI();
@@ -454,25 +665,29 @@ function cancelPreview() {
 
 async function submitPhoto() {
   if (!pendingBase64) return;
+  playClick();
 
   feedbackArea.innerHTML = '';
   loadingOverlay.classList.remove('hidden');
 
   try {
-    const response = await identifyObject(pendingBase64, pendingMimeType);
-    const firstLine = response.split('\n')[0].toLowerCase().trim();
-    const matched = firstLine.includes('yes');
+    var response = await identifyObject(pendingBase64, pendingMimeType);
+    var firstLine = response.split('\n')[0].toLowerCase().trim();
+    var matched = firstLine.indexOf('yes') >= 0;
 
     loadingOverlay.classList.add('hidden');
     pendingBase64 = null;
     pendingMimeType = null;
 
     if (matched) {
+      recordProgress(currentCategory, shuffledItems[currentIndex].name);
       showResultButtons('found');
       fireConfetti(1500);
+      playSuccess();
       speak('You found it! Great job!');
     } else {
       showResultButtons('notfound');
+      playMiss();
       speak('Hmm, try again!');
     }
   } catch (err) {
@@ -484,133 +699,94 @@ async function submitPhoto() {
   }
 }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Strip the data:...;base64, prefix
-      const result = reader.result.split(',')[1];
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// ── Gemini API ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// GEMINI API
+// ═══════════════════════════════════════════════════════════════
 async function identifyObject(base64Data, mimeType) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  var cat = CATEGORIES[currentCategory];
+  var item = shuffledItems[currentIndex];
+  var prompt = cat.aiPrompt(item.name);
 
-  const body = {
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+
+  var body = {
     contents: [{
       parts: [
-        {
-          text: `I am playing a scavenger hunt game. I am looking for: ${shuffledItems[currentIndex].name}. Does this photo contain a ${shuffledItems[currentIndex].name} or something very similar? Reply with ONLY "yes" or "no" on the first line, then on the second line briefly say what you see.`
-        },
-        {
-          inlineData: {
-            mimeType: mimeType || 'image/jpeg',
-            data: base64Data
-          }
-        }
+        { text: prompt },
+        { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Data } }
       ]
     }]
   };
 
-  const resp = await fetch(url, {
+  var resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
 
   if (!resp.ok) {
-    const errText = await resp.text();
-    throw new Error(`Gemini API error ${resp.status}: ${errText}`);
+    var errText = await resp.text();
+    throw new Error('Gemini API error ' + resp.status + ': ' + errText);
   }
 
-  const data = await resp.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  var data = await resp.json();
+  var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+    data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+    data.candidates[0].content.parts[0].text) || '';
   console.log('Gemini response:', text);
-  console.log('Looking for:', shuffledItems[currentIndex]?.name);
+  console.log('Looking for:', item.name, '(category:', currentCategory + ')');
   return text.trim().toLowerCase();
 }
 
-// ── Matching ──────────────────────────────────────────────────
-function matchItem(detected, item) {
-  const d = detected.toLowerCase().replace(/[^a-z\s]/g, '').trim();
-  // Check if detected text contains any synonym
-  for (const syn of item.synonyms) {
-    if (d.includes(syn) || syn.includes(d)) return true;
-  }
-  // Also check if any word in the response matches
-  const words = d.split(/\s+/);
-  for (const word of words) {
-    for (const syn of item.synonyms) {
-      if (syn.includes(word) || word.includes(syn)) return true;
-    }
-  }
-  return false;
-}
-
-// ── Feedback ──────────────────────────────────────────────────
-function showFeedback(text, type) {
-  feedbackArea.innerHTML = `<div class="feedback ${type}">${text}</div>`;
-}
-
+// ═══════════════════════════════════════════════════════════════
+// RESULT HANDLING
+// ═══════════════════════════════════════════════════════════════
 function showResultButtons(result) {
-  // Hide camera button
   cameraLabel.style.display = 'none';
-  document.querySelector('.skip-area').style.display = 'none';
-  
+  var skipArea = document.querySelector('.skip-area');
+  if (skipArea) skipArea.style.display = 'none';
+
   if (result === 'found') {
-    feedbackArea.innerHTML = `
-      <div class="result-msg success">🎉 You found it!</div>
-      <div class="result-buttons">
-        <button class="result-btn result-green" onclick="acceptResult()">
-          <span class="result-icon">✓</span>
-        </button>
-        <button class="result-btn result-yellow" onclick="retakePhoto()">
-          <span class="result-icon">↻</span>
-        </button>
-      </div>
-    `;
+    feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>'
+      + '<div class="result-buttons">'
+      + '<button class="result-btn result-green" onclick="acceptResult()"><span class="result-icon">✓</span></button>'
+      + '<button class="result-btn result-yellow" onclick="retakePhoto()"><span class="result-icon">↻</span></button>'
+      + '</div>';
   } else {
-    feedbackArea.innerHTML = `
-      <div class="result-msg fail">${result === 'error' ? '😅 Oops!' : '🤔 Not quite!'}</div>
-      <div class="result-buttons">
-        <button class="result-btn result-green" onclick="forceAccept()">
-          <span class="result-icon">✓</span>
-        </button>
-        <button class="result-btn result-red" onclick="dismissResult()">
-          <span class="result-icon">✗</span>
-        </button>
-        <button class="result-btn result-yellow" onclick="retakePhoto()">
-          <span class="result-icon">↻</span>
-        </button>
-      </div>
-    `;
+    feedbackArea.innerHTML = '<div class="result-msg fail">'
+      + (result === 'error' ? '😅 Oops!' : '🤔 Not quite!') + '</div>'
+      + '<div class="result-buttons">'
+      + '<button class="result-btn result-green" onclick="forceAccept()"><span class="result-icon">✓</span></button>'
+      + '<button class="result-btn result-red" onclick="dismissResult()"><span class="result-icon">✗</span></button>'
+      + '<button class="result-btn result-yellow" onclick="retakePhoto()"><span class="result-icon">↻</span></button>'
+      + '</div>';
   }
 }
 
 function acceptResult() {
+  playClick();
   resetCameraUI();
   advanceItem();
 }
 
 function forceAccept() {
-  // Parent override - accept even if AI said no
+  playClick();
+  recordProgress(currentCategory, shuffledItems[currentIndex].name);
   fireConfetti(1000);
+  playSuccess();
   speak('Great job!');
   resetCameraUI();
   setTimeout(advanceItem, 800);
 }
 
 function dismissResult() {
+  playClick();
   resetCameraUI();
   speak('Try again!');
 }
 
 function retakePhoto() {
+  playClick();
   resetCameraUI();
 }
 
@@ -620,25 +796,26 @@ function resetCameraUI() {
   cameraLabel.style.pointerEvents = 'auto';
   cameraLabel.style.opacity = '1';
   cameraInput.value = '';
-  const skipArea = document.querySelector('.skip-area');
+  var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = '';
 }
 
-// ── Confetti 🎊 ──────────────────────────────────────────────
-let confettiPieces = [];
-let confettiAnimId = null;
+// ═══════════════════════════════════════════════════════════════
+// CONFETTI 🎊
+// ═══════════════════════════════════════════════════════════════
+var confettiPieces = [];
+var confettiAnimId = null;
 
 function resizeCanvas() {
   confettiCanvas.width = window.innerWidth;
   confettiCanvas.height = window.innerHeight;
 }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
 
-function fireConfetti(durationMs = 2000) {
+function fireConfetti(durationMs) {
+  durationMs = durationMs || 2000;
   confettiPieces = [];
-  const colors = ['#f5576c', '#43e97b', '#feca57', '#667eea', '#f093fb', '#38f9d7', '#ff6b6b', '#48dbfb'];
-  for (let i = 0; i < 120; i++) {
+  var colors = ['#f5576c', '#43e97b', '#feca57', '#667eea', '#f093fb', '#38f9d7', '#ff6b6b', '#48dbfb'];
+  for (var i = 0; i < 120; i++) {
     confettiPieces.push({
       x: Math.random() * confettiCanvas.width,
       y: Math.random() * confettiCanvas.height - confettiCanvas.height,
@@ -651,17 +828,18 @@ function fireConfetti(durationMs = 2000) {
       rotV: (Math.random() - 0.5) * 10
     });
   }
-  const start = Date.now();
+  var start = Date.now();
   function loop() {
     ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    const elapsed = Date.now() - start;
-    const fade = elapsed > durationMs - 500 ? Math.max(0, (durationMs - elapsed) / 500) : 1;
+    var elapsed = Date.now() - start;
+    var fade = elapsed > durationMs - 500 ? Math.max(0, (durationMs - elapsed) / 500) : 1;
 
-    for (const p of confettiPieces) {
+    for (var j = 0; j < confettiPieces.length; j++) {
+      var p = confettiPieces[j];
       p.x += p.vx;
       p.y += p.vy;
       p.rot += p.rotV;
-      p.vy += 0.05; // gravity
+      p.vy += 0.05;
 
       ctx.save();
       ctx.translate(p.x, p.y);
@@ -688,21 +866,36 @@ function stopConfetti() {
     cancelAnimationFrame(confettiAnimId);
     confettiAnimId = null;
   }
-  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
 
-// Check for saved game on load
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function() {
-  const saved = localStorage.getItem('PH_GAME_STATE');
-  if (saved) {
-    try {
-      const state = JSON.parse(saved);
-      const selectedItems = getSelectedItems();
-      shuffledItems = state.items.map(name => selectedItems.find(i => i.name === name)).filter(Boolean);
-      currentIndex = state.index;
-      if (shuffledItems.length > 0 && currentIndex < shuffledItems.length) {
-        updateSplashButtons();
-      }
-    } catch(e) { localStorage.removeItem('PH_GAME_STATE'); }
+  if (!GEMINI_API_KEY) return; // showKeySetup handles this case
+
+  initDomRefs();
+  migrateOldData();
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Wire setup buttons
+  selectAllBtn.addEventListener('click', setupSelectAll);
+  clearAllBtn.addEventListener('click', setupClearAll);
+  setupDoneBtn.addEventListener('click', setupDone);
+
+  // Restore saved game state for splash display
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+  if (saved && saved.category) {
+    currentCategory = saved.category;
+    var catItems = CATEGORIES[saved.category].items;
+    shuffledItems = saved.items.map(function(name) {
+      return catItems.find(function(i) { return i.name === name; });
+    }).filter(Boolean);
+    currentIndex = saved.index || 0;
   }
+
+  renderSplash();
 });
