@@ -12,8 +12,9 @@
     var k = h.substring(5);
     if (k) {
       localStorage.setItem('PH_KEY', k);
-      // Clean the URL so key isn't visible, but keep the hash for bookmarking
-      history.replaceState(null, '', location.pathname + location.search + '#');
+      // Reload cleanly so the key setup screen never shows
+      location.replace(location.pathname + location.search);
+      return;
     }
   }
 })();
