@@ -109,7 +109,7 @@ const CATEGORIES = {
     gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 50%, #feca57 100%)',
     speakPrompt: function(name) { return 'Can you find something ' + name + '?'; },
     aiPrompt: function(name) {
-      return 'I am playing a color-finding game with a young child. We are looking for the color ' + name + '. Does this photo contain something that is clearly or predominantly ' + name + ' in color? Be generous with young children. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly describe what you see.';
+      return 'I am playing a color-finding game with a young child. We are looking for the color ' + name + '. Does this photo contain an object or surface that is clearly and obviously ' + name + ' in color? The dominant color of the object must be ' + name + '. If the object is a different color (even a similar shade), say no. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly describe what you see and its color.';
     },
     items: [
       { name: 'red', emoji: '🔴' },
