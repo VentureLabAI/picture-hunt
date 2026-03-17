@@ -56,7 +56,7 @@ const CATEGORIES = {
     gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     speakPrompt: function(name) { return 'Can you find a ' + name + '?'; },
     aiPrompt: function(name) {
-      return 'I am playing a scavenger hunt game with a young child. I am looking for: ' + name + '. Does this photo contain a ' + name + ' or something very similar? Reply with ONLY "yes" or "no" on the first line, then on the second line briefly say what you see.';
+      return 'Is the primary object in this photo a ' + name + ', or a very similar common variation of it? A sippy cup counts as a cup, a sandal counts as a shoe, a sofa counts as a chair. But a hat does not count as a shoe. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'shoe', emoji: '👟' },
@@ -90,7 +90,7 @@ const CATEGORIES = {
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     speakPrompt: function(name) { return 'Can you find a ' + name + '?'; },
     aiPrompt: function(name) {
-      return 'I am playing a shape-finding game with a young child. We are looking for a ' + name + ' shape. Does this photo contain an object or feature that is shaped like a ' + name + '? Be generous - it does not have to be a perfect geometric shape. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly describe what you see.';
+      return 'Does the main object in this photo predominantly have the shape of a ' + name + '? It does not need to be perfectly geometric — real objects have rounded edges and imperfections. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But a square should not be identified as a circle. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'circle', emoji: '⭕' },
@@ -109,7 +109,7 @@ const CATEGORIES = {
     gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 50%, #feca57 100%)',
     speakPrompt: function(name) { return 'Can you find something ' + name + '?'; },
     aiPrompt: function(name) {
-      return 'I am playing a color-finding game with a toddler. We are looking for the color ' + name + '. Does this photo contain an object that a young child would recognize as ' + name + '? Accept different shades of the same color (e.g. light blue and dark blue both count as blue). But do NOT accept completely different colors — for example green is not brown, red is not blue, yellow is not purple. Reply with ONLY "yes" or "no" on the first line, then on the second line briefly say what you see.';
+      return 'Is the predominant color of the main object in this photo ' + name + '? This includes all shades, tints, and variations of ' + name + ' (e.g. light blue, dark blue, and navy all count as blue). However, colors from a completely different color family must be rejected — green is not brown, purple is not red. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see and its color.';
     },
     items: [
       { name: 'red', emoji: '🔴' },
@@ -709,7 +709,10 @@ async function identifyObject(base64Data, mimeType) {
         { text: prompt },
         { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Data } }
       ]
-    }]
+    }],
+    generationConfig: {
+      temperature: 0
+    }
   };
 
   var resp = await fetch(url, {
