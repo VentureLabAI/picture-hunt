@@ -5,6 +5,19 @@
 // ═══════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
+// Check URL hash for key (e.g. #key=AIza...) — lets you bookmark it
+(function() {
+  var h = location.hash;
+  if (h && h.indexOf('#key=') === 0) {
+    var k = h.substring(5);
+    if (k) {
+      localStorage.setItem('PH_KEY', k);
+      // Clean the URL so key isn't visible, but keep the hash for bookmarking
+      history.replaceState(null, '', location.pathname + location.search + '#');
+    }
+  }
+})();
+
 let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
 
 function showKeySetup() {
