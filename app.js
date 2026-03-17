@@ -645,43 +645,23 @@ function handlePhoto(input) {
     pendingBase64 = dataUrl.split(',')[1];
     pendingMimeType = file.type || 'image/jpeg';
 
+    // Hide camera and skip, show photo + loading, auto-submit
     cameraLabel.style.display = 'none';
     var skipArea = document.querySelector('.skip-area');
     if (skipArea) skipArea.style.display = 'none';
 
     feedbackArea.innerHTML = '<div class="photo-preview">'
       + '<img src="' + dataUrl + '" class="preview-img" alt="Your photo">'
-      + '</div>'
-      + '<div class="preview-buttons">'
-      + '<button class="preview-btn preview-retake" onclick="retakePreview()">📷<br><span class="preview-label">Again</span></button>'
-      + '<button class="preview-btn preview-submit" onclick="submitPhoto()">✅<br><span class="preview-label">Yes!</span></button>'
-      + '<button class="preview-btn preview-cancel" onclick="cancelPreview()">❌<br><span class="preview-label">No</span></button>'
       + '</div>';
+
+    submitPhoto();
   };
   reader.readAsDataURL(file);
 }
 
-function retakePreview() {
-  playClick();
-  pendingBase64 = null;
-  pendingMimeType = null;
-  resetCameraUI();
-  cameraInput.value = '';
-  cameraInput.click();
-}
-
-function cancelPreview() {
-  playClick();
-  pendingBase64 = null;
-  pendingMimeType = null;
-  resetCameraUI();
-}
-
 async function submitPhoto() {
   if (!pendingBase64) return;
-  playClick();
 
-  feedbackArea.innerHTML = '';
   loadingOverlay.classList.remove('hidden');
 
   try {
