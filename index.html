@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
   <!-- Splash Screen -->
@@ -49,17 +49,17 @@
     <div id="target-area" class="target-area">
       <div id="target-emoji" class="target-emoji"></div>
       <div id="target-text" class="target-text"></div>
-      <button class="repeat-btn" onclick="repeatPrompt()">🔊 Again</button>
+      <button class="repeat-btn" onclick="repeatPrompt()">🔊</button>
     </div>
     <div id="feedback-area" class="feedback-area"></div>
     <div id="camera-area" class="camera-area">
       <label id="camera-label" class="big-btn camera-btn">
-        📷 Take a Photo!
+        📷
         <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)">
       </label>
     </div>
     <div class="skip-area">
-      <button class="skip-btn" onclick="skipItem()">⏭️ Skip</button>
+      <button class="skip-btn" onclick="skipItem()">⏭️</button>
     </div>
     <div id="loading" class="loading hidden">
       <div class="spinner"></div>
@@ -88,6 +88,6 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
 </body>
 </html>
