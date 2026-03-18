@@ -74,7 +74,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Shapes! Find circles, squares, and more!',
     aiPrompt: function(n) {
-      return 'Does the main object in this photo predominantly have the shape of a ' + n + '? It does not need to be perfectly geometric — real objects have rounded edges and imperfections. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But a square should not be identified as a circle. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does the main object in this photo predominantly have the shape of a ' + n + '? It does not need to be perfectly geometric — real objects have rounded edges, imperfections, and may appear stretched due to camera angle. Ovals and elongated circles still count as circles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected (a square is not a circle). Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'circle', emoji: '⭕' }, { name: 'square', emoji: '🟧' },
