@@ -359,14 +359,17 @@ var audioUnlocked = false;
 function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
-  // Create and play a silent audio to unlock iOS audio
+  // Unlock Web Audio context with a silent buffer (required for iOS)
   try {
-    var a = new Audio();
-    a.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAbD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    a.play().catch(function(){});
+    var ctx = ensureAudioCtx();
+    var buf = ctx.createBuffer(1, 1, 22050);
+    var src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
   } catch(e) {}
-  // Also unlock Web Audio
-  ensureAudioCtx();
+  // Start preloading all audio files into Web Audio buffers
+  preloadAllAudio();
 }
 
 function onSplashEnter() {
@@ -481,8 +484,55 @@ function setupDone() {
 // ═══════════════════════════════════════════════════════════════
 // SPEECH (Pre-generated audio with Web Speech API fallback)
 // ═══════════════════════════════════════════════════════════════
-var audioMap = {};
-var currentAudio = null;
+var audioBufferCache = {};
+var currentAudioSource = null;
+
+// Preload audio files into Web Audio API buffers (bypasses iOS autoplay restrictions)
+function preloadAudio(key) {
+  if (audioBufferCache[key]) return;
+  var src = 'audio/' + key + '.mp3';
+  fetch(src).then(function(r) { return r.arrayBuffer(); }).then(function(buf) {
+    var ctx = ensureAudioCtx();
+    return ctx.decodeAudioData(buf);
+  }).then(function(decoded) {
+    audioBufferCache[key] = decoded;
+  }).catch(function() {});
+}
+
+function preloadAllAudio() {
+  var keys = [
+    'pick-a-game','you-found-it','try-again','lets-try-another','great-job',
+    'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors'
+  ];
+  // Preload all find prompts
+  Object.keys(CATEGORIES).forEach(function(catId) {
+    var cat = CATEGORIES[catId];
+    cat.items.forEach(function(item) {
+      var k = textToAudioKey(cat.speakPrompt(item.name));
+      if (k) keys.push(k);
+    });
+  });
+  keys.forEach(preloadAudio);
+}
+
+function playBuffer(key, onEnd) {
+  var ctx = ensureAudioCtx();
+  var buf = audioBufferCache[key];
+  if (!buf) { if (onEnd) onEnd(); return false; }
+
+  // Stop current
+  if (currentAudioSource) {
+    try { currentAudioSource.stop(); } catch(e) {}
+  }
+
+  var source = ctx.createBufferSource();
+  source.buffer = buf;
+  source.connect(ctx.destination);
+  source.onended = function() { currentAudioSource = null; if (onEnd) onEnd(); };
+  source.start(0);
+  currentAudioSource = source;
+  return true;
+}
 
 // Map text → audio file key
 function textToAudioKey(text) {
@@ -510,43 +560,32 @@ function textToAudioKey(text) {
 }
 
 function speak(text, onEnd) {
-  console.log('[PH] speak("' + text.substring(0, 30) + '...", hasCallback=' + !!onEnd + ')');
-  if (!soundEnabled) { console.log('[PH] sound disabled, firing callback'); if (onEnd) onEnd(); return; }
+  console.log('[PH] speak("' + text.substring(0, 30) + '...")');
+  if (!soundEnabled) { if (onEnd) onEnd(); return; }
 
   // Stop any current audio
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (currentAudioSource) { try { currentAudioSource.stop(); } catch(e) {} currentAudioSource = null; }
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-  // Try pre-generated audio first
+  // Try Web Audio buffer first (works on iOS without user gesture)
   var key = textToAudioKey(text);
   if (key) {
+    if (playBuffer(key, onEnd)) return;
+    // Buffer not loaded yet — try loading and playing
+    preloadAudio(key);
+    // Fallback: try HTML5 Audio
     var src = 'audio/' + key + '.mp3';
     var audio = new Audio(src);
-    currentAudio = audio;
-    var callbackFired = false;
-    function fireCallback() {
-      if (callbackFired) return;
-      callbackFired = true;
-      currentAudio = null;
-      if (onEnd) onEnd();
-    }
-    audio.onended = fireCallback;
-    audio.onerror = function() {
-      currentAudio = null;
-      fireCallback();
-    };
+    var done = false;
+    function finish() { if (done) return; done = true; if (onEnd) onEnd(); }
+    audio.onended = finish;
+    audio.onerror = finish;
     audio.play().then(function() {
-      // Safety timeout: if onended never fires, call back after estimated duration
-      setTimeout(fireCallback, (audio.duration || 5) * 1000 + 500);
-    }).catch(function() {
-      // Autoplay blocked (iOS) — still fire callback so pulses/timers start
-      currentAudio = null;
-      fireCallback();
-    });
+      setTimeout(finish, (audio.duration || 5) * 1000 + 500);
+    }).catch(finish);
     return;
   }
 
-  // No audio file mapped — use Web Speech API
   speakFallback(text, onEnd);
 }
 
@@ -882,6 +921,8 @@ function stopConfetti() {
 window.addEventListener('DOMContentLoaded', function() {
   if (!hasApiAccess()) return;
   initDomRefs(); migrateOldData(); resizeCanvas();
+  // Start preloading audio buffers (will fully work after first tap on iOS)
+  try { preloadAllAudio(); } catch(e) {}
   window.addEventListener('resize', resizeCanvas);
   selectAllBtn.addEventListener('click', setupSelectAll);
   clearAllBtn.addEventListener('click', setupClearAll);
