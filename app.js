@@ -736,12 +736,14 @@ async function submitPhoto() {
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
       // AUTO-ADVANCE: celebrate then move on
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
-      fireConfetti(3500); playSuccess();
+      fireConfetti(3500);
+      // Play voice FIRST, then chime after a beat — iOS can't play both simultaneously
       speak('You found it! Great job!');
+      setTimeout(playSuccess, 300);
       autoAdvanceTimer = setTimeout(function() {
         resetCameraUI();
         advanceItem();
-      }, 4000);
+      }, 4500);
     } else {
       playMiss();
       showMissResult();
