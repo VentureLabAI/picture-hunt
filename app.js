@@ -611,6 +611,8 @@ function startGame() { playCategory('household'); }
 function resetGame() { stopConfetti(); localStorage.removeItem('PH_GAME_STATE'); showScreen('splash'); }
 
 function showCurrentItem() {
+  stopAllPulses();
+  resetInactivity();
   var item = shuffledItems[currentIndex];
   var cat = CATEGORIES[currentCategory];
   if (item.img) {
@@ -734,12 +736,12 @@ async function submitPhoto() {
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
       // AUTO-ADVANCE: celebrate then move on
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
-      fireConfetti(2500); playSuccess();
+      fireConfetti(3500); playSuccess();
       speak('You found it! Great job!');
       autoAdvanceTimer = setTimeout(function() {
         resetCameraUI();
         advanceItem();
-      }, 3000);
+      }, 4000);
     } else {
       playMiss();
       showMissResult();
