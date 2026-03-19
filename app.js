@@ -3,7 +3,14 @@
 // ============================================================
 
 // ═══════════════════════════════════════════════════════════════
-// API KEY MANAGEMENT
+// API CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+// Proxy URL — set this to your Cloudflare Worker URL to skip API key setup
+// Leave empty string to use direct Gemini API with localStorage key
+var PROXY_URL = '';
+
+// ═══════════════════════════════════════════════════════════════
+// API KEY MANAGEMENT (only needed when no proxy)
 // ═══════════════════════════════════════════════════════════════
 (function() {
   var h = location.hash;
@@ -18,6 +25,10 @@
 })();
 
 let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
+
+function hasApiAccess() {
+  return PROXY_URL || GEMINI_API_KEY;
+}
 
 function showKeySetup() {
   document.getElementById('splash').querySelector('.splash-content').innerHTML =
@@ -38,7 +49,7 @@ function saveKey() {
   }
 }
 
-if (!GEMINI_API_KEY) {
+if (!hasApiAccess()) {
   window.addEventListener('DOMContentLoaded', showKeySetup);
 }
 
@@ -696,7 +707,9 @@ function resetCameraUI() {
 async function identifyObject(base64Data, mimeType) {
   var cat = CATEGORIES[currentCategory];
   var item = shuffledItems[currentIndex];
-  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+  var url = PROXY_URL
+    ? PROXY_URL
+    : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
   var body = {
     contents: [{ parts: [
       { text: cat.aiPrompt(item.name) },
@@ -763,7 +776,7 @@ function stopConfetti() {
 // INITIALIZATION
 // ═══════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function() {
-  if (!GEMINI_API_KEY) return;
+  if (!hasApiAccess()) return;
   initDomRefs(); migrateOldData(); resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   selectAllBtn.addEventListener('click', setupSelectAll);
