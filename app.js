@@ -222,11 +222,17 @@ function clearInactivity() {
 
 function startInactivityTimer(nudgeFn, delayMs) {
   clearInactivity();
-  if (inactivityCount >= MAX_INACTIVITY_PROMPTS) return; // stop nagging
+  if (inactivityCount >= MAX_INACTIVITY_PROMPTS) {
+    console.log('[PH] Inactivity: max prompts reached (' + inactivityCount + '), staying quiet');
+    return;
+  }
+  var delay = delayMs || 12000;
+  console.log('[PH] Inactivity timer set: ' + delay + 'ms, count=' + inactivityCount);
   inactivityTimer = setTimeout(function() {
     inactivityCount++;
+    console.log('[PH] Inactivity timer fired, count now=' + inactivityCount);
     nudgeFn();
-  }, delayMs || 12000);
+  }, delay);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -483,7 +489,8 @@ function textToAudioKey(text) {
 }
 
 function speak(text, onEnd) {
-  if (!soundEnabled) { if (onEnd) onEnd(); return; }
+  console.log('[PH] speak("' + text.substring(0, 30) + '...", hasCallback=' + !!onEnd + ')');
+  if (!soundEnabled) { console.log('[PH] sound disabled, firing callback'); if (onEnd) onEnd(); return; }
 
   // Stop any current audio
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
@@ -603,22 +610,26 @@ function showCurrentItem() {
 
   // Speak the prompt, then start pulsing camera + inactivity timer
   speak(cat.speakPrompt(item.name), function() {
+    console.log('[PH] Prompt spoken, starting camera pulse + inactivity');
     startPulse(cameraLabel, 'camera');
     startGameInactivity();
   });
 }
 
 function startGameInactivity() {
+  console.log('[PH] startGameInactivity called, count=' + inactivityCount);
   startInactivityTimer(function() {
     // Nudge: suggest hearing the item again
+    console.log('[PH] Inactivity nudge 1: tap to hear again');
     stopPulse('camera');
     speak('Tap here to hear it again!', function() {
+      console.log('[PH] Nudge 1 spoken, pulsing repeat btn');
       var repeatBtn = document.querySelector('.repeat-btn');
       if (repeatBtn) startPulse(repeatBtn, 'repeat');
       // Second timer: if still no activity, go quiet
       startInactivityTimer(function() {
+        console.log('[PH] Inactivity nudge 2: going quiet');
         stopAllPulses();
-        // Don't cycle further — kid probably walked away
       }, 15000);
     });
   }, 12000);
