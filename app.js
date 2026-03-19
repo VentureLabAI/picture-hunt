@@ -159,7 +159,7 @@ function playVictorySound() {
 function playClick() { playTone(800,0.06,0,'sine',0.12); }
 
 function toggleSound() {
-  unlockAudio();
+  if (!firstTapDone) { firstTapDone = true; unlockAudio(); }
   soundEnabled = !soundEnabled;
   localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
   var btn = document.getElementById('sound-toggle');
@@ -372,22 +372,19 @@ function unlockAudio() {
   preloadAllAudio();
 }
 
-var splashPulseDone = false;
+var firstTapDone = false;
 
 function onSplashEnter() {
   renderSplash();
-  splashPulseDone = false;
-  // Always pulse categories visually after a short delay
-  setTimeout(function() {
-    if (!splashPulseDone) {
-      splashPulseDone = true;
-      pulseCategories();
-    }
-  }, 600);
-  // Try to speak — if it plays, great. If iOS blocks it, pulses still happen above.
-  setTimeout(function() {
-    speak('Pick a game!');
-  }, 400);
+  if (firstTapDone) {
+    // Returning to splash (from game, etc.) — full audio + pulse
+    setTimeout(function() {
+      speak('Pick a game!', function() {
+        pulseCategories();
+      });
+    }, 400);
+  }
+  // On first load: splash shows, categories visible, waiting for first tap
 }
 
 function renderSplash() {
@@ -428,7 +425,7 @@ var setupCategory = 'household';
 var setupSelection = new Set();
 
 function openSetup() {
-  unlockAudio();
+  if (!firstTapDone) { firstTapDone = true; unlockAudio(); }
   setupCategory = 'household';
   setupSelection = new Set(getSelectedNames(setupCategory));
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
@@ -622,9 +619,11 @@ function shuffle(arr) {
 // GAME FLOW
 // ═══════════════════════════════════════════════════════════════
 function playCategory(catId) {
-  unlockAudio();
+  if (!firstTapDone) {
+    firstTapDone = true;
+    unlockAudio();
+  }
   playClick();
-  splashPulseDone = true; // prevent any pending pulse from firing
   stopAllPulses();
   currentCategory = catId;
   var cat = CATEGORIES[catId];
