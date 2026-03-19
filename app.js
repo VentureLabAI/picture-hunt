@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════════════
 // Proxy URL — set this to your Cloudflare Worker URL to skip API key setup
 // Leave empty string to use direct Gemini API with localStorage key
-var PROXY_URL = '';
+var PROXY_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/';
 
 // ═══════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (only needed when no proxy)
