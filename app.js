@@ -76,7 +76,7 @@ var CATEGORIES = {
       { name: 'water bottle', emoji: '🍼' }, { name: 'crayon', emoji: '🖍️' },
       { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🧻' },
       { name: 'lamp', emoji: '💡' }, { name: 'clock', emoji: '⏰' },
-      { name: 'fork', emoji: '🍴' }, { name: 'brush', emoji: '🪮' }
+      { name: 'fork', emoji: '🍴' }, { name: 'brush', emoji: '💇' }
     ]
   },
   shapes: {
