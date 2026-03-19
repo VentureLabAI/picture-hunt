@@ -505,16 +505,15 @@ function speak(text, onEnd) {
     audio.onended = fireCallback;
     audio.onerror = function() {
       currentAudio = null;
-      callbackFired = true;
-      speakFallback(text, onEnd);
+      fireCallback();
     };
     audio.play().then(function() {
       // Safety timeout: if onended never fires, call back after estimated duration
       setTimeout(fireCallback, (audio.duration || 5) * 1000 + 500);
     }).catch(function() {
+      // Autoplay blocked (iOS) — still fire callback so pulses/timers start
       currentAudio = null;
-      callbackFired = true;
-      speakFallback(text, onEnd);
+      fireCallback();
     });
     return;
   }
