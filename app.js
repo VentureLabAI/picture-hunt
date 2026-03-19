@@ -344,12 +344,8 @@ function unlockAudio() {
 
 function onSplashEnter() {
   renderSplash();
-  if (!audioUnlocked) {
-    // First load on iOS — pulse visually, speak after first tap unlocks audio
-    setTimeout(pulseCategories, 600);
-    return;
-  }
-  // Audio is unlocked — full voice workflow
+  // Always try to speak — works on most devices
+  // If iOS blocks it, the speak callback safety net still fires and pulses run
   setTimeout(function() {
     speak('Pick a game!', function() {
       pulseCategories();
