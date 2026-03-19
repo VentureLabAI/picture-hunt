@@ -69,14 +69,14 @@ var CATEGORIES = {
       { name: 'shoe', emoji: '👟' }, { name: 'cup', emoji: '🥤' },
       { name: 'ball', emoji: '⚽' }, { name: 'teddy bear', emoji: '🧸' },
       { name: 'book', emoji: '📚' }, { name: 'spoon', emoji: '🥄' },
-      { name: 'pillow', emoji: '🛏️' }, { name: 'blanket', emoji: '🧣' },
-      { name: 'remote control', emoji: '📺' }, { name: 'toothbrush', emoji: '🪥' },
+      { name: 'pillow', emoji: '🛏️', img: 'img/pillow.png' }, { name: 'blanket', emoji: '🧣', img: 'img/blanket.png' },
+      { name: 'remote control', emoji: '📺', img: 'img/remote-control.png' }, { name: 'toothbrush', emoji: '🪥' },
       { name: 'chair', emoji: '🪑' }, { name: 'sock', emoji: '🧦' },
       { name: 'hat', emoji: '🧢' }, { name: 'keys', emoji: '🔑' },
-      { name: 'water bottle', emoji: '🍼' }, { name: 'crayon', emoji: '🖍️' },
-      { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🧻' },
-      { name: 'lamp', emoji: '💡' }, { name: 'clock', emoji: '⏰' },
-      { name: 'fork', emoji: '🍴' }, { name: 'brush', emoji: '💇' }
+      { name: 'water bottle', emoji: '🍼', img: 'img/water-bottle.png' }, { name: 'crayon', emoji: '🖍️' },
+      { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🧻', img: 'img/towel.png' },
+      { name: 'lamp', emoji: '💡', img: 'img/lamp.png' }, { name: 'clock', emoji: '⏰' },
+      { name: 'fork', emoji: '🍴', img: 'img/fork.png' }, { name: 'brush', emoji: '💇', img: 'img/brush.png' }
     ]
   },
   shapes: {
@@ -401,8 +401,10 @@ function renderSetupGrid() {
   cat.items.forEach(function(item) {
     var card = document.createElement('div');
     card.className = 'setup-card' + (setupSelection.has(item.name) ? ' selected' : '');
-    card.innerHTML = '<span class="setup-card-emoji">' + item.emoji + '</span>'
-      + '<span class="setup-card-name">' + item.name + '</span>';
+    var iconHtml = item.img
+      ? '<img src="' + item.img + '" class="setup-card-img" alt="' + item.name + '">'
+      : '<span class="setup-card-emoji">' + item.emoji + '</span>';
+    card.innerHTML = iconHtml + '<span class="setup-card-name">' + item.name + '</span>';
     card.addEventListener('click', function() {
       playClick();
       if (setupSelection.has(item.name)) setupSelection.delete(item.name);
@@ -554,7 +556,11 @@ function resetGame() { stopConfetti(); localStorage.removeItem('PH_GAME_STATE');
 function showCurrentItem() {
   var item = shuffledItems[currentIndex];
   var cat = CATEGORIES[currentCategory];
-  targetEmoji.textContent = item.emoji;
+  if (item.img) {
+    targetEmoji.innerHTML = '<img src="' + item.img + '" class="target-img" alt="' + item.name + '">';
+  } else {
+    targetEmoji.textContent = item.emoji;
+  }
   targetText.textContent = cat.speakPrompt(item.name);
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((currentIndex / shuffledItems.length) * 100) + '%';

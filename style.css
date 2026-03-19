@@ -290,6 +290,19 @@ html, body {
   line-height: 1.2;
 }
 
+.setup-card-img {
+  width: clamp(50px, 12vw, 70px);
+  height: clamp(50px, 12vw, 70px);
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.target-img {
+  width: clamp(120px, 35vw, 200px);
+  height: clamp(120px, 35vw, 200px);
+  object-fit: contain;
+}
+
 .setup-card-name {
   font-size: clamp(0.7rem, 2.5vw, 0.9rem);
   color: rgba(255,255,255,0.8);
