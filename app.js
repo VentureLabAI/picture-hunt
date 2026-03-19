@@ -159,6 +159,7 @@ function playVictorySound() {
 function playClick() { playTone(800,0.06,0,'sine',0.12); }
 
 function toggleSound() {
+  unlockAudio();
   soundEnabled = !soundEnabled;
   localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
   var btn = document.getElementById('sound-toggle');
@@ -326,9 +327,30 @@ function showScreen(name) {
 // ═══════════════════════════════════════════════════════════════
 // SPLASH SCREEN
 // ═══════════════════════════════════════════════════════════════
+var audioUnlocked = false;
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  // Create and play a silent audio to unlock iOS audio
+  try {
+    var a = new Audio();
+    a.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAbD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    a.play().catch(function(){});
+  } catch(e) {}
+  // Also unlock Web Audio
+  ensureAudioCtx();
+}
+
 function onSplashEnter() {
   renderSplash();
   // Voice guide + sequential pulse
+  // On first load, wait for a tap to unlock audio (iOS requirement)
+  if (!audioUnlocked) {
+    // Pulse categories immediately as visual cue, speak after first interaction
+    setTimeout(pulseCategories, 400);
+    return;
+  }
   setTimeout(function() {
     speak('Pick a game!', function() {
       pulseCategories();
@@ -374,6 +396,7 @@ var setupCategory = 'household';
 var setupSelection = new Set();
 
 function openSetup() {
+  unlockAudio();
   setupCategory = 'household';
   setupSelection = new Set(getSelectedNames(setupCategory));
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
@@ -520,6 +543,7 @@ function shuffle(arr) {
 // GAME FLOW
 // ═══════════════════════════════════════════════════════════════
 function playCategory(catId) {
+  unlockAudio();
   playClick();
   currentCategory = catId;
   var cat = CATEGORIES[catId];

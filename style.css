@@ -549,11 +549,8 @@ html, body {
 }
 .repeat-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.92); }
 
-/* Home Button — bigger tap target */
+/* Home Button — bigger tap target, below progress bar */
 .home-btn {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
   background: rgba(255,255,255,0.15);
   border: none;
   font-size: 2rem;
@@ -566,6 +563,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-start;
 }
 .home-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.92); }
 
