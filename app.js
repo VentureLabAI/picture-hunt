@@ -372,15 +372,22 @@ function unlockAudio() {
   preloadAllAudio();
 }
 
+var splashPulseDone = false;
+
 function onSplashEnter() {
   renderSplash();
-  // Always try to speak — works on most devices
-  // If iOS blocks it, the speak callback safety net still fires and pulses run
+  splashPulseDone = false;
+  // Always pulse categories visually after a short delay
   setTimeout(function() {
-    speak('Pick a game!', function() {
+    if (!splashPulseDone) {
+      splashPulseDone = true;
       pulseCategories();
-    });
-  }, 500);
+    }
+  }, 600);
+  // Try to speak — if it plays, great. If iOS blocks it, pulses still happen above.
+  setTimeout(function() {
+    speak('Pick a game!');
+  }, 400);
 }
 
 function renderSplash() {
@@ -617,12 +624,13 @@ function shuffle(arr) {
 function playCategory(catId) {
   unlockAudio();
   playClick();
+  splashPulseDone = true; // prevent any pending pulse from firing
+  stopAllPulses();
   currentCategory = catId;
   var cat = CATEGORIES[catId];
 
-  // Announce category name
+  // Announce category name, then start game
   speak(cat.speakName, function() {
-    // Check for saved game
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
     if (saved && saved.category === catId) {
