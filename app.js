@@ -198,7 +198,7 @@ function pulseCategories() {
     if (i < cards.length) {
       cards[i].classList.add('pulse-once');
       i++;
-      setTimeout(next, 300);
+      setTimeout(next, 800);
     }
   }
   next();
@@ -344,18 +344,17 @@ function unlockAudio() {
 
 function onSplashEnter() {
   renderSplash();
-  // Voice guide + sequential pulse
-  // On first load, wait for a tap to unlock audio (iOS requirement)
   if (!audioUnlocked) {
-    // Pulse categories immediately as visual cue, speak after first interaction
-    setTimeout(pulseCategories, 400);
+    // First load on iOS — pulse visually, speak after first tap unlocks audio
+    setTimeout(pulseCategories, 600);
     return;
   }
+  // Audio is unlocked — full voice workflow
   setTimeout(function() {
     speak('Pick a game!', function() {
       pulseCategories();
     });
-  }, 400);
+  }, 500);
 }
 
 function renderSplash() {
@@ -500,14 +499,25 @@ function speak(text, onEnd) {
     var src = 'audio/' + key + '.mp3';
     var audio = new Audio(src);
     currentAudio = audio;
-    audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
-    audio.onerror = function() {
-      // Fallback to Web Speech API
+    var callbackFired = false;
+    function fireCallback() {
+      if (callbackFired) return;
+      callbackFired = true;
       currentAudio = null;
+      if (onEnd) onEnd();
+    }
+    audio.onended = fireCallback;
+    audio.onerror = function() {
+      currentAudio = null;
+      callbackFired = true;
       speakFallback(text, onEnd);
     };
-    audio.play().catch(function() {
+    audio.play().then(function() {
+      // Safety timeout: if onended never fires, call back after estimated duration
+      setTimeout(fireCallback, (audio.duration || 5) * 1000 + 500);
+    }).catch(function() {
       currentAudio = null;
+      callbackFired = true;
       speakFallback(text, onEnd);
     });
     return;
