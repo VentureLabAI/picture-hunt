@@ -205,34 +205,55 @@ function pulseCategories() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INACTIVITY TIMER SYSTEM
+// INACTIVITY SYSTEM — simple interval-based
 // ═══════════════════════════════════════════════════════════════
-var inactivityTimer = null;
-var inactivityCount = 0;
-var MAX_INACTIVITY_PROMPTS = 2; // max nudges before going quiet
+var inactivityInterval = null;
+var inactivitySeconds = 0;
+var inactivityActive = false;
 
 function resetInactivity() {
-  clearInactivity();
-  inactivityCount = 0;
+  stopInactivity();
+  inactivitySeconds = 0;
 }
 
-function clearInactivity() {
-  if (inactivityTimer) { clearTimeout(inactivityTimer); inactivityTimer = null; }
+function stopInactivity() {
+  if (inactivityInterval) { clearInterval(inactivityInterval); inactivityInterval = null; }
+  inactivityActive = false;
 }
 
-function startInactivityTimer(nudgeFn, delayMs) {
-  clearInactivity();
-  if (inactivityCount >= MAX_INACTIVITY_PROMPTS) {
-    console.log('[PH] Inactivity: max prompts reached (' + inactivityCount + '), staying quiet');
-    return;
-  }
-  var delay = delayMs || 12000;
-  console.log('[PH] Inactivity timer set: ' + delay + 'ms, count=' + inactivityCount);
-  inactivityTimer = setTimeout(function() {
-    inactivityCount++;
-    console.log('[PH] Inactivity timer fired, count now=' + inactivityCount);
-    nudgeFn();
-  }, delay);
+function startInactivity() {
+  stopInactivity();
+  inactivitySeconds = 0;
+  inactivityActive = true;
+  inactivityInterval = setInterval(function() {
+    if (!inactivityActive) return;
+    inactivitySeconds++;
+
+    // At 12s: stop camera pulse, say "tap to hear again", pulse repeat button
+    if (inactivitySeconds === 12) {
+      console.log('[PH] Inactivity 12s: nudge hear-again');
+      stopPulse('camera');
+      speak('Tap here to hear it again!');
+      var repeatBtn = document.querySelector('.repeat-btn');
+      if (repeatBtn) startPulse(repeatBtn, 'repeat');
+    }
+
+    // At 25s: stop repeat pulse, say "try again or skip"
+    if (inactivitySeconds === 25) {
+      console.log('[PH] Inactivity 25s: nudge try/skip');
+      stopPulse('repeat');
+      speak('Try again, or skip to the next one!');
+      var skipBtn = document.querySelector('.skip-btn');
+      if (skipBtn) startPulse(skipBtn, 'skip');
+    }
+
+    // At 40s: go quiet, stop everything
+    if (inactivitySeconds >= 40) {
+      console.log('[PH] Inactivity 40s: going quiet');
+      stopAllPulses();
+      stopInactivity();
+    }
+  }, 1000);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -608,31 +629,12 @@ function showCurrentItem() {
   var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = '';
 
-  // Speak the prompt, then start pulsing camera + inactivity timer
+  // Speak the prompt, then start pulsing camera + inactivity
   speak(cat.speakPrompt(item.name), function() {
     console.log('[PH] Prompt spoken, starting camera pulse + inactivity');
     startPulse(cameraLabel, 'camera');
-    startGameInactivity();
+    startInactivity();
   });
-}
-
-function startGameInactivity() {
-  console.log('[PH] startGameInactivity called, count=' + inactivityCount);
-  startInactivityTimer(function() {
-    // Nudge: suggest hearing the item again
-    console.log('[PH] Inactivity nudge 1: tap to hear again');
-    stopPulse('camera');
-    speak('Tap here to hear it again!', function() {
-      console.log('[PH] Nudge 1 spoken, pulsing repeat btn');
-      var repeatBtn = document.querySelector('.repeat-btn');
-      if (repeatBtn) startPulse(repeatBtn, 'repeat');
-      // Second timer: if still no activity, go quiet
-      startInactivityTimer(function() {
-        console.log('[PH] Inactivity nudge 2: going quiet');
-        stopAllPulses();
-      }, 15000);
-    });
-  }, 12000);
 }
 
 function repeatPrompt() {
@@ -643,7 +645,7 @@ function repeatPrompt() {
   var cat = CATEGORIES[currentCategory];
   speak(cat.speakPrompt(item.name), function() {
     startPulse(cameraLabel, 'camera');
-    startGameInactivity();
+    startInactivity();
   });
 }
 
@@ -766,11 +768,6 @@ function showMissResult() {
     var btns = document.querySelectorAll('.result-btn');
     if (btns[0]) startPulse(btns[0], 'retry');
   });
-
-  // Inactivity: after timeout, nudge once then go quiet
-  startInactivityTimer(function() {
-    speak('Tap the camera to try again, or the arrow to skip!');
-  }, 10000);
 }
 
 function retakeFromMiss() {
