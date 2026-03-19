@@ -69,12 +69,12 @@ var CATEGORIES = {
       { name: 'shoe', emoji: '👟' }, { name: 'cup', emoji: '🥤' },
       { name: 'ball', emoji: '⚽' }, { name: 'teddy bear', emoji: '🧸' },
       { name: 'book', emoji: '📚' }, { name: 'spoon', emoji: '🥄' },
-      { name: 'pillow', emoji: '🛋️' }, { name: 'blanket', emoji: '🧶' },
+      { name: 'pillow', emoji: '🛏️' }, { name: 'blanket', emoji: '🧣' },
       { name: 'remote control', emoji: '📺' }, { name: 'toothbrush', emoji: '🪥' },
       { name: 'chair', emoji: '🪑' }, { name: 'sock', emoji: '🧦' },
       { name: 'hat', emoji: '🧢' }, { name: 'keys', emoji: '🔑' },
-      { name: 'water bottle', emoji: '💧' }, { name: 'crayon', emoji: '✏️' },
-      { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🏖️' },
+      { name: 'water bottle', emoji: '🍼' }, { name: 'crayon', emoji: '🖍️' },
+      { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🧻' },
       { name: 'lamp', emoji: '💡' }, { name: 'clock', emoji: '⏰' },
       { name: 'fork', emoji: '🍴' }, { name: 'brush', emoji: '🪮' }
     ]
@@ -88,9 +88,9 @@ var CATEGORIES = {
       return 'Does the main object in this photo predominantly have the shape of a ' + n + '? It does not need to be perfectly geometric — real objects have rounded edges, imperfections, and may appear stretched due to camera angle. Ovals and elongated circles still count as circles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected (a square is not a circle). Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'circle', emoji: '⭕' }, { name: 'square', emoji: '🟧' },
+      { name: 'circle', emoji: '⭕' }, { name: 'square', emoji: '🟦' },
       { name: 'triangle', emoji: '🔺' }, { name: 'star', emoji: '⭐' },
-      { name: 'rectangle', emoji: '📱' }, { name: 'heart', emoji: '❤️' },
+      { name: 'rectangle', emoji: '🟫' }, { name: 'heart', emoji: '❤️' },
       { name: 'diamond', emoji: '🔷' }
     ]
   },
