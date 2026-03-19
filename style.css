@@ -145,6 +145,9 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  font-size: 4rem !important;
+  padding: 30px 80px !important;
+  min-height: 120px !important;
 }
 
 .camera-btn input[type="file"] {

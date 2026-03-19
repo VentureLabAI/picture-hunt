@@ -70,7 +70,7 @@ var CATEGORIES = {
       { name: 'ball', emoji: '⚽' }, { name: 'teddy bear', emoji: '🧸' },
       { name: 'book', emoji: '📚' }, { name: 'spoon', emoji: '🥄' },
       { name: 'pillow', emoji: '🛋️' }, { name: 'blanket', emoji: '🧶' },
-      { name: 'remote control', emoji: '🎛️' }, { name: 'toothbrush', emoji: '🪥' },
+      { name: 'remote control', emoji: '📺' }, { name: 'toothbrush', emoji: '🪥' },
       { name: 'chair', emoji: '🪑' }, { name: 'sock', emoji: '🧦' },
       { name: 'hat', emoji: '🧢' }, { name: 'keys', emoji: '🔑' },
       { name: 'water bottle', emoji: '💧' }, { name: 'crayon', emoji: '✏️' },
