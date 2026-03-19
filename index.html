@@ -9,14 +9,24 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=46">
+  <link rel="stylesheet" href="style.css?v=47">
 </head>
 <body>
-  <!-- Splash Screen -->
-  <div id="splash" class="screen active">
-    <div class="splash-content">
+  <!-- Landing Screen -->
+  <div id="landing" class="screen active">
+    <div class="landing-content">
       <h1 class="title-bounce">📸 Picture Hunt!</h1>
-      <p class="subtitle">A photo adventure!</p>
+      <p class="landing-sub">A photo adventure awaits!</p>
+      <button class="landing-play-btn pulse" onclick="startFromLanding()">
+        📷 Let's Play!
+      </button>
+    </div>
+  </div>
+
+  <!-- Home Screen (Category Select) -->
+  <div id="splash" class="screen">
+    <div class="splash-content">
+      <h1 class="home-title">Choose a Category</h1>
       <div id="category-grid" class="category-grid"></div>
       <div class="splash-bottom">
         <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()">⚙️</button>
@@ -88,6 +98,6 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="app.js?v=46"></script>
+  <script src="app.js?v=47"></script>
 </body>
 </html>

@@ -159,7 +159,6 @@ function playVictorySound() {
 function playClick() { playTone(800,0.06,0,'sine',0.12); }
 
 function toggleSound() {
-  if (!firstTapDone) { firstTapDone = true; unlockAudio(); }
   soundEnabled = !soundEnabled;
   localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
   var btn = document.getElementById('sound-toggle');
@@ -318,6 +317,7 @@ var setupGrid, setupMsg, setupDoneBtn, selectAllBtn, clearAllBtn;
 
 function initDomRefs() {
   screens = {
+    landing: document.getElementById('landing'),
     splash: document.getElementById('splash'),
     setup: document.getElementById('setup'),
     game: document.getElementById('game'),
@@ -372,19 +372,21 @@ function unlockAudio() {
   preloadAllAudio();
 }
 
-var firstTapDone = false;
+function startFromLanding() {
+  unlockAudio();
+  // Hide landing, show home
+  document.getElementById('landing').classList.remove('active');
+  showScreen('splash');
+}
 
 function onSplashEnter() {
   renderSplash();
-  if (firstTapDone) {
-    // Returning to splash (from game, etc.) — full audio + pulse
-    setTimeout(function() {
-      speak('Pick a game!', function() {
-        pulseCategories();
-      });
-    }, 400);
-  }
-  // On first load: splash shows, categories visible, waiting for first tap
+  // Full audio + pulse every time we enter the home screen
+  setTimeout(function() {
+    speak('Pick a game!', function() {
+      pulseCategories();
+    });
+  }, 400);
 }
 
 function renderSplash() {
@@ -425,7 +427,6 @@ var setupCategory = 'household';
 var setupSelection = new Set();
 
 function openSetup() {
-  if (!firstTapDone) { firstTapDone = true; unlockAudio(); }
   setupCategory = 'household';
   setupSelection = new Set(getSelectedNames(setupCategory));
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
@@ -619,10 +620,6 @@ function shuffle(arr) {
 // GAME FLOW
 // ═══════════════════════════════════════════════════════════════
 function playCategory(catId) {
-  if (!firstTapDone) {
-    firstTapDone = true;
-    unlockAudio();
-  }
   playClick();
   stopAllPulses();
   currentCategory = catId;
@@ -943,5 +940,5 @@ window.addEventListener('DOMContentLoaded', function() {
     shuffledItems = saved.items.map(function(name) { return catItems.find(function(i) { return i.name === name; }); }).filter(Boolean);
     currentIndex = saved.index || 0;
   }
-  onSplashEnter();
+  // Stay on landing screen — user taps "Let's Play!" to unlock audio and enter home
 });

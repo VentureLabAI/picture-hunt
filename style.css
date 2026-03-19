@@ -21,7 +21,36 @@ html, body {
 }
 .screen.active { display: flex; }
 
-/* === Splash === */
+/* === Landing === */
+#landing {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.landing-content {
+  text-align: center;
+  padding: 40px 20px;
+}
+.landing-sub {
+  font-size: clamp(1.2rem, 5vw, 2rem);
+  color: rgba(255,255,255,0.9);
+  margin: 15px 0 50px;
+  font-style: italic;
+}
+.landing-play-btn {
+  display: inline-block;
+  padding: 30px 60px;
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: bold;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #1a1a2e;
+  box-shadow: 0 10px 30px rgba(67,233,123,0.5);
+  min-height: 100px;
+}
+.landing-play-btn:active { transform: scale(0.92); }
+
+/* === Splash / Home === */
 #splash {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-y: auto;
@@ -32,18 +61,18 @@ html, body {
   max-width: 500px;
   padding: 40px 20px 30px;
 }
+.home-title {
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  color: #fff;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  margin-bottom: 25px;
+}
 
 .title-bounce {
   font-size: clamp(2.2rem, 9vw, 4rem);
   color: #fff;
   text-shadow: 4px 4px 0 rgba(0,0,0,0.2);
   animation: bounce 1s ease infinite;
-}
-
-.subtitle {
-  font-size: clamp(1rem, 4vw, 1.6rem);
-  color: rgba(255,255,255,0.85);
-  margin: 8px 0 25px;
 }
 
 /* === Category Grid (Splash) === */
