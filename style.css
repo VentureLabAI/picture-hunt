@@ -355,10 +355,18 @@ html, body {
   gap: 15px;
 }
 
-/* Progress Bar */
-.progress-bar {
+/* Game top bar: progress + home */
+.game-top {
   width: 90%;
   max-width: 500px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Progress Bar */
+.progress-bar {
+  flex: 1;
   height: 16px;
   background: rgba(255,255,255,0.15);
   border-radius: 10px;
@@ -578,21 +586,21 @@ html, body {
 }
 .repeat-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.92); }
 
-/* Home Button — bigger tap target, below progress bar */
+/* Home Button — inline with progress bar */
 .home-btn {
   background: rgba(255,255,255,0.15);
   border: none;
-  font-size: 2rem;
-  padding: 12px 16px;
-  border-radius: 16px;
+  font-size: 1.6rem;
+  padding: 10px 14px;
+  border-radius: 14px;
   cursor: pointer;
   z-index: 20;
-  min-width: 56px;
-  min-height: 56px;
+  min-width: 48px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
+  flex-shrink: 0;
 }
 .home-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.92); }
 
