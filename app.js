@@ -432,11 +432,68 @@ function setupDone() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SPEECH
+// SPEECH (Pre-generated audio with Web Speech API fallback)
 // ═══════════════════════════════════════════════════════════════
+var audioMap = {};
+var currentAudio = null;
+
+// Map text → audio file key
+function textToAudioKey(text) {
+  var map = {
+    'Pick a game!': 'pick-a-game',
+    'You found it! Great job!': 'you-found-it',
+    'Try again, or skip to the next one!': 'try-again',
+    "Let's try another one!": 'lets-try-another',
+    'Great job!': 'great-job',
+    'Tap here to hear it again!': 'tap-to-hear',
+    'You did it! You found everything! Great job!': 'you-did-it',
+    'Tap the camera to try again, or the arrow to skip!': 'try-again',
+    'Things! Find stuff around the house!': 'cat-things',
+    'Shapes! Find circles, squares, and more!': 'cat-shapes',
+    'Colors! Find red, blue, green, and more!': 'cat-colors'
+  };
+  if (map[text]) return map[text];
+  // Champion messages
+  if (text.indexOf('champion') >= 0 || text.indexOf('Amazing') >= 0) return 'champion';
+  if (text.indexOf('You did it') >= 0) return 'you-did-it';
+  // Find prompts: "Can you find a shoe?" → "find-shoe"
+  var m = text.match(/^Can you find (?:a |an |some |something )?(.+)\?$/);
+  if (m) return 'find-' + m[1].replace(/ /g, '-').toLowerCase();
+  return null;
+}
+
 function speak(text, onEnd) {
-  if (!soundEnabled || !('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
-  window.speechSynthesis.cancel();
+  if (!soundEnabled) { if (onEnd) onEnd(); return; }
+
+  // Stop any current audio
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+  // Try pre-generated audio first
+  var key = textToAudioKey(text);
+  if (key) {
+    var src = 'audio/' + key + '.mp3';
+    var audio = new Audio(src);
+    currentAudio = audio;
+    audio.onended = function() { currentAudio = null; if (onEnd) onEnd(); };
+    audio.onerror = function() {
+      // Fallback to Web Speech API
+      currentAudio = null;
+      speakFallback(text, onEnd);
+    };
+    audio.play().catch(function() {
+      currentAudio = null;
+      speakFallback(text, onEnd);
+    });
+    return;
+  }
+
+  // No audio file mapped — use Web Speech API
+  speakFallback(text, onEnd);
+}
+
+function speakFallback(text, onEnd) {
+  if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
   var utter = new SpeechSynthesisUtterance(text);
   utter.rate = 0.85; utter.pitch = 1.2; utter.volume = 1;
   var voices = speechSynthesis.getVoices();
