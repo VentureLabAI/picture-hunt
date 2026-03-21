@@ -130,7 +130,7 @@ var CATEGORIES = {
   food: {
     id: 'food', name: 'Food', emoji: '🍎',
     gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
+    speakPrompt: function(n) { if (n === 'cereal') return 'Can you find a cereal box?'; return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Food! Find yummy things to eat!',
     aiPrompt: function(n) {
       return 'Is the primary object in this photo ' + n + ', or a container/package of ' + n + '? A juice box counts as juice, a milk carton counts as milk. But completely different foods should be rejected — a banana is not an apple. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -139,7 +139,7 @@ var CATEGORIES = {
       { name: 'apple', emoji: '🍎' }, { name: 'banana', emoji: '🍌' },
       { name: 'orange', emoji: '🍊' }, { name: 'bread', emoji: '🍞' },
       { name: 'egg', emoji: '🥚' }, { name: 'carrot', emoji: '🥕' },
-      { name: 'cookie', emoji: '🍪' }, { name: 'cereal box', emoji: '🥣' },
+      { name: 'cookie', emoji: '🍪' }, { name: 'cereal', emoji: '🥣' },
       { name: 'milk', emoji: '🥛' }, { name: 'yogurt', emoji: '🫙' },
       { name: 'juice', emoji: '🧃' }
     ]
