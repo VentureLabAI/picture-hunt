@@ -79,7 +79,7 @@ html, body {
 .category-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
   padding: 0 10px;
 }
@@ -94,7 +94,7 @@ html, body {
   cursor: pointer;
   transition: transform 0.15s;
   box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  min-height: 100px;
+  min-height: 80px;
   text-align: left;
 }
 .category-card:active { transform: scale(0.95); }

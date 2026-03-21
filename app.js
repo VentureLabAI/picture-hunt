@@ -109,10 +109,75 @@ var CATEGORIES = {
       { name: 'pink', emoji: '🩷' }, { name: 'white', emoji: '⚪' },
       { name: 'black', emoji: '⚫' }, { name: 'brown', emoji: '🟤' }
     ]
+  },
+  animals: {
+    id: 'animals', name: 'Animals', emoji: '🐾',
+    gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Animals! Find dogs, cats, and more!',
+    aiPrompt: function(n) {
+      return 'Is the primary subject in this photo a ' + n + ', or a toy/stuffed animal version of a ' + n + '? Stuffed animals, figurines, and pictures of the animal all count. But a completely different animal should be rejected — a cat is not a dog. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'dog', emoji: '🐕' }, { name: 'cat', emoji: '🐱' },
+      { name: 'duck', emoji: '🦆' }, { name: 'dinosaur', emoji: '🦕' },
+      { name: 'elephant', emoji: '🐘' }, { name: 'lion', emoji: '🦁' },
+      { name: 'pig', emoji: '🐷' }, { name: 'frog', emoji: '🐸' },
+      { name: 'rabbit', emoji: '🐰' }, { name: 'bird', emoji: '🐦' },
+      { name: 'fish', emoji: '🐟' }
+    ]
+  },
+  food: {
+    id: 'food', name: 'Food', emoji: '🍎',
+    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
+    speakName: 'Food! Find yummy things to eat!',
+    aiPrompt: function(n) {
+      return 'Is the primary object in this photo ' + n + ', or a container/package of ' + n + '? A juice box counts as juice, a milk carton counts as milk. But completely different foods should be rejected — a banana is not an apple. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'apple', emoji: '🍎' }, { name: 'banana', emoji: '🍌' },
+      { name: 'orange', emoji: '🍊' }, { name: 'bread', emoji: '🍞' },
+      { name: 'egg', emoji: '🥚' }, { name: 'carrot', emoji: '🥕' },
+      { name: 'cookie', emoji: '🍪' }, { name: 'cereal box', emoji: '🥣' },
+      { name: 'milk', emoji: '🥛' }, { name: 'yogurt', emoji: '🫙' },
+      { name: 'juice', emoji: '🧃' }
+    ]
+  },
+  furniture: {
+    id: 'furniture', name: 'Furniture', emoji: '🛋️',
+    gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Furniture! Find things around the house!',
+    aiPrompt: function(n) {
+      return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sofa counts as a couch, a monitor counts as a TV. But completely different furniture should be rejected — a table is not a chair. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'chair', emoji: '🪑' }, { name: 'table', emoji: '🪵' },
+      { name: 'couch', emoji: '🛋️' }, { name: 'bed', emoji: '🛏️' },
+      { name: 'TV', emoji: '📺' }, { name: 'door', emoji: '🚪' },
+      { name: 'window', emoji: '🪟' }, { name: 'shelf', emoji: '📚' },
+      { name: 'lamp', emoji: '💡', img: 'img/lamp.png' }
+    ]
+  },
+  clothing: {
+    id: 'clothing', name: 'Clothing', emoji: '👕',
+    gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Clothing! Find things you can wear!',
+    aiPrompt: function(n) {
+      return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. But completely different clothing should be rejected — a shirt is not pants. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'shirt', emoji: '👕' }, { name: 'pants', emoji: '👖' },
+      { name: 'dress', emoji: '👗' }, { name: 'jacket', emoji: '🧥' },
+      { name: 'hat', emoji: '🧢' }, { name: 'glove', emoji: '🧤' },
+      { name: 'scarf', emoji: '🧣' }, { name: 'sock', emoji: '🧦' }
+    ]
   }
 };
 
-var CATEGORY_ORDER = ['household', 'shapes', 'colors'];
+var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing'];
 
 // ═══════════════════════════════════════════════════════════════
 // SOUND EFFECTS (Web Audio API)
@@ -507,7 +572,8 @@ function preloadAudio(key) {
 function preloadAllAudio() {
   var keys = [
     'pick-a-game','you-found-it','try-again','lets-try-another','great-job',
-    'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors'
+    'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
+    'cat-animals','cat-food','cat-furniture','cat-clothing'
   ];
   // Preload all find prompts
   Object.keys(CATEGORIES).forEach(function(catId) {
@@ -552,7 +618,11 @@ function textToAudioKey(text) {
     'Tap the camera to try again, or the arrow to skip!': 'try-again',
     'Things! Find stuff around the house!': 'cat-things',
     'Shapes! Find circles, squares, and more!': 'cat-shapes',
-    'Colors! Find red, blue, green, and more!': 'cat-colors'
+    'Colors! Find red, blue, green, and more!': 'cat-colors',
+    'Animals! Find dogs, cats, and more!': 'cat-animals',
+    'Food! Find yummy things to eat!': 'cat-food',
+    'Furniture! Find things around the house!': 'cat-furniture',
+    'Clothing! Find things you can wear!': 'cat-clothing'
   };
   if (map[text]) return map[text];
   // Champion messages
