@@ -1,0 +1,438 @@
+/* ═══════════════════════════════════════════════════════════════
+   Picture Hunt — Parent Progress Dashboard Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Stats button on splash screen ── */
+.dashboard-open-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 52px;
+  height: 52px;
+  font-size: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.2s;
+}
+.dashboard-open-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.4);
+}
+
+/* ── Dashboard Screen ── */
+.dashboard-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dashboard-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.dashboard-back-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+.dashboard-back-btn:active { transform: scale(0.9); }
+
+.dashboard-title {
+  color: #fff;
+  font-size: 24px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 24px;
+}
+
+/* ── Sections ── */
+.dashboard-section {
+  margin-bottom: 24px;
+}
+
+.dashboard-section-title {
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+/* ── Overall Progress ── */
+.dashboard-overall {
+  text-align: center;
+  padding: 24px 16px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+}
+
+.dashboard-big-number {
+  font-size: 56px;
+  font-weight: 800;
+  color: #feca57;
+  line-height: 1;
+}
+.dashboard-big-number .dashboard-total {
+  font-size: 28px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 400;
+}
+
+.dashboard-big-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  margin: 4px 0 16px;
+}
+
+.dashboard-progress-bar {
+  height: 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.dashboard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #43e97b, #38f9d7);
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.dashboard-pct {
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ── Category Cards ── */
+.dashboard-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-cat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dashboard-cat-card:active {
+  background: rgba(255,255,255,0.15);
+}
+.dashboard-cat-card.complete {
+  background: rgba(67, 233, 123, 0.12);
+  border: 1px solid rgba(67, 233, 123, 0.3);
+}
+
+.dashboard-cat-emoji {
+  font-size: 32px;
+  width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dashboard-cat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard-cat-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.dashboard-cat-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dashboard-cat-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.dashboard-cat-count {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ── Category Item Detail (tap to expand) ── */
+.dashboard-cat-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px 12px;
+}
+
+.dashboard-item {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.dashboard-item.found {
+  background: rgba(67, 233, 123, 0.2);
+  color: #43e97b;
+}
+.dashboard-item.missing {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Achievements ── */
+.dashboard-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-achievement {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  transition: background 0.2s;
+}
+.dashboard-achievement.unlocked {
+  background: rgba(254, 202, 87, 0.12);
+  border: 1px solid rgba(254, 202, 87, 0.3);
+}
+.dashboard-achievement.locked {
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.6;
+}
+
+.dashboard-ach-emoji {
+  font-size: 28px;
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dashboard-ach-info {
+  flex: 1;
+}
+.dashboard-ach-name {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.dashboard-ach-desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+.dashboard-ach-summary {
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ── Weekly Activity ── */
+.dashboard-week {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.dashboard-day {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dashboard-day-label {
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+}
+
+.dashboard-day-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+}
+.dashboard-day.level-1 .dashboard-day-dot { background: rgba(67, 233, 123, 0.25); }
+.dashboard-day.level-2 .dashboard-day-dot { background: rgba(67, 233, 123, 0.45); }
+.dashboard-day.level-3 .dashboard-day-dot { background: rgba(67, 233, 123, 0.65); }
+.dashboard-day.level-4 .dashboard-day-dot { background: rgba(67, 233, 123, 0.80); }
+.dashboard-day.level-5 .dashboard-day-dot { background: rgba(67, 233, 123, 1.0); }
+
+.dashboard-day-count {
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+}
+
+/* ── Recent Sessions ── */
+.dashboard-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-session-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+
+.dashboard-session-cat {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.dashboard-session-info {
+  flex: 1;
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+}
+
+.dashboard-session-date {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.dashboard-playtime {
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+/* ── Reset Button ── */
+.dashboard-reset-section {
+  text-align: center;
+  padding-top: 8px;
+  padding-bottom: 32px;
+}
+
+.dashboard-reset-btn {
+  font-size: 14px;
+  padding: 10px 24px;
+  border: 1px solid rgba(255, 87, 87, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 87, 87, 0.1);
+  color: rgba(255, 87, 87, 0.7);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dashboard-reset-btn:active {
+  background: rgba(255, 87, 87, 0.25);
+}
+
+/* ── Confirm Reset Overlay ── */
+.dashboard-confirm-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-confirm-box {
+  background: #1a1a2e;
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+}
+
+.dashboard-confirm-text {
+  color: #fff;
+  font-size: 18px;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.dashboard-confirm-yes {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background: #f5576c;
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.dashboard-confirm-no {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  cursor: pointer;
+}

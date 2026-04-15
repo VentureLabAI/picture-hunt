@@ -370,6 +370,8 @@ var currentCategory = null;
 var currentIndex = 0;
 var shuffledItems = [];
 var autoAdvanceTimer = null;
+var currentDifficulty = localStorage.getItem('PH_DIFFICULTY') || 'medium';
+var _currentSession = null; // Dashboard session tracking
 
 // ═══════════════════════════════════════════════════════════════
 // DOM REFS
@@ -458,6 +460,33 @@ function renderSplash() {
   var grid = document.getElementById('category-grid');
   if (!grid) return;
 
+  // Difficulty selector HTML (above categories)
+  var diffHtml = '<div class="difficulty-selector">'
+    + '<button class="diff-btn' + (currentDifficulty === 'easy' ? ' active' : '') + '" onclick="setDifficulty(\'easy\')">⭐ Easy</button>'
+    + '<button class="diff-btn' + (currentDifficulty === 'medium' ? ' active' : '') + '" onclick="setDifficulty(\'medium\')">⭐⭐ Medium</button>'
+    + '<button class="diff-btn' + (currentDifficulty === 'hard' ? ' active' : '') + '" onclick="setDifficulty(\'hard\')">⭐⭐⭐ Hard</button>'
+    + '</div>';
+
+  // Language selector HTML (below difficulty)
+  var langHtml = '';
+  if (typeof SUPPORTED_LANGUAGES !== 'undefined') {
+    var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
+    langHtml = '<div class="lang-selector">'
+      + '<button class="lang-btn" onclick="cycleLanguage()">' + currentLang.emoji + ' ' + (currentLang.code === 'none' ? 'Language' : currentLang.name) + '</button>'
+      + '</div>';
+  }
+
+  // Insert difficulty + lang before the grid
+  var title = document.querySelector('.home-title');
+  if (title && !document.querySelector('.difficulty-selector')) {
+    title.insertAdjacentHTML('afterend', diffHtml + langHtml);
+  } else if (title) {
+    // Update active state
+    document.querySelectorAll('.diff-btn').forEach(function(btn, idx) {
+      btn.className = 'diff-btn' + (['easy','medium','hard'][idx] === currentDifficulty ? ' active' : '');
+    });
+  }
+
   var savedGame = null;
   try { savedGame = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
 
@@ -481,8 +510,23 @@ function renderSplash() {
   });
   grid.innerHTML = html;
 
+  // Storyline mode button
+  var storyBtn = document.getElementById('story-btn');
+  if (!storyBtn) {
+    var btnContainer = document.querySelector('.splash-bottom');
+    if (btnContainer) {
+      storyBtn = document.createElement('button');
+      storyBtn.id = 'story-btn';
+      storyBtn.className = 'setup-icon-btn';
+      storyBtn.textContent = '📖';
+      storyBtn.onclick = function() { if (typeof openStorySelector === 'function') openStorySelector(); };
+      btnContainer.insertBefore(storyBtn, btnContainer.firstChild);
+    }
+  }
+
   var btn = document.getElementById('sound-toggle');
   if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -715,7 +759,22 @@ function startNewGame(catId) {
   localStorage.removeItem('PH_GAME_STATE');
   currentCategory = catId || currentCategory;
   shuffledItems = shuffle(getSelectedItems(currentCategory));
+
+  // Apply difficulty: limit items
+  if (currentDifficulty === 'easy' && shuffledItems.length > 5) {
+    shuffledItems = shuffledItems.slice(0, 5);
+  } else if (currentDifficulty === 'medium' && shuffledItems.length > 10) {
+    shuffledItems = shuffledItems.slice(0, 10);
+  }
+  // hard uses all items
+
   currentIndex = 0;
+
+  // Start dashboard session tracking
+  if (typeof dashboardStartSession === 'function') {
+    _currentSession = dashboardStartSession(currentCategory);
+  }
+
   showScreen('game'); showCurrentItem();
 }
 
@@ -756,6 +815,7 @@ function repeatPrompt() {
   playClick();
   stopAllPulses();
   resetInactivity();
+  if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleRepeat === 'function' && storylineHandleRepeat()) return;
   var item = shuffledItems[currentIndex];
   var cat = CATEGORIES[currentCategory];
   speak(cat.speakPrompt(item.name), function() {
@@ -766,6 +826,13 @@ function repeatPrompt() {
 
 function goHome() {
   playClick();
+  // Exit storyline mode if active
+  if (typeof storylineActive !== 'undefined' && storylineActive) { storylineActive = false; currentStory = null; }
+  // End dashboard session if mid-game
+  if (typeof dashboardEndSession === 'function' && _currentSession) {
+    dashboardEndSession(_currentSession, currentIndex);
+    _currentSession = null;
+  }
   localStorage.setItem('PH_GAME_STATE', JSON.stringify({
     category: currentCategory,
     items: shuffledItems.map(function(i) { return i.name; }),
@@ -776,6 +843,7 @@ function goHome() {
 
 function skipItem() {
   playClick(); stopAllPulses(); resetInactivity();
+  if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleSkip === 'function' && storylineHandleSkip()) return;
   speak("Let's try another one!");
   advanceItem();
 }
@@ -787,11 +855,19 @@ function advanceItem() {
 }
 
 function showVictory() {
+  // Storyline mode: handle victory in story context
+  if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleVictory === 'function' && storylineHandleVictory()) return;
   localStorage.removeItem('PH_GAME_STATE');
   var cat = CATEGORIES[currentCategory];
   var found = getCategoryProgress(currentCategory);
   var total = cat.items.length;
   var complete = found >= total;
+
+  // End dashboard session
+  if (typeof dashboardEndSession === 'function' && _currentSession) {
+    dashboardEndSession(_currentSession, shuffledItems.length);
+    _currentSession = null;
+  }
 
   var subEl = document.getElementById('victory-sub');
   var statsEl = document.getElementById('victory-stats');
@@ -800,7 +876,13 @@ function showVictory() {
     + ' unique ' + cat.name.toLowerCase() + ' found!' + (complete ? ' 🏆' : '') + '</div>';
 
   showScreen('victory');
-  fireConfetti(4000); playVictorySound();
+  // Use enhanced celebrations if available, fallback to confetti
+  if (typeof celebrateCombo === 'function') {
+    celebrateCombo(4000);
+  } else {
+    fireConfetti(4000);
+  }
+  playVictorySound();
   speak(complete
     ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
     : 'You did it! You found everything! Great job!');
@@ -846,10 +928,18 @@ async function submitPhoto() {
     pendingBase64 = null; pendingMimeType = null;
 
     if (matched) {
+      // Storyline mode: handle success in story context
+      if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
       // AUTO-ADVANCE: celebrate then move on
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
-      fireConfetti(3500);
+      // Use enhanced celebrations if available
+      if (typeof celebrateEmojiRain === 'function') {
+        celebrateEmojiRain(3500);
+        if (typeof celebrateStickerPopRandom === 'function') celebrateStickerPopRandom(2500);
+      } else {
+        fireConfetti(3500);
+      }
       // Play voice FIRST, then chime after a beat — iOS can't play both simultaneously
       speak('You found it! Great job!');
       setTimeout(playSuccess, 300);
@@ -903,7 +993,13 @@ function skipFromMiss() {
 function forceAccept() {
   playClick();
   recordProgress(currentCategory, shuffledItems[currentIndex].name);
-  fireConfetti(1000); playSuccess(); speak('Great job!');
+  // Use sticker pop for parent override
+  if (typeof celebrateStickerPop === 'function') {
+    celebrateStickerPop('👏', 1500);
+  } else {
+    fireConfetti(1000);
+  }
+  playSuccess(); speak('Great job!');
   resetCameraUI();
   setTimeout(advanceItem, 800);
 }
@@ -935,7 +1031,18 @@ async function identifyObject(base64Data, mimeType) {
     generationConfig: { temperature: 0 }
   };
   var resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  if (!resp.ok) { var e = await resp.text(); throw new Error('Gemini API error ' + resp.status + ': ' + e); }
+  if (!resp.ok) {
+    // Check for offline response from service worker
+    if (resp.status === 503) {
+      var errData = null;
+      try { errData = await resp.json(); } catch(e) {}
+      if (errData && errData.error === 'offline') {
+        if (typeof showOfflineMessage === 'function') showOfflineMessage();
+        throw new Error('offline');
+      }
+    }
+    var e = await resp.text(); throw new Error('Gemini API error ' + resp.status + ': ' + e);
+  }
   var data = await resp.json();
   var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
     data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
@@ -987,6 +1094,31 @@ function fireConfetti(durationMs) {
 function stopConfetti() {
   if (confettiAnimId) { cancelAnimationFrame(confettiAnimId); confettiAnimId = null; }
   if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  // Also stop enhanced celebrations
+  if (typeof stopAllCelebrations === 'function') stopAllCelebrations();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIFFICULTY LEVELS
+// ═══════════════════════════════════════════════════════════════
+function setDifficulty(level) {
+  currentDifficulty = level;
+  localStorage.setItem('PH_DIFFICULTY', level);
+  playClick();
+  renderSplash();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MULTI-LANGUAGE VOCABULARY
+// ═══════════════════════════════════════════════════════════════
+function cycleLanguage() {
+  if (typeof SUPPORTED_LANGUAGES === 'undefined') return;
+  var current = getSelectedLanguage();
+  var idx = SUPPORTED_LANGUAGES.findIndex(function(l) { return l.code === current.code; });
+  var next = (idx + 1) % SUPPORTED_LANGUAGES.length;
+  setSelectedLanguage(SUPPORTED_LANGUAGES[next].code);
+  playClick();
+  renderSplash();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1010,5 +1142,9 @@ window.addEventListener('DOMContentLoaded', function() {
     shuffledItems = saved.items.map(function(name) { return catItems.find(function(i) { return i.name === name; }); }).filter(Boolean);
     currentIndex = saved.index || 0;
   }
-  // Stay on landing screen — user taps "Let's Play!" to unlock audio and enter home
+  // Initialize drop-in modules
+  if (typeof initDashboard === 'function') initDashboard();
+  if (typeof DailyChallenge !== 'undefined') DailyChallenge.init();
+  if (typeof initHintSystem === 'function') initHintSystem();
+  if (typeof initStorylineMode === 'function') initStorylineMode();
 });

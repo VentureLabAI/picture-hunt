@@ -9,7 +9,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=51">
+  <link rel="stylesheet" href="style.css?v=53">
+  <link rel="stylesheet" href="parent-dashboard.css?v=53">
+  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=53">
 </head>
 <body>
   <!-- Landing Screen -->
@@ -27,6 +29,7 @@
   <div id="splash" class="screen">
     <div class="splash-content">
       <h1 class="home-title">Choose a Category</h1>
+      <div id="daily-challenge-container"></div>
       <div id="category-grid" class="category-grid"></div>
       <div class="splash-bottom">
         <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()">⚙️</button>
@@ -100,6 +103,14 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="app.js?v=51"></script>
+  <script src="content/translations/languages-config.js?v=53"></script>
+  <script src="content/translations/all-translations.js?v=53"></script>
+  <script src="app.js?v=53"></script>
+  <script src="hint-system.js?v=53"></script>
+  <script src="content/animations/new-celebrations.js?v=53"></script>
+  <script src="parent-dashboard.js?v=53"></script>
+  <script src="daily-challenge.js?v=53"></script>
+  <script src="storyline-mode.js?v=53"></script>
+  <script src="sw-register.js?v=53"></script>
 </body>
 </html>
