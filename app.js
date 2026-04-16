@@ -64,20 +64,28 @@ var CATEGORIES = {
     speakName: 'Things! Find stuff around the house!',
     aiPrompt: function(n) {
       // Item-specific overrides for tricky items
+      // NOTE: All prompts use "does this photo contain" not "is the primary object"
+      // because a 3-year-old will not center or isolate the object.
       var overrides = {
-        'remote control': 'Is the primary object in this photo a TV remote control or any type of remote control device (including smart remotes, streaming remotes, game controllers, or universal remotes)? Any handheld device with buttons used to control a TV or electronics counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'water bottle': 'Is the primary object in this photo a water bottle, drinking bottle, or any type of plastic or reusable bottle that holds a beverage? A labeled water bottle like Ozarka, Dasani, or any brand counts. A sports bottle or squeeze bottle also counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'keys': 'Is the primary object in this photo a key or set of keys, including car keys, house keys, key fobs, or keychains? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'brush': 'Is the primary object in this photo a brush of any kind — hairbrush, paintbrush, scrub brush, or cleaning brush? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'towel': 'Is the primary object in this photo a towel, washcloth, hand towel, or bath towel? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'lamp': 'Is the primary object in this photo a lamp, table lamp, floor lamp, or desk lamp? A light fixture that sits on a surface or floor counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'clock': 'Is the primary object in this photo a clock — wall clock, alarm clock, digital clock, or any device primarily showing the time? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'fork': 'Is the primary object in this photo a fork, including dinner forks, salad forks, or plastic forks? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'blanket': 'Is the primary object in this photo a blanket, throw blanket, quilt, or comforter? A fabric covering used for warmth counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
-        'pillow': 'Is the primary object in this photo a pillow, throw pillow, or cushion? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.'
+        'remote control': 'Does this photo contain a TV remote control or any type of remote control device anywhere in the frame? This includes smart remotes, streaming remotes (Roku, Fire TV), game controllers, or universal remotes. The remote does not need to be centered or the only object. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'water bottle': 'Does this photo contain a water bottle, drinking bottle, or any type of bottle that holds a beverage anywhere in the frame? A branded water bottle (Ozarka, Dasani, etc.), sports bottle, squeeze bottle, or reusable water bottle all count. It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'keys': 'Does this photo contain a key or set of keys anywhere in the frame? Car keys, house keys, key fobs, or keychains all count. They do not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'brush': 'Does this photo contain a brush of any kind anywhere in the frame — hairbrush, paintbrush, scrub brush, or cleaning brush? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'towel': 'Does this photo contain a towel, washcloth, hand towel, or bath towel anywhere in the frame? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'lamp': 'Does this photo contain a lamp, table lamp, floor lamp, or desk lamp anywhere in the frame? A light fixture that sits on a surface or floor counts. It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'clock': 'Does this photo contain a clock anywhere in the frame — wall clock, alarm clock, digital clock, or any device primarily showing the time? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'fork': 'Does this photo contain a fork anywhere in the frame, including dinner forks, salad forks, or plastic forks? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'blanket': 'Does this photo contain a blanket, throw blanket, quilt, or comforter anywhere in the frame? A fabric covering used for warmth counts. It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'pillow': 'Does this photo contain a pillow, throw pillow, or cushion anywhere in the frame? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'toothbrush': 'Does this photo contain a toothbrush anywhere in the frame? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'crayon': 'Does this photo contain a crayon or crayons anywhere in the frame? A single crayon or a box of crayons both count. They do not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'spoon': 'Does this photo contain a spoon anywhere in the frame, including teaspoons, tablespoons, or plastic spoons? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'sock': 'Does this photo contain a sock or socks anywhere in the frame? Any type of sock — ankle, crew, fuzzy — counts. They do not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'hat': 'Does this photo contain a hat or cap of any kind anywhere in the frame — baseball cap, beanie, sun hat, winter hat? It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'plate': 'Does this photo contain a plate or dinner plate anywhere in the frame? A plastic plate, paper plate, or ceramic plate all count. It does not need to be centered. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.'
       };
       if (overrides[n]) return overrides[n];
-      return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sippy cup counts as a cup, a sandal counts as a shoe, a sofa counts as a chair. But a hat does not count as a shoe. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation of it? A sippy cup counts as a cup, a sandal counts as a shoe. The object does not need to be centered or the only item visible — a toddler took this photo. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'shoe', emoji: '👟', d: 1 }, { name: 'cup', emoji: '🥤', d: 1 },
@@ -99,7 +107,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Shapes! Find circles, squares, and more!',
     aiPrompt: function(n) {
-      return 'Does the main object in this photo predominantly have the shape of a ' + n + '? It does not need to be perfectly geometric — real objects have rounded edges, imperfections, and may appear stretched due to camera angle. Ovals and elongated circles still count as circles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected (a square is not a circle). Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain an object that has the shape of a ' + n + ' anywhere in the frame? It does not need to be perfectly geometric or centered — a toddler took this photo. Real objects have rounded edges and may appear at an angle. Ovals count as circles, elongated shapes count as rectangles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'circle', emoji: '⭕', d: 1 }, { name: 'square', emoji: '🟦', img: 'img/square.png', d: 1 },
@@ -114,7 +122,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find something ' + n + '?'; },
     speakName: 'Colors! Find red, blue, green, and more!',
     aiPrompt: function(n) {
-      return 'Is the predominant color of the main object in this photo ' + n + '? This includes all shades, tints, and variations of ' + n + ' (e.g. light blue, dark blue, and navy all count as blue). However, colors from a completely different color family must be rejected — green is not brown, purple is not red. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see and its color.';
+      return 'Does this photo contain any object that is clearly ' + n + ' in color anywhere in the frame? The object does not need to be centered or the only thing visible — a toddler took this photo. Accept all shades and tints of ' + n + ' (light blue, dark blue, and navy all count as blue). Reject only if there is truly nothing ' + n + ' visible anywhere. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see and its color.';
     },
     items: [
       { name: 'red', emoji: '🔴', d: 1 }, { name: 'blue', emoji: '🔵', d: 1 },
@@ -130,7 +138,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Animals! Find dogs, cats, and more!',
     aiPrompt: function(n) {
-      return 'Is the primary subject in this photo a ' + n + ', or a toy/stuffed animal version of a ' + n + '? Stuffed animals, figurines, and pictures of the animal all count. But a completely different animal should be rejected — a cat is not a dog. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real animals, stuffed animals, toys, figurines, or pictures/images of a ' + n + '. The animal does not need to be centered — a toddler took this photo. But a completely different animal should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'dog', emoji: '🐕', d: 1 }, { name: 'cat', emoji: '🐱', d: 1 },
@@ -147,7 +155,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { if (n === 'cereal') return 'Can you find a cereal box?'; return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Food! Find yummy things to eat!',
     aiPrompt: function(n) {
-      return 'Is the primary object in this photo ' + n + ', or a container/package of ' + n + '? A juice box counts as juice, a milk carton counts as milk. But completely different foods should be rejected — a banana is not an apple. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain ' + n + ' anywhere in the frame, or a container/package of ' + n + '? A juice box counts as juice, a milk carton counts as milk, a cereal box counts as cereal. The food does not need to be centered — a toddler took this photo. But a completely different food should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'apple', emoji: '🍎', d: 1 }, { name: 'banana', emoji: '🍌', d: 1 },
@@ -164,7 +172,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Furniture! Find things around the house!',
     aiPrompt: function(n) {
-      return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sofa counts as a couch, a monitor counts as a TV. But completely different furniture should be rejected — a table is not a chair. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation of it? A sofa counts as a couch, a monitor or flatscreen counts as a TV. The furniture does not need to be centered or the only thing visible — a toddler took this photo. But a completely different piece of furniture should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'chair', emoji: '🪑', d: 1 }, { name: 'table', emoji: '🪵', d: 1 },
@@ -180,7 +188,7 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Clothing! Find things you can wear!',
     aiPrompt: function(n) {
-      return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. But completely different clothing should be rejected — a shirt is not pants. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+      return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. The clothing does not need to be centered or the only thing visible — a toddler took this photo. It can be worn by someone or lying on a surface. But a completely different type of clothing should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
       { name: 'shirt', emoji: '👕', d: 1 }, { name: 'pants', emoji: '👖', d: 1 },
