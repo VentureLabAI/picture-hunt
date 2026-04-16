@@ -566,7 +566,11 @@ function renderSetupGrid() {
     var iconHtml = item.img
       ? '<img src="' + item.img + '" class="setup-card-img" alt="' + item.name + '">'
       : '<span class="setup-card-emoji">' + item.emoji + '</span>';
-    card.innerHTML = iconHtml + '<span class="setup-card-name">' + item.name + '</span>';
+    var setupTranslation = (typeof getTranslationByName === 'function') ? getTranslationByName(item.name) : null;
+    var setupNameHtml = '<span class="setup-card-name">' + item.name
+      + (setupTranslation ? '<br><span class="setup-card-translation">' + setupTranslation.word + '</span>' : '')
+      + '</span>';
+    card.innerHTML = iconHtml + setupNameHtml;
     card.addEventListener('click', function() {
       playClick();
       if (setupSelection.has(item.name)) setupSelection.delete(item.name);
@@ -795,7 +799,14 @@ function showCurrentItem() {
   } else {
     targetEmoji.textContent = item.emoji;
   }
-  targetText.textContent = cat.speakPrompt(item.name);
+  // Show English prompt + foreign word if language mode active
+  var langResult = (typeof getTranslationByName === 'function') ? getTranslationByName(item.name) : null;
+  if (langResult) {
+    targetText.innerHTML = cat.speakPrompt(item.name)
+      + '<span class="target-translation">' + langResult.emoji + ' ' + langResult.word + '</span>';
+  } else {
+    targetText.textContent = cat.speakPrompt(item.name);
+  }
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((currentIndex / shuffledItems.length) * 100) + '%';
 
@@ -935,6 +946,7 @@ async function submitPhoto() {
       if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
       // AUTO-ADVANCE: celebrate then move on
+      var foundItemName = shuffledItems[currentIndex].name;
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
       // Use enhanced celebrations if available
       if (typeof celebrateEmojiRain === 'function') {
@@ -946,10 +958,27 @@ async function submitPhoto() {
       // Play voice FIRST, then chime after a beat — iOS can't play both simultaneously
       speak('You found it! Great job!');
       setTimeout(playSuccess, 300);
+
+      // Victory Echo: 'How do you say X in Spanish? ... zapato!'
+      var hasLang = (typeof getSelectedLanguage === 'function') && getSelectedLanguage().code !== 'none';
+      var echoDuration = 0;
+      if (hasLang && typeof playVictoryEcho === 'function') {
+        // Show translation badge in feedback area
+        var echoResult = (typeof getTranslationByName === 'function') ? getTranslationByName(foundItemName) : null;
+        if (echoResult) {
+          echoDuration = 4000; // extra time for echo
+          setTimeout(function() {
+            feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>'
+              + '<div class="translation-echo">' + echoResult.emoji + ' ' + echoResult.word + '</div>';
+            playVictoryEcho(foundItemName);
+          }, 800);
+        }
+      }
+
       autoAdvanceTimer = setTimeout(function() {
         resetCameraUI();
         advanceItem();
-      }, 4500);
+      }, 4500 + echoDuration);
     } else {
       playMiss();
       showMissResult();

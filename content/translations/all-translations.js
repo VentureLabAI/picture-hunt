@@ -46,6 +46,34 @@ var ITEM_TRANSLATIONS = {
     es: 'llave', fr: 'clé', zh: '钥匙', ja: '鍵',
     de: 'Schlüssel', ko: '열쇠', it: 'chiave', hi: 'चाबी', pt: 'chave', ar: 'مفتاح'
   },
+  'keys': {
+    es: 'llaves', fr: 'clés', zh: '钥匙', ja: '鍵',
+    de: 'Schlüssel', ko: '열쇠', it: 'chiavi', hi: 'चाबियाँ', pt: 'chaves', ar: 'مفاتيح'
+  },
+  'remote control': {
+    es: 'control remoto', fr: 'télécommande', zh: '遥控器', ja: 'リモコン',
+    de: 'Fernbedienung', ko: '리모컨', it: 'telecomando', hi: 'रिमोट कंट्रोल', pt: 'controle remoto', ar: 'جهاز التحكم'
+  },
+  'water bottle': {
+    es: 'botella de agua', fr: "bouteille d'eau", zh: '水瓶', ja: '水筒',
+    de: 'Wasserflasche', ko: '물병', it: "bottiglia d'acqua", hi: 'पानी की बोतल', pt: 'garrafa de água', ar: 'زجاجة ماء'
+  },
+  'towel': {
+    es: 'toalla', fr: 'serviette', zh: '毛巾', ja: 'タオル',
+    de: 'Handtuch', ko: '수건', it: 'asciugamano', hi: 'तौलिया', pt: 'toalha', ar: 'منشفة'
+  },
+  'fork': {
+    es: 'tenedor', fr: 'fourchette', zh: '叉子', ja: 'フォーク',
+    de: 'Gabel', ko: '포크', it: 'forchetta', hi: 'काँटा', pt: 'garfo', ar: 'شوكة'
+  },
+  'cereal': {
+    es: 'cereal', fr: 'céréales', zh: '麦片', ja: 'シリアル',
+    de: 'Müsli', ko: '시리얼', it: 'cereali', hi: 'अनाज', pt: 'cereal', ar: 'حبوب'
+  },
+  'TV': {
+    es: 'televisión', fr: 'télévision', zh: '电视', ja: 'テレビ',
+    de: 'Fernseher', ko: '텔레비전', it: 'televisione', hi: 'टेलीविजन', pt: 'televisão', ar: 'تلفاز'
+  },
   'pillow': {
     es: 'almohada', fr: 'oreiller', zh: '枕头', ja: '枕',
     de: 'Kissen', ko: '베개', it: 'cuscino', hi: 'तकिया', pt: 'travesseiro', ar: 'وسادة'

@@ -74,3 +74,68 @@ function getTranslation(item) {
     speechLang: lang.speechLang
   };
 }
+
+/**
+ * Look up a translation by item name string from ITEM_TRANSLATIONS global.
+ * Handles name mismatches (e.g. 'TV' -> 'tv', 'keys' -> 'key').
+ * @param {string} itemName
+ * @returns {object|null} { word, langName, emoji, speechLang } or null
+ */
+function getTranslationByName(itemName) {
+  var lang = getSelectedLanguage();
+  if (lang.code === 'none') return null;
+  if (typeof ITEM_TRANSLATIONS === 'undefined') return null;
+
+  // Direct lookup first
+  var entry = ITEM_TRANSLATIONS[itemName];
+
+  // Fallback: try lowercase, then common aliases
+  if (!entry) entry = ITEM_TRANSLATIONS[itemName.toLowerCase()];
+  if (!entry) {
+    var aliases = {
+      'keys': 'key', 'TV': 'tv', 'remote control': 'remote',
+      'water bottle': 'bottle', 'cereal': 'cereal box',
+      'orange': 'orange' // food and color both exist as 'orange'
+    };
+    var alias = aliases[itemName];
+    if (alias) entry = ITEM_TRANSLATIONS[alias];
+  }
+
+  if (!entry) return null;
+  var word = entry[lang.code];
+  if (!word) return null;
+  return {
+    word: word,
+    langName: lang.name,
+    emoji: lang.emoji,
+    speechLang: lang.speechLang
+  };
+}
+
+/**
+ * Play the Victory Echo: English 'How do you say X in [language]?'
+ * then speak the translated word in the target language.
+ * Call this ~800ms after a successful find.
+ * @param {string} itemName
+ * @param {function} [onDone]
+ */
+function playVictoryEcho(itemName, onDone) {
+  var result = getTranslationByName(itemName);
+  if (!result) { if (onDone) onDone(); return; }
+
+  var lang = getSelectedLanguage();
+  var englishPrompt = 'How do you say ' + itemName + ' in ' + lang.name + '?';
+
+  // Speak the English prompt via app's speak() function
+  if (typeof speak === 'function') {
+    speak(englishPrompt, function() {
+      // Pause 1.2s for child to "think", then reveal the word
+      setTimeout(function() {
+        speakTranslation(result.word, result.speechLang);
+        if (onDone) setTimeout(onDone, 1800);
+      }, 1200);
+    });
+  } else {
+    if (onDone) onDone();
+  }
+}
