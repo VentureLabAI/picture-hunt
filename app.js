@@ -63,6 +63,20 @@ var CATEGORIES = {
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Things! Find stuff around the house!',
     aiPrompt: function(n) {
+      // Item-specific overrides for tricky items
+      var overrides = {
+        'remote control': 'Is the primary object in this photo a TV remote control or any type of remote control device (including smart remotes, streaming remotes, game controllers, or universal remotes)? Any handheld device with buttons used to control a TV or electronics counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'water bottle': 'Is the primary object in this photo a water bottle, drinking bottle, or any type of plastic or reusable bottle that holds a beverage? A labeled water bottle like Ozarka, Dasani, or any brand counts. A sports bottle or squeeze bottle also counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'keys': 'Is the primary object in this photo a key or set of keys, including car keys, house keys, key fobs, or keychains? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'brush': 'Is the primary object in this photo a brush of any kind — hairbrush, paintbrush, scrub brush, or cleaning brush? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'towel': 'Is the primary object in this photo a towel, washcloth, hand towel, or bath towel? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'lamp': 'Is the primary object in this photo a lamp, table lamp, floor lamp, or desk lamp? A light fixture that sits on a surface or floor counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'clock': 'Is the primary object in this photo a clock — wall clock, alarm clock, digital clock, or any device primarily showing the time? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'fork': 'Is the primary object in this photo a fork, including dinner forks, salad forks, or plastic forks? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'blanket': 'Is the primary object in this photo a blanket, throw blanket, quilt, or comforter? A fabric covering used for warmth counts. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.',
+        'pillow': 'Is the primary object in this photo a pillow, throw pillow, or cushion? Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.'
+      };
+      if (overrides[n]) return overrides[n];
       return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sippy cup counts as a cup, a sandal counts as a shoe, a sofa counts as a chair. But a hat does not count as a shoe. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
