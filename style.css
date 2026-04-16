@@ -704,12 +704,14 @@ html, body {
 
 /* Small translation word under item name on setup screen */
 .setup-card-translation {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #feca57;
   font-weight: 600;
   display: block;
   margin-top: 2px;
   opacity: 0.9;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 /* === Difficulty Selector === */
