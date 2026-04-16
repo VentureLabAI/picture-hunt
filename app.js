@@ -414,7 +414,11 @@ function showScreen(name) {
   resetInactivity();
   if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
   Object.values(screens).forEach(function(s) { s.classList.remove('active'); });
-  screens[name].classList.add('active');
+  var el = screens[name];
+  el.classList.add('active');
+  // Brief ghost-tap guard on ALL screen transitions
+  el.style.pointerEvents = 'none';
+  setTimeout(function() { el.style.pointerEvents = ''; }, 350);
   if (name === 'splash') onSplashEnter();
 }
 
@@ -448,6 +452,12 @@ function startFromLanding() {
 
 function onSplashEnter() {
   renderSplash();
+  // Block ghost taps for 400ms after landing (touch bleed from landing screen)
+  var splash = document.getElementById('splash');
+  if (splash) {
+    splash.style.pointerEvents = 'none';
+    setTimeout(function() { splash.style.pointerEvents = ''; }, 400);
+  }
   // Full audio + pulse every time we enter the home screen
   setTimeout(function() {
     speak('Pick a game!', function() {
