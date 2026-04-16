@@ -66,17 +66,17 @@ var CATEGORIES = {
       return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sippy cup counts as a cup, a sandal counts as a shoe, a sofa counts as a chair. But a hat does not count as a shoe. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'shoe', emoji: '👟' }, { name: 'cup', emoji: '🥤' },
-      { name: 'ball', emoji: '⚽' }, { name: 'teddy bear', emoji: '🧸' },
-      { name: 'book', emoji: '📚' }, { name: 'spoon', emoji: '🥄' },
-      { name: 'pillow', emoji: '🛏️', img: 'img/pillow.png' }, { name: 'blanket', emoji: '🧣', img: 'img/blanket.png' },
-      { name: 'remote control', emoji: '📺', img: 'img/remote-control.png' }, { name: 'toothbrush', emoji: '🪥' },
-      { name: 'chair', emoji: '🪑' }, { name: 'sock', emoji: '🧦' },
-      { name: 'hat', emoji: '🧢' }, { name: 'keys', emoji: '🔑' },
-      { name: 'water bottle', emoji: '🍼', img: 'img/water-bottle.png' }, { name: 'crayon', emoji: '🖍️' },
-      { name: 'plate', emoji: '🍽️' }, { name: 'towel', emoji: '🧻', img: 'img/towel.png' },
-      { name: 'lamp', emoji: '💡', img: 'img/lamp.png' }, { name: 'clock', emoji: '⏰' },
-      { name: 'fork', emoji: '🍴', img: 'img/fork.png' }, { name: 'brush', emoji: '💇', img: 'img/brush.png' }
+      { name: 'shoe', emoji: '👟', d: 1 }, { name: 'cup', emoji: '🥤', d: 1 },
+      { name: 'ball', emoji: '⚽', d: 1 }, { name: 'teddy bear', emoji: '🧸', d: 1 },
+      { name: 'book', emoji: '📚', d: 1 }, { name: 'spoon', emoji: '🥄', d: 2 },
+      { name: 'pillow', emoji: '🛏️', img: 'img/pillow.png', d: 1 }, { name: 'blanket', emoji: '🧣', img: 'img/blanket.png', d: 2 },
+      { name: 'remote control', emoji: '📺', img: 'img/remote-control.png', d: 2 }, { name: 'toothbrush', emoji: '🪥', d: 1 },
+      { name: 'chair', emoji: '🪑', d: 1 }, { name: 'sock', emoji: '🧦', d: 1 },
+      { name: 'hat', emoji: '🧢', d: 1 }, { name: 'keys', emoji: '🔑', d: 2 },
+      { name: 'water bottle', emoji: '🍼', img: 'img/water-bottle.png', d: 2 }, { name: 'crayon', emoji: '🖍️', d: 2 },
+      { name: 'plate', emoji: '🍽️', d: 2 }, { name: 'towel', emoji: '🧻', img: 'img/towel.png', d: 2 },
+      { name: 'lamp', emoji: '💡', img: 'img/lamp.png', d: 3 }, { name: 'clock', emoji: '⏰', d: 3 },
+      { name: 'fork', emoji: '🍴', img: 'img/fork.png', d: 3 }, { name: 'brush', emoji: '💇', img: 'img/brush.png', d: 3 }
     ]
   },
   shapes: {
@@ -88,10 +88,10 @@ var CATEGORIES = {
       return 'Does the main object in this photo predominantly have the shape of a ' + n + '? It does not need to be perfectly geometric — real objects have rounded edges, imperfections, and may appear stretched due to camera angle. Ovals and elongated circles still count as circles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected (a square is not a circle). Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'circle', emoji: '⭕' }, { name: 'square', emoji: '🟦', img: 'img/square.png' },
-      { name: 'triangle', emoji: '🔺' }, { name: 'star', emoji: '⭐' },
-      { name: 'rectangle', emoji: '🟫', img: 'img/rectangle.png' }, { name: 'heart', emoji: '❤️' },
-      { name: 'diamond', emoji: '🔷' }
+      { name: 'circle', emoji: '⭕', d: 1 }, { name: 'square', emoji: '🟦', img: 'img/square.png', d: 1 },
+      { name: 'triangle', emoji: '🔺', d: 1 }, { name: 'star', emoji: '⭐', d: 1 },
+      { name: 'rectangle', emoji: '🟫', img: 'img/rectangle.png', d: 2 }, { name: 'heart', emoji: '❤️', d: 2 },
+      { name: 'diamond', emoji: '🔷', d: 3 }
     ]
   },
   colors: {
@@ -103,11 +103,11 @@ var CATEGORIES = {
       return 'Is the predominant color of the main object in this photo ' + n + '? This includes all shades, tints, and variations of ' + n + ' (e.g. light blue, dark blue, and navy all count as blue). However, colors from a completely different color family must be rejected — green is not brown, purple is not red. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see and its color.';
     },
     items: [
-      { name: 'red', emoji: '🔴' }, { name: 'blue', emoji: '🔵' },
-      { name: 'green', emoji: '🟢' }, { name: 'yellow', emoji: '🟡' },
-      { name: 'orange', emoji: '🟠' }, { name: 'purple', emoji: '🟣' },
-      { name: 'pink', emoji: '🩷' }, { name: 'white', emoji: '⚪' },
-      { name: 'black', emoji: '⚫' }, { name: 'brown', emoji: '🟤' }
+      { name: 'red', emoji: '🔴', d: 1 }, { name: 'blue', emoji: '🔵', d: 1 },
+      { name: 'green', emoji: '🟢', d: 1 }, { name: 'yellow', emoji: '🟡', d: 1 },
+      { name: 'orange', emoji: '🟠', d: 2 }, { name: 'purple', emoji: '🟣', d: 2 },
+      { name: 'pink', emoji: '🩷', d: 2 }, { name: 'white', emoji: '⚪', d: 3 },
+      { name: 'black', emoji: '⚫', d: 3 }, { name: 'brown', emoji: '🟤', d: 3 }
     ]
   },
   animals: {
@@ -119,12 +119,12 @@ var CATEGORIES = {
       return 'Is the primary subject in this photo a ' + n + ', or a toy/stuffed animal version of a ' + n + '? Stuffed animals, figurines, and pictures of the animal all count. But a completely different animal should be rejected — a cat is not a dog. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'dog', emoji: '🐕' }, { name: 'cat', emoji: '🐱' },
-      { name: 'duck', emoji: '🦆' }, { name: 'dinosaur', emoji: '🦕' },
-      { name: 'elephant', emoji: '🐘' }, { name: 'lion', emoji: '🦁' },
-      { name: 'pig', emoji: '🐷' }, { name: 'frog', emoji: '🐸' },
-      { name: 'rabbit', emoji: '🐰' }, { name: 'bird', emoji: '🐦' },
-      { name: 'fish', emoji: '🐟' }
+      { name: 'dog', emoji: '🐕', d: 1 }, { name: 'cat', emoji: '🐱', d: 1 },
+      { name: 'duck', emoji: '🦆', d: 1 }, { name: 'dinosaur', emoji: '🦕', d: 1 },
+      { name: 'elephant', emoji: '🐘', d: 2 }, { name: 'lion', emoji: '🦁', d: 2 },
+      { name: 'pig', emoji: '🐷', d: 2 }, { name: 'frog', emoji: '🐸', d: 2 },
+      { name: 'rabbit', emoji: '🐰', d: 2 }, { name: 'bird', emoji: '🐦', d: 3 },
+      { name: 'fish', emoji: '🐟', d: 3 }
     ]
   },
   food: {
@@ -136,12 +136,12 @@ var CATEGORIES = {
       return 'Is the primary object in this photo ' + n + ', or a container/package of ' + n + '? A juice box counts as juice, a milk carton counts as milk. But completely different foods should be rejected — a banana is not an apple. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'apple', emoji: '🍎' }, { name: 'banana', emoji: '🍌' },
-      { name: 'orange', emoji: '🍊' }, { name: 'bread', emoji: '🍞' },
-      { name: 'egg', emoji: '🥚' }, { name: 'carrot', emoji: '🥕' },
-      { name: 'cookie', emoji: '🍪' }, { name: 'cereal', emoji: '🥣' },
-      { name: 'milk', emoji: '🥛' }, { name: 'yogurt', emoji: '🫙' },
-      { name: 'juice', emoji: '🧃' }
+      { name: 'apple', emoji: '🍎', d: 1 }, { name: 'banana', emoji: '🍌', d: 1 },
+      { name: 'orange', emoji: '🍊', d: 1 }, { name: 'bread', emoji: '🍞', d: 1 },
+      { name: 'egg', emoji: '🥚', d: 1 }, { name: 'carrot', emoji: '🥕', d: 2 },
+      { name: 'cookie', emoji: '🍪', d: 2 }, { name: 'cereal', emoji: '🥣', d: 2 },
+      { name: 'milk', emoji: '🥛', d: 2 }, { name: 'yogurt', emoji: '🫙', d: 3 },
+      { name: 'juice', emoji: '🧃', d: 3 }
     ]
   },
   furniture: {
@@ -153,11 +153,11 @@ var CATEGORIES = {
       return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A sofa counts as a couch, a monitor counts as a TV. But completely different furniture should be rejected — a table is not a chair. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'chair', emoji: '🪑' }, { name: 'table', emoji: '🪵' },
-      { name: 'couch', emoji: '🛋️' }, { name: 'bed', emoji: '🛏️' },
-      { name: 'TV', emoji: '📺' }, { name: 'door', emoji: '🚪' },
-      { name: 'window', emoji: '🪟' }, { name: 'shelf', emoji: '📚' },
-      { name: 'lamp', emoji: '💡', img: 'img/lamp.png' }
+      { name: 'chair', emoji: '🪑', d: 1 }, { name: 'table', emoji: '🪵', d: 1 },
+      { name: 'couch', emoji: '🛋️', d: 1 }, { name: 'bed', emoji: '🛏️', d: 1 },
+      { name: 'TV', emoji: '📺', d: 1 }, { name: 'door', emoji: '🚪', d: 2 },
+      { name: 'window', emoji: '🪟', d: 2 }, { name: 'shelf', emoji: '📚', d: 3 },
+      { name: 'lamp', emoji: '💡', img: 'img/lamp.png', d: 3 }
     ]
   },
   clothing: {
@@ -169,10 +169,10 @@ var CATEGORIES = {
       return 'Is the primary object in this photo a ' + n + ', or a very similar common variation of it? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. But completely different clothing should be rejected — a shirt is not pants. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'shirt', emoji: '👕' }, { name: 'pants', emoji: '👖' },
-      { name: 'dress', emoji: '👗' }, { name: 'jacket', emoji: '🧥' },
-      { name: 'hat', emoji: '🧢' }, { name: 'glove', emoji: '🧤' },
-      { name: 'scarf', emoji: '🧣' }, { name: 'sock', emoji: '🧦' }
+      { name: 'shirt', emoji: '👕', d: 1 }, { name: 'pants', emoji: '👖', d: 1 },
+      { name: 'dress', emoji: '👗', d: 1 }, { name: 'jacket', emoji: '🧥', d: 1 },
+      { name: 'hat', emoji: '🧢', d: 2 }, { name: 'glove', emoji: '🧤', d: 2 },
+      { name: 'scarf', emoji: '🧣', d: 3 }, { name: 'sock', emoji: '🧦', d: 2 }
     ]
   }
 };
@@ -760,11 +760,14 @@ function startNewGame(catId) {
   currentCategory = catId || currentCategory;
   shuffledItems = shuffle(getSelectedItems(currentCategory));
 
-  // Apply difficulty: limit items
-  if (currentDifficulty === 'easy' && shuffledItems.length > 5) {
-    shuffledItems = shuffledItems.slice(0, 5);
-  } else if (currentDifficulty === 'medium' && shuffledItems.length > 10) {
-    shuffledItems = shuffledItems.slice(0, 10);
+  // Apply difficulty: filter by item complexity rating (d: 1=Easy, 2=Medium, 3=Hard)
+  // Easy shows only d:1 items; Medium shows d:1+2; Hard shows all
+  if (currentDifficulty === 'easy') {
+    var easyItems = shuffledItems.filter(function(i) { return !i.d || i.d === 1; });
+    if (easyItems.length >= 3) shuffledItems = easyItems; // only filter if we have enough
+  } else if (currentDifficulty === 'medium') {
+    var medItems = shuffledItems.filter(function(i) { return !i.d || i.d <= 2; });
+    if (medItems.length >= 3) shuffledItems = medItems;
   }
   // hard uses all items
 
