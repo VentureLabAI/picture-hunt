@@ -482,7 +482,7 @@ function renderSplash() {
   if (typeof SUPPORTED_LANGUAGES !== 'undefined') {
     var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
     langHtml = '<div class="lang-selector">'
-      + '<button class="lang-btn" onclick="cycleLanguage()">' + currentLang.emoji + ' ' + (currentLang.code === 'none' ? 'Language' : currentLang.name) + '</button>'
+      + '<button class="lang-btn" onclick="openLangPicker()">' + currentLang.emoji + ' ' + (currentLang.code === 'none' ? 'Language' : currentLang.name) + '</button>'
       + '</div>';
   }
 
@@ -1154,13 +1154,46 @@ function setDifficulty(level) {
 // MULTI-LANGUAGE VOCABULARY
 // ═══════════════════════════════════════════════════════════════
 function cycleLanguage() {
+  // Kept for backward compat but now just opens the picker
+  openLangPicker();
+}
+
+function openLangPicker() {
   if (typeof SUPPORTED_LANGUAGES === 'undefined') return;
-  var current = getSelectedLanguage();
-  var idx = SUPPORTED_LANGUAGES.findIndex(function(l) { return l.code === current.code; });
-  var next = (idx + 1) % SUPPORTED_LANGUAGES.length;
-  setSelectedLanguage(SUPPORTED_LANGUAGES[next].code);
   playClick();
-  renderSplash();
+  // Remove any existing picker
+  var existing = document.getElementById('lang-picker-overlay');
+  if (existing) existing.remove();
+
+  var current = getSelectedLanguage();
+  var overlay = document.createElement('div');
+  overlay.id = 'lang-picker-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) closeLangPicker(); };
+
+  var modal = document.createElement('div');
+  modal.className = 'lang-picker-modal';
+  modal.innerHTML = '<div class="lang-picker-title">Choose a Language</div>';
+
+  SUPPORTED_LANGUAGES.forEach(function(lang) {
+    var btn = document.createElement('button');
+    btn.className = 'lang-picker-option' + (lang.code === current.code ? ' selected' : '');
+    btn.textContent = lang.emoji + ' ' + lang.name;
+    btn.onclick = function() {
+      setSelectedLanguage(lang.code);
+      playClick();
+      closeLangPicker();
+      renderSplash();
+    };
+    modal.appendChild(btn);
+  });
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+function closeLangPicker() {
+  var el = document.getElementById('lang-picker-overlay');
+  if (el) el.remove();
 }
 
 // ═══════════════════════════════════════════════════════════════
