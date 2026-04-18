@@ -888,7 +888,8 @@ function goHome() {
 }
 
 function skipItem() {
-  playClick(); stopAllPulses(); resetInactivity();
+  if (typeof playRichSkip === 'function') { playRichSkip(); } else { playClick(); }
+  stopAllPulses(); resetInactivity();
   if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleSkip === 'function' && storylineHandleSkip()) return;
   speak("Let's try another one!");
   advanceItem();
@@ -928,7 +929,7 @@ function showVictory() {
   } else {
     fireConfetti(4000);
   }
-  playVictorySound();
+  if (typeof playRichVictory === 'function') { playRichVictory(); } else { playVictorySound(); }
   speak(complete
     ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
     : 'You did it! You found everything! Great job!');
@@ -977,6 +978,12 @@ async function submitPhoto() {
       // Storyline mode: handle success in story context
       if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
+      // Streak sound: fire after 3+ consecutive finds
+      if (!window._phStreak) window._phStreak = 0;
+      window._phStreak++;
+      if (window._phStreak >= 3 && typeof playRichStreak === 'function') {
+        setTimeout(playRichStreak, 800);
+      }
       // AUTO-ADVANCE: celebrate then move on
       var foundItemName = shuffledItems[currentIndex].name;
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
@@ -989,7 +996,7 @@ async function submitPhoto() {
       }
       // Play voice FIRST, then chime after a beat — iOS can't play both simultaneously
       speak('You found it! Great job!');
-      setTimeout(playSuccess, 300);
+      setTimeout(typeof playRichSuccess === 'function' ? playRichSuccess : playSuccess, 300);
 
       // Victory Echo: 'How do you say X in Spanish? ... zapato!'
       var hasLang = (typeof getSelectedLanguage === 'function') && getSelectedLanguage().code !== 'none';
@@ -1012,7 +1019,8 @@ async function submitPhoto() {
         advanceItem();
       }, 4500 + echoDuration);
     } else {
-      playMiss();
+      if (typeof playRichMiss === 'function') { playRichMiss(); } else { playMiss(); }
+      window._phStreak = 0; // reset streak on miss
       showMissResult();
     }
   } catch (err) {
