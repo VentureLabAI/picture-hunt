@@ -196,10 +196,62 @@ var CATEGORIES = {
       { name: 'hat', emoji: '🧢', d: 2 }, { name: 'glove', emoji: '🧤', d: 2 },
       { name: 'scarf', emoji: '🧣', d: 3 }, { name: 'sock', emoji: '🧦', d: 2 }
     ]
+  },
+  halloween: {
+    id: 'halloween', name: 'Halloween', emoji: '🎃',
+    gradient: 'linear-gradient(135deg, #FF6B00 0%, #1A0033 50%, #FFD700 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Halloween Hunt! Find spooky things!',
+    aiPrompt: function(n) {
+      return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, plushies, costumes, or pictures/drawings. The item does not need to be centered — a toddler took this photo during a Halloween activity. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'pumpkin', emoji: '🎃', d: 1 }, { name: 'ghost', emoji: '👻', d: 1 },
+      { name: 'candy', emoji: '🍬', d: 1 }, { name: 'witch hat', emoji: '🧙', d: 1 },
+      { name: 'spider', emoji: '🕷️', d: 2 }, { name: 'spider web', emoji: '🕸️', d: 2 },
+      { name: 'black cat', emoji: '🐱', d: 2 }, { name: 'bat', emoji: '🦇', d: 2 },
+      { name: 'skeleton', emoji: '💀', d: 3 }, { name: 'treat bag', emoji: '🎒', d: 1 }
+    ],
+    seasonal: true
+  },
+  christmas: {
+    id: 'christmas', name: 'Christmas', emoji: '🎄',
+    gradient: 'linear-gradient(135deg, #C8102E 0%, #006747 50%, #FFD700 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Christmas Hunt! Find holiday magic!',
+    aiPrompt: function(n) {
+      return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, ornaments, wrapping, or pictures. The item does not need to be centered — a toddler took this photo during the Christmas season. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'Christmas tree', emoji: '🎄', d: 1 }, { name: 'ornament', emoji: '🔮', d: 1 },
+      { name: 'star', emoji: '⭐', d: 1 }, { name: 'stocking', emoji: '🧦', d: 1 },
+      { name: 'Christmas lights', emoji: '💡', d: 1 }, { name: 'Santa', emoji: '🎅', d: 1 },
+      { name: 'gift', emoji: '🎁', d: 1 }, { name: 'wreath', emoji: '💚', d: 2 },
+      { name: 'snowman', emoji: '⛄', d: 2 }, { name: 'candy cane', emoji: '🍭', d: 2 },
+      { name: 'reindeer', emoji: '🦌', d: 3 }
+    ],
+    seasonal: true
+  },
+  spring: {
+    id: 'spring', name: 'Spring', emoji: '🌸',
+    gradient: 'linear-gradient(135deg, #FF69B4 0%, #4CAF50 50%, #FFD700 100%)',
+    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakName: 'Spring Hunt! Find signs of spring!',
+    aiPrompt: function(n) {
+      return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, stuffed animals, or pictures/drawings. The item does not need to be centered — a toddler took this photo exploring springtime. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
+    },
+    items: [
+      { name: 'flower', emoji: '🌸', d: 1 }, { name: 'butterfly', emoji: '🦋', d: 2 },
+      { name: 'bird', emoji: '🐦', d: 2 }, { name: 'rainbow', emoji: '🌈', d: 1 },
+      { name: 'umbrella', emoji: '☂️', d: 1 }, { name: 'rain boots', emoji: '🥾', d: 1 },
+      { name: 'bee', emoji: '🐝', d: 2 }, { name: 'Easter egg', emoji: '🥚', d: 1 },
+      { name: 'bunny', emoji: '🐰', d: 1 }, { name: 'sunshine', emoji: '☀️', d: 1 }
+    ],
+    seasonal: true
   }
 };
 
-var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing'];
+var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing', 'halloween', 'christmas', 'spring'];
 
 // ═══════════════════════════════════════════════════════════════
 // SOUND EFFECTS (Web Audio API)
@@ -522,20 +574,26 @@ function renderSplash() {
   var savedGame = null;
   try { savedGame = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
 
+  // Filter: only show seasonal packs that are currently in-season or manually enabled
+  var visibleCategories = (typeof SeasonalManager !== 'undefined')
+    ? SeasonalManager.filterVisibleCategories(CATEGORY_ORDER)
+    : CATEGORY_ORDER.filter(function(catId) { return !CATEGORIES[catId].seasonal; });
+
   var html = '';
-  CATEGORY_ORDER.forEach(function(catId) {
+  visibleCategories.forEach(function(catId) {
     var cat = CATEGORIES[catId];
     var found = getCategoryProgress(catId);
     var total = cat.items.length;
     var hasContinue = savedGame && savedGame.category === catId;
     var complete = found >= total;
+    var badge = (typeof SeasonalManager !== 'undefined') ? SeasonalManager.getInSeasonBadge(catId) : '';
 
     html += '<button class="category-card' + (hasContinue ? ' has-continue' : '') + '" '
       + 'style="background:' + cat.gradient + '" '
       + 'onclick="playCategory(\'' + catId + '\')">'
       + '<div class="cat-emoji">' + cat.emoji + '</div>'
       + '<div class="cat-info">'
-      + '<div class="cat-name">' + cat.name + '</div>'
+      + '<div class="cat-name">' + cat.name + badge + '</div>'
       + '<div class="cat-progress">'
       + (hasContinue ? '▶️ Continue!' : (complete ? '🏆 ' + found + '/' + total : found + '/' + total + ' ⭐'))
       + '</div></div></button>';
@@ -576,7 +634,10 @@ function renderSetupTabs() {
   var tabsEl = document.getElementById('category-tabs');
   if (!tabsEl) return;
   var html = '';
-  CATEGORY_ORDER.forEach(function(catId) {
+  var visibleTabs = (typeof SeasonalManager !== 'undefined')
+    ? SeasonalManager.filterVisibleCategories(CATEGORY_ORDER)
+    : CATEGORY_ORDER.filter(function(catId) { return !CATEGORIES[catId].seasonal; });
+  visibleTabs.forEach(function(catId) {
     var cat = CATEGORIES[catId];
     html += '<button class="cat-tab' + (catId === setupCategory ? ' active' : '') + '" '
       + 'onclick="switchSetupTab(\'' + catId + '\')">' + cat.emoji + ' ' + cat.name + '</button>';
@@ -653,7 +714,8 @@ function preloadAllAudio() {
   var keys = [
     'pick-a-game','you-found-it','try-again','lets-try-another','great-job',
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
-    'cat-animals','cat-food','cat-furniture','cat-clothing'
+    'cat-animals','cat-food','cat-furniture','cat-clothing',
+    'cat-halloween','cat-christmas','cat-spring'
   ];
   // Preload all find prompts
   Object.keys(CATEGORIES).forEach(function(catId) {
@@ -702,7 +764,10 @@ function textToAudioKey(text) {
     'Animals! Find dogs, cats, and more!': 'cat-animals',
     'Food! Find yummy things to eat!': 'cat-food',
     'Furniture! Find things around the house!': 'cat-furniture',
-    'Clothing! Find things you can wear!': 'cat-clothing'
+    'Clothing! Find things you can wear!': 'cat-clothing',
+    'Halloween Hunt! Find spooky things!': 'cat-halloween',
+    'Christmas Hunt! Find holiday magic!': 'cat-christmas',
+    'Spring Hunt! Find signs of spring!': 'cat-spring'
   };
   if (map[text]) return map[text];
   // Champion messages

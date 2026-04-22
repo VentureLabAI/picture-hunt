@@ -120,6 +120,8 @@ function _allCatsComplete(progress) {
     var catId = CATEGORY_ORDER[i];
     var cat = CATEGORIES[catId];
     if (!cat) continue;
+    // Skip seasonal packs that aren't visible — shouldn't need to complete out-of-season packs
+    if (cat.seasonal && typeof SeasonalManager !== 'undefined' && !SeasonalManager.isPackVisible(catId)) continue;
     if ((progress[catId] || []).length < cat.items.length) return false;
   }
   return true;
@@ -216,7 +218,16 @@ function _renderDashboard() {
   html += '  <h2 class="dashboard-section-title">Categories</h2>';
   html += '  <div class="dashboard-categories">';
 
-  CATEGORY_ORDER.forEach(function(catId) {
+  var dashCategories = CATEGORY_ORDER.filter(function(catId) {
+    // Always show non-seasonal categories
+    if (!CATEGORIES[catId] || !CATEGORIES[catId].seasonal) return true;
+    // Show seasonal categories if they have any progress or are currently visible
+    var hasProgress = (progress[catId] || []).length > 0;
+    var isVisible = (typeof SeasonalManager !== 'undefined') && SeasonalManager.isPackVisible(catId);
+    return hasProgress || isVisible;
+  });
+
+  dashCategories.forEach(function(catId) {
     var cat = CATEGORIES[catId];
     if (!cat) return;
     var found = (progress[catId] || []).length;
@@ -327,6 +338,14 @@ function _renderDashboard() {
     html += '</div>';
   }
 
+  // ── Seasonal Pack Toggles ──
+  if (typeof SeasonalManager !== 'undefined') {
+    html += '<div class="dashboard-section">';
+    html += '  <h2 class="dashboard-section-title">🎃 Seasonal Hunts</h2>';
+    html += SeasonalManager.renderSeasonalToggles();
+    html += '</div>';
+  }
+
   // ── Reset Button (parent-only, small and unobtrusive) ──
   html += '<div class="dashboard-section dashboard-reset-section">';
   html += '  <button class="dashboard-reset-btn" onclick="_confirmReset()">🗑️ Reset All Progress</button>';
@@ -338,7 +357,7 @@ function _renderDashboard() {
   var catCards = content.querySelectorAll('.dashboard-cat-card');
   catCards.forEach(function(card, idx) {
     card.onclick = function() {
-      var catId = CATEGORY_ORDER[idx];
+      var catId = dashCategories[idx];
       var items = document.getElementById('dash-items-' + catId);
       if (items) {
         items.style.display = items.style.display === 'none' ? 'flex' : 'none';

@@ -677,67 +677,6 @@ html, body {
 .preview-retake { background: linear-gradient(135deg, #f39c12, #e67e22); }
 .preview-cancel { background: linear-gradient(135deg, #e74c3c, #c0392b); }
 
-/* === Language Picker Modal ===
-
-#lang-picker-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lang-picker-modal {
-  background: #1a1a2e;
-  border-radius: 20px;
-  padding: 24px 20px;
-  width: min(85vw, 340px);
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  border: 2px solid rgba(255,255,255,0.15);
-}
-
-.lang-picker-title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 16px;
-  opacity: 0.9;
-}
-
-.lang-picker-option {
-  display: block;
-  width: 100%;
-  padding: 14px 18px;
-  margin-bottom: 8px;
-  background: rgba(255,255,255,0.08);
-  border: 2px solid transparent;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #fff;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.15s;
-  min-height: 54px;
-}
-
-.lang-picker-option:active {
-  background: rgba(255,255,255,0.18);
-  transform: scale(0.98);
-}
-
-.lang-picker-option.selected {
-  border-color: #feca57;
-  background: rgba(254,202,87,0.15);
-  color: #feca57;
-}
-
 /* === Translation Labels ===
 
 /* Under the 'Can you find a shoe?' text on the game screen */
