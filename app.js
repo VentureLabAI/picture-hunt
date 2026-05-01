@@ -715,7 +715,8 @@ function preloadAllAudio() {
     'pick-a-game','you-found-it','try-again','lets-try-another','great-job',
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
-    'cat-halloween','cat-christmas','cat-spring'
+    'cat-halloween','cat-christmas','cat-spring',
+    'halloween-victory','christmas-victory','spring-victory'
   ];
   // Preload all find prompts
   Object.keys(CATEGORIES).forEach(function(catId) {
@@ -767,7 +768,10 @@ function textToAudioKey(text) {
     'Clothing! Find things you can wear!': 'cat-clothing',
     'Halloween Hunt! Find spooky things!': 'cat-halloween',
     'Christmas Hunt! Find holiday magic!': 'cat-christmas',
-    'Spring Hunt! Find signs of spring!': 'cat-spring'
+    'Spring Hunt! Find signs of spring!': 'cat-spring',
+    'You found all the spooky things! Happy Halloween!': 'halloween-victory',
+    'You found all the holiday magic! Merry Christmas!': 'christmas-victory',
+    'You found all the signs of spring! Great job!': 'spring-victory'
   };
   if (map[text]) return map[text];
   // Champion messages
@@ -995,9 +999,19 @@ function showVictory() {
     fireConfetti(4000);
   }
   if (typeof playRichVictory === 'function') { playRichVictory(); } else { playVictorySound(); }
-  speak(complete
-    ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
-    : 'You did it! You found everything! Great job!');
+  // Seasonal victory messages — use category-specific audio
+  var seasonalVictory = {
+    halloween: 'You found all the spooky things! Happy Halloween!',
+    christmas: 'You found all the holiday magic! Merry Christmas!',
+    spring: 'You found all the signs of spring! Great job!'
+  };
+  if (seasonalVictory[currentCategory]) {
+    speak(seasonalVictory[currentCategory]);
+  } else {
+    speak(complete
+      ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
+      : 'You did it! You found everything! Great job!');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════

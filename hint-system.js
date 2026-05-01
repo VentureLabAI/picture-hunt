@@ -18,11 +18,14 @@
  * INTEGRATION POINTS:
  *   - Adds a "💡" hint button to the game screen
  *   - Hooks into startInactivity() to show hint button at 15s
- *   - Uses speak() for audio delivery (pre-generated MP3 or TTS fallback)
+ *   - Uses playBuffer() for pre-generated ElevenLabs audio, speak() as TTS fallback
+ *   - Pre-loads hint audio for current category on game start
  *   - Resets on advanceItem() / showCurrentItem()
  *
  * REQUIRES:
  *   - speak(text, onEnd) function from app.js
+ *   - playBuffer(key, onEnd) function from app.js
+ *   - preloadAudio(key) function from app.js
  *   - playClick() function from app.js
  *   - CATEGORIES object from app.js
  *   - currentCategory, currentIndex, shuffledItems globals from app.js
@@ -37,7 +40,8 @@
 // Tier 3: Giveaway clue — nearly tells them (last resort)
 //
 // Audio key format: "hint-{category}-{item}-{tier}" e.g. "hint-household-shoe-1"
-// If no pre-generated audio exists, falls back to TTS via speak()
+// Pre-generated ElevenLabs MP3s are tried first via playBuffer(), with TTS fallback via speak()
+// 235 MP3s exist for all 78 items × 3 tiers (all categories)
 
 var HINT_DATA = {
   household: {
@@ -131,6 +135,43 @@ var HINT_DATA = {
     'glove':   ['You wear them on your hands!', 'Check by the door or closet!', 'They keep your hands warm in winter!'],
     'scarf':   ['You wear it around your neck!', 'Check the closet!', 'It wraps around your neck when it is cold!'],
     'sock':    ['You wear it inside your shoe!', 'Check the dresser or laundry!', 'It goes on your foot before the shoe!']
+  },
+  halloween: {
+    'pumpkin':       ['It is big, round, and orange!', 'Look for a jack-o-lantern or decoration!', 'It is a big orange vegetable carved with a face!'],
+    'ghost':         ['It goes boo!', 'Look for a decoration or costume!', 'It is white and floats around saying boo!'],
+    'candy':         ['It is a sweet treat!', 'Check the treat bowl or your bag!', 'It is yummy and sweet from trick-or-treating!'],
+    'witch hat':     ['It is a tall pointy hat!', 'Look for a costume or decoration!', 'It is black and pointy like a witch wears!'],
+    'spider':        ['It has eight legs!', 'Look for a decoration or a real one!', 'It is small with eight legs and makes a web!'],
+    'spider web':    ['It is sticky and made by a spider!', 'Look in corners or on decorations!', 'It is a white stringy pattern a spider makes!'],
+    'black cat':     ['It is a cat that is black!', 'Look for a decoration or picture!', 'It is a black kitty, very spooky!'],
+    'bat':           ['It flies at night!', 'Look for a decoration hanging up!', 'It has wings and flies in the dark!'],
+    'skeleton':      ['It is all bones!', 'Look for a decoration or costume!', 'It is made of bones and goes rattling!'],
+    'treat bag':     ['You carry it to collect candy!', 'Look by the door or with your costume!', 'You hold it to put candy in on Halloween!']
+  },
+  christmas: {
+    'Christmas tree':  ['It is a tree with lights and ornaments!', 'Look in the living room!', 'It is a green tree with decorations and a star on top!'],
+    'ornament':        ['It hangs on a tree!', 'Look on the Christmas tree!', 'It is a shiny ball that hangs on the tree!'],
+    'star':            ['It goes on top of the tree!', 'Look at the very top of the Christmas tree!', 'It is bright and goes on top of the tree!'],
+    'stocking':        ['You hang it by the fireplace!', 'Look on the wall or fireplace!', 'Santa fills it with small presents!'],
+    'Christmas lights': ['They glow and twinkle!', 'Look on the tree or outside the house!', 'They are colorful little lights that shine!'],
+    'Santa':           ['He brings presents!', 'Look for a decoration, picture, or stuffed Santa!', 'He has a red suit and a white beard!'],
+    'gift':            ['It has a bow and wrapping paper!', 'Look under the Christmas tree!', 'It is a present wrapped in paper!'],
+    'wreath':          ['It is a circle of green leaves!', 'Look on the door!', 'It is round and green with a red bow!'],
+    'snowman':         ['It is made of snow!', 'Look outside or for a decoration!', 'It is three snowballs stacked up with a carrot nose!'],
+    'candy cane':      ['It is a sweet stick that is red and white!', 'Look on the tree or in a bowl!', 'It is curved like a hook and tastes like peppermint!'],
+    'reindeer':        ['It pulls Santa\'s sleigh!', 'Look for a decoration or stuffed animal!', 'It has antlers and flies with Santa!']
+  },
+  spring: {
+    'flower':      ['It grows in the garden!', 'Look outside or in a vase!', 'It has colorful petals and smells nice!'],
+    'butterfly':   ['It has colorful wings!', 'Look outside flying around!', 'It is a bug with pretty wings that flutters!'],
+    'bird':        ['It sings in the trees!', 'Look outside or find a toy one!', 'It has feathers and flies in the sky!'],
+    'rainbow':     ['It has many colors in the sky!', 'Look for a picture or decoration!', 'It is a colorful arch in the sky after rain!'],
+    'umbrella':    ['You use it when it rains!', 'Check by the door or closet!', 'You hold it over your head to stay dry!'],
+    'rain boots':  ['You wear them in puddles!', 'Check by the door!', 'They are rubber boots for jumping in puddles!'],
+    'bee':         ['It buzzes and makes honey!', 'Look outside or find a toy one!', 'It is yellow and black and goes buzz!'],
+    'Easter egg':  ['It is a colorful egg!', 'Look for a decoration or plastic egg!', 'It is a pretty egg hidden for Easter!'],
+    'bunny':       ['It hops and has long ears!', 'Look for a stuffed animal or picture!', 'It is a fluffy rabbit with long ears!'],
+    'sunshine':    ['It is bright and warm!', 'Look out the window!', 'The sun is shining bright and warm!']
   }
 };
 
