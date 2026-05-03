@@ -1,0 +1,352 @@
+/* ============================================================
+   Picture Hunt — Sticker Book Styles 📕✨
+   Drop-in CSS for the Sticker Book feature.
+   Add to index.html <head>: <link rel="stylesheet" href="content/sticker-book.css?v=55">
+   ============================================================ */
+
+/* ═══ STICKER BOOK OVERLAY ═══ */
+.sticker-book-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: sticker-fade-in 0.3s ease;
+}
+
+@keyframes sticker-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sticker-book-modal {
+  background: #1a1a2e;
+  border-radius: 24px;
+  width: 92%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  border: 3px solid #feca57;
+}
+
+/* ═══ HEADER ═══ */
+.sticker-book-header {
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.sticker-book-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.sticker-book-count {
+  font-size: 1.4rem;
+  color: #feca57;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sticker-book-progress-bar {
+  width: 80%;
+  margin: 0 auto;
+  height: 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sticker-book-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f093fb, #feca57, #43e97b);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+/* ═══ CATEGORY SECTION ═══ */
+.sticker-category-section {
+  margin-bottom: 12px;
+}
+
+.sticker-cat-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  gap: 10px;
+  transition: transform 0.1s;
+}
+
+.sticker-cat-header:active {
+  transform: scale(0.97);
+}
+
+.sticker-cat-emoji {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.sticker-cat-name {
+  flex: 1;
+  text-align: left;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.sticker-cat-count {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* ═══ STICKER GRID ═══ */
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 8px 4px 4px;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  max-height: 600px;
+  opacity: 1;
+}
+
+.sticker-grid.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 4px;
+  overflow: hidden;
+}
+
+/* ═══ STICKER SLOT ═══ */
+.sticker-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 14px;
+  transition: transform 0.15s;
+  min-height: 90px;
+}
+
+.sticker-slot.found {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.sticker-slot.found.uncommon {
+  border-color: #48dbfb;
+  background: rgba(72,219,251,0.1);
+}
+
+.sticker-slot.found.rare {
+  border-color: #feca57;
+  background: rgba(254,202,87,0.12);
+  animation: sticker-rare-glow 2s ease-in-out infinite;
+}
+
+@keyframes sticker-rare-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(254,202,87,0.3); }
+  50% { box-shadow: 0 0 15px rgba(254,202,87,0.6); }
+}
+
+.sticker-slot.unfound {
+  background: rgba(255,255,255,0.04);
+  border: 2px dashed rgba(255,255,255,0.15);
+  opacity: 0.6;
+}
+
+.sticker-slot:active {
+  transform: scale(0.92);
+}
+
+.sticker-emoji {
+  font-size: 2.2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.sticker-slot.unfound .sticker-emoji {
+  font-size: 1.8rem;
+  opacity: 0.5;
+}
+
+.sticker-name {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.sticker-slot.unfound .sticker-name {
+  color: rgba(255,255,255,0.35);
+}
+
+.sticker-rarity {
+  font-size: 0.55rem;
+  margin-top: 2px;
+}
+
+/* ═══ CLOSE BUTTON ═══ */
+.sticker-close-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  background: #2a2a4a;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sticker-close-btn:active {
+  transform: scale(0.95);
+  background: #3a3a5a;
+}
+
+/* ═══ EARN ANIMATION — popup during gameplay ═══ */
+.sticker-earn-popup {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: sticker-earn-pop 2s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes sticker-earn-pop {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.3) translateY(40px); }
+  15% { opacity: 1; transform: translateX(-50%) scale(1.2) translateY(0); }
+  25% { transform: translateX(-50%) scale(1) translateY(0); }
+  70% { opacity: 1; transform: translateX(-50%) scale(1) translateY(-10px); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(-40px); }
+}
+
+.sticker-earn-icon {
+  font-size: 2rem;
+  animation: sticker-book-wiggle 0.5s ease;
+}
+
+@keyframes sticker-book-wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.sticker-earn-emoji {
+  font-size: 3rem;
+  animation: sticker-emoji-bounce 0.6s ease;
+}
+
+@keyframes sticker-emoji-bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.4); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.sticker-earn-label {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #feca57;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  margin-top: 4px;
+}
+
+/* ═══ SPLASH SCREEN — sticker count badge ═══ */
+.sticker-count-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  background: #feca57;
+  color: #1a1a2e;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-weight: 700;
+  cursor: pointer;
+  animation: sticker-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sticker-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ═══ CATEGORY CARD — mini sticker badge ═══ */
+.sticker-cat-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #feca57;
+  background: rgba(0,0,0,0.4);
+  padding: 2px 6px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.category-card {
+  position: relative; /* needed for badge positioning */
+}
+
+/* ═══ VICTORY — sticker row ═══ */
+.victory-sticker-row {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #feca57;
+  font-weight: 600;
+}
+
+.victory-sticker-row.complete {
+  animation: sticker-complete-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes sticker-complete-glow {
+  0%, 100% { text-shadow: 0 0 5px rgba(254,202,87,0.3); }
+  50% { text-shadow: 0 0 20px rgba(254,202,87,0.8); }
+}
+
+.victory-sticker-icon {
+  font-size: 1.2rem;
+}
+
+/* ═══ RESPONSIVE — wider grid on tablets ═══ */
+@media (min-width: 500px) {
+  .sticker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .sticker-emoji {
+    font-size: 2.6rem;
+  }
+  .sticker-slot {
+    min-height: 100px;
+  }
+}

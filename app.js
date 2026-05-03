@@ -526,6 +526,7 @@ function startFromLanding() {
 
 function onSplashEnter() {
   renderSplash();
+  if (typeof StickerBook !== 'undefined') StickerBook.addButtonToSplash();
   // Block ghost taps for 400ms after landing (touch bleed from landing screen)
   var splash = document.getElementById('splash');
   if (splash) {
@@ -990,6 +991,7 @@ function showVictory() {
   subEl.textContent = complete ? 'You\'re a ' + cat.name + ' champion!' : 'You found everything!';
   statsEl.innerHTML = '<div class="victory-stat">' + cat.emoji + ' ' + found + '/' + total
     + ' unique ' + cat.name.toLowerCase() + ' found!' + (complete ? ' 🏆' : '') + '</div>';
+  if (typeof StickerBook !== 'undefined') StickerBook.addStickersToVictory(currentCategory);
 
   showScreen('victory');
   // Use enhanced celebrations if available, fallback to confetti
@@ -1331,4 +1333,5 @@ window.addEventListener('DOMContentLoaded', function() {
   if (typeof DailyChallenge !== 'undefined') DailyChallenge.init();
   if (typeof initHintSystem === 'function') initHintSystem();
   if (typeof initStorylineMode === 'function') initStorylineMode();
+  if (typeof StickerBook !== 'undefined') StickerBook.init();
 });
