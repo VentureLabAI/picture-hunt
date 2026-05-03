@@ -877,6 +877,9 @@ function startNewGame(catId) {
   }
   // hard uses all items
 
+  // Sort by difficulty ascending — easy items first for early success
+  shuffledItems.sort(function(a, b) { return (a.d || 1) - (b.d || 1); });
+
   currentIndex = 0;
 
   // Start dashboard session tracking
