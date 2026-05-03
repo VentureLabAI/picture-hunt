@@ -527,6 +527,7 @@ function startFromLanding() {
 function onSplashEnter() {
   renderSplash();
   if (typeof StickerBook !== 'undefined') StickerBook.addButtonToSplash();
+  if (typeof DailyStreak !== 'undefined') DailyStreak.addCardToSplash();
   // Block ghost taps for 400ms after landing (touch bleed from landing screen)
   var splash = document.getElementById('splash');
   if (splash) {
@@ -1068,6 +1069,8 @@ async function submitPhoto() {
       if (window._phStreak >= 3 && typeof playRichStreak === 'function') {
         setTimeout(playRichStreak, 800);
       }
+      // Daily challenge: check if this matches today's item
+      if (typeof DailyStreak !== 'undefined') DailyStreak.onItemFound(currentCategory, shuffledItems[currentIndex].name);
       // AUTO-ADVANCE: celebrate then move on
       var foundItemName = shuffledItems[currentIndex].name;
       feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>';
@@ -1337,4 +1340,5 @@ window.addEventListener('DOMContentLoaded', function() {
   if (typeof initHintSystem === 'function') initHintSystem();
   if (typeof initStorylineMode === 'function') initStorylineMode();
   if (typeof StickerBook !== 'undefined') StickerBook.init();
+  if (typeof DailyStreak !== 'undefined') DailyStreak.init();
 });
