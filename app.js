@@ -1181,6 +1181,9 @@ async function identifyObject(base64Data, mimeType) {
   var item = shuffledItems[currentIndex];
   var url = PROXY_URL
     ? PROXY_URL
+    : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=' + GEMINI_API_KEY;
+  var fallbackUrl = PROXY_URL
+    ? null
     : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
   var body = {
     contents: [{ parts: [
@@ -1190,6 +1193,11 @@ async function identifyObject(base64Data, mimeType) {
     generationConfig: { temperature: 0 }
   };
   var resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  // If primary fails with 5xx, try fallback (direct API only — worker handles its own fallback)
+  if (!resp.ok && resp.status >= 500 && fallbackUrl) {
+    console.warn('Primary model failed (' + resp.status + '), trying fallback...');
+    resp = await fetch(fallbackUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  }
   if (!resp.ok) {
     // Check for offline response from service worker
     if (resp.status === 503) {

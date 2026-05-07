@@ -3,7 +3,10 @@
 // Deploy: npx wrangler deploy
 // Set secret: npx wrangler secret put GEMINI_API_KEY
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const MODELS = [
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+];
 
 // Allowed origins (update with your GitHub Pages URL)
 const ALLOWED_ORIGINS = [
@@ -50,18 +53,39 @@ export default {
     // Rate limit: basic per-IP (optional, Cloudflare has built-in too)
     try {
       const body = await request.text();
-      const url = `${GEMINI_URL}?key=${env.GEMINI_API_KEY}`;
+      let lastError = null;
 
-      const geminiResp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: body
-      });
+      for (const modelUrl of MODELS) {
+        try {
+          const url = `${modelUrl}?key=${env.GEMINI_API_KEY}`;
+          const geminiResp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body
+          });
 
-      const data = await geminiResp.text();
-      return new Response(data, {
-        status: geminiResp.status,
-        headers: { ...headers, 'Content-Type': 'application/json' }
+          // If OK or client error (4xx), return immediately — only retry on 5xx
+          if (geminiResp.status < 500) {
+            const data = await geminiResp.text();
+            return new Response(data, {
+              status: geminiResp.status,
+              headers: { ...headers, 'Content-Type': 'application/json' }
+            });
+          }
+
+          // 5xx — try next model
+          const errText = await geminiResp.text();
+          lastError = new Error(`Model ${modelUrl.split('models/')[1].split(':')[0]} returned ${geminiResp.status}: ${errText}`);
+          console.error(lastError.message);
+        } catch (fetchErr) {
+          lastError = fetchErr;
+          console.error('Fetch error for', modelUrl, fetchErr.message);
+        }
+      }
+
+      // All models failed
+      return new Response(JSON.stringify({ error: lastError ? lastError.message : 'All models failed' }), {
+        status: 502, headers: { ...headers, 'Content-Type': 'application/json' }
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: 'Proxy error: ' + err.message }), {
