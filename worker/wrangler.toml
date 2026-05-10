@@ -1,3 +1,10 @@
 name = "picture-hunt-api"
 main = "worker.js"
 compatibility_date = "2024-01-01"
+
+# KV namespace for unlock codes — populated by Stripe webhook (see docs/PAYWALL-DEPLOY.md)
+# Create with: npx wrangler kv:namespace create UNLOCK_CODES
+# Then paste the returned id below and deploy.
+[[kv_namespaces]]
+binding = "UNLOCK_CODES"
+id = "3984b5b16694406590dca6f5c6238a8b"

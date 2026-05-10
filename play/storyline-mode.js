@@ -628,36 +628,17 @@ function generateStoryAudioScripts() {
 // ═══════════════════════════════════════════════════════════════
 // STORY AUDIO PLAYBACK
 // ═══════════════════════════════════════════════════════════════
-// Attempts to play pre-generated story audio, falls back to TTS
+// Play pre-generated story audio, fall back to speechSynthesis.
+// Never use new Audio() — fails on iOS outside user gesture (LESSONS-LEARNED).
 function speakStoryAudio(key, text, onEnd) {
-  // Try pre-generated audio first (same system as app.js speak())
   var audioKey = 'story-' + key;
-  if (typeof playBuffer === 'function') {
-    if (playBuffer(audioKey, onEnd)) return;
+  if (typeof playBuffer === 'function' && playBuffer(audioKey, onEnd)) return;
+  if (typeof preloadAudio === 'function') preloadAudio(audioKey);
+  if (typeof speakFallback === 'function') {
+    speakFallback(text, onEnd);
+  } else if (onEnd) {
+    onEnd();
   }
-  // Try HTML5 Audio fallback
-  var src = 'audio/' + audioKey + '.mp3';
-  var audio = new Audio(src);
-  var done = false;
-  function finish() { if (done) return; done = true; if (onEnd) onEnd(); }
-  audio.onended = finish;
-  audio.onerror = function() {
-    // Final fallback: use TTS
-    if (typeof speakFallback === 'function') {
-      speakFallback(text, onEnd);
-    } else if (onEnd) {
-      onEnd();
-    }
-  };
-  audio.play().then(function() {
-    setTimeout(finish, (audio.duration || 5) * 1000 + 500);
-  }).catch(function() {
-    if (typeof speakFallback === 'function') {
-      speakFallback(text, onEnd);
-    } else if (onEnd) {
-      onEnd();
-    }
-  });
 }
 
 // ═══════════════════════════════════════════════════════════════

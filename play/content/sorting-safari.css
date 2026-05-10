@@ -1,0 +1,376 @@
+/* ============================================================
+ * Picture Hunt — Sorting Safari Styles
+ * A tap-based categorization game for ages 2-5
+ * ============================================================ */
+
+/* ── Overlay ──────────────────────────────────────────────── */
+.sorting-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sorting-screen {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px 20px;
+  text-align: center;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* ── Intro Screen ─────────────────────────────────────────── */
+.sorting-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.sorting-subtitle {
+  font-size: 1.15rem;
+  color: #b8c9e0;
+  margin-bottom: 20px;
+}
+
+.sorting-level-badge {
+  display: inline-block;
+  background: #e91e63;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.sorting-bucket-preview {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.sorting-preview-bucket {
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* ── Game Screen ──────────────────────────────────────────── */
+.sorting-progress {
+  margin-bottom: 16px;
+}
+
+.sorting-count {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #90caf9;
+}
+
+.sorting-progress-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.sorting-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Item Display ─────────────────────────────────────────── */
+.sorting-item-display {
+  margin: 16px 0;
+}
+
+.sorting-item-emoji {
+  font-size: 5rem;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  animation: sortingBounce 1s ease-in-out infinite;
+}
+
+@keyframes sortingBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.sorting-item-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.sorting-question {
+  font-size: 1.2rem;
+  color: #ffd54f;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ── Bucket Buttons ───────────────────────────────────────── */
+.sorting-buckets {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.sorting-bucket-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  min-height: 100px;
+  padding: 16px 20px;
+  border: 4px solid transparent;
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.sorting-bucket-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.sorting-bucket-emoji {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sorting-bucket-name {
+  font-size: 1rem;
+  display: block;
+}
+
+/* Correct answer */
+.sorting-bucket-correct {
+  animation: sortingPopCorrect 0.4s ease;
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.6) !important;
+}
+
+@keyframes sortingPopCorrect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Wrong answer */
+.sorting-bucket-wrong {
+  animation: sortingShakeWrong 0.4s ease;
+  border-color: #f44336 !important;
+}
+
+@keyframes sortingShakeWrong {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* ── Victory Screen ───────────────────────────────────────── */
+.sorting-victory-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.sorting-victory-emoji {
+  font-size: 4rem;
+  margin: 12px 0;
+  animation: sortingSpin 1.5s ease-in-out infinite;
+}
+
+@keyframes sortingSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.sorting-victory-stats {
+  margin-bottom: 16px;
+}
+
+.sorting-stat {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+}
+
+.sorting-stat-perfect {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffd54f;
+}
+
+.sorting-stat-ok {
+  font-size: 1rem;
+  color: #90caf9;
+}
+
+.sorting-level-up {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffd54f;
+  margin: 12px 0;
+  text-shadow: 0 0 10px rgba(255, 213, 79, 0.5);
+}
+
+.sorting-victory-items {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0 24px;
+}
+
+.sorting-victory-item {
+  font-size: 2rem;
+  display: inline-block;
+  animation: sortingFloat 2s ease-in-out infinite;
+}
+
+.sorting-victory-item:nth-child(2n) {
+  animation-delay: 0.3s;
+}
+.sorting-victory-item:nth-child(3n) {
+  animation-delay: 0.6s;
+}
+
+@keyframes sortingFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ── Need More Screen ─────────────────────────────────────── */
+.sorting-need-more .sorting-subtitle {
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.sorting-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 10px auto;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.sorting-btn:active {
+  transform: scale(0.96);
+}
+
+.sorting-start-btn {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #fff;
+  min-height: 70px;
+  font-size: 1.4rem;
+}
+
+.sorting-again-btn {
+  background: linear-gradient(135deg, #2196f3, #1565c0);
+  color: #fff;
+  min-height: 64px;
+}
+
+.sorting-back-btn,
+.sorting-quit-btn {
+  background: rgba(255,255,255,0.1);
+  color: #90caf9;
+  border: 2px solid rgba(255,255,255,0.2);
+  min-height: 56px;
+  font-size: 1rem;
+}
+
+.sorting-back-btn:active,
+.sorting-quit-btn:active {
+  background: rgba(255,255,255,0.2);
+}
+
+/* ── Splash Button ────────────────────────────────────────── */
+.sorting-splash-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  border: 3px solid #e91e63;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.sorting-splash-btn span {
+  font-size: 0.9rem;
+  margin-top: 2px;
+  color: #f8bbd0;
+  font-weight: 600;
+}
+
+.sorting-splash-btn:active {
+  transform: scale(0.96);
+}
+
+/* ── Mobile (small screens) ───────────────────────────────── */
+@media (max-width: 420px) {
+  .sorting-title { font-size: 1.6rem; }
+  .sorting-subtitle { font-size: 1rem; }
+  .sorting-item-emoji { font-size: 4rem; }
+  .sorting-item-name { font-size: 1.2rem; }
+  .sorting-question { font-size: 1rem; }
+  .sorting-bucket-btn { min-width: 100px; min-height: 88px; padding: 12px 14px; }
+  .sorting-bucket-emoji { font-size: 1.8rem; }
+  .sorting-bucket-name { font-size: 0.9rem; }
+  .sorting-victory-title { font-size: 1.8rem; }
+  .sorting-splash-btn { min-height: 70px; font-size: 1.4rem; }
+}

@@ -1,0 +1,262 @@
+/* ============================================================
+   Picture Hunt — Review Mode Styles
+   ============================================================ */
+
+.review-mode-overlay {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.review-mode-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  color: white;
+}
+
+.review-mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.review-mode-level {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.review-mode-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.review-mode-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 12px;
+}
+
+/* ── Progress dots ── */
+
+.review-mode-progress {
+  margin-bottom: 20px;
+}
+
+.rm-progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.rm-dot {
+  font-size: 1.5rem;
+  opacity: 0.3;
+  transition: all 0.3s ease;
+}
+
+.rm-dot-done {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.rm-dot-current {
+  opacity: 1;
+  animation: rm-pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes rm-pulse-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+/* ── Target display ── */
+
+.review-mode-target {
+  margin: 16px 0;
+}
+
+.rm-target-emoji {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.rm-target-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.rm-target-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #feca57;
+}
+
+/* ── Feedback ── */
+
+.review-mode-feedback {
+  margin: 16px 0;
+  min-height: 60px;
+}
+
+.rm-success {
+  font-size: 1.8rem;
+  color: #2ed573;
+  font-weight: 700;
+}
+
+.rm-review-count {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.8);
+  margin-top: 6px;
+}
+
+.rm-miss {
+  font-size: 1.8rem;
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.rm-mastered {
+  font-size: 2.5rem;
+  color: #feca57;
+  font-weight: 800;
+  text-shadow: 0 0 20px rgba(254,202,87,0.5);
+  animation: rm-mastered-glow 1s ease-in-out infinite alternate;
+}
+
+.rm-mastered-name {
+  font-size: 1.3rem;
+  color: #fff;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+@keyframes rm-mastered-glow {
+  from { text-shadow: 0 0 10px rgba(254,202,87,0.3); }
+  to { text-shadow: 0 0 30px rgba(254,202,87,0.8); }
+}
+
+.rm-round-done {
+  font-size: 2.5rem;
+  margin: 10px 0;
+}
+
+/* ── Victory ── */
+
+.rm-victory {
+  padding: 20px;
+}
+
+.rm-victory-stars {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.rm-victory-mastered {
+  font-size: 1.4rem;
+  color: #feca57;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.rm-victory-total {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── Camera ── */
+
+.review-mode-camera-btn {
+  font-size: 2rem !important;
+  width: 120px !important;
+  height: 120px !important;
+}
+
+/* ── Photo preview ── */
+
+.photo-preview {
+  margin: 12px auto;
+  max-width: 200px;
+}
+
+.photo-preview .preview-img {
+  width: 100%;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+
+/* ── Splash card ── */
+
+.rm-splash-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px;
+  text-align: left;
+  transition: transform 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.rm-splash-card:active {
+  transform: scale(0.97);
+}
+
+.rm-splash-emoji {
+  font-size: 2.5rem;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.rm-splash-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rm-splash-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.rm-splash-sub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 2px;
+}
+
+/* ── Buttons ── */
+
+.review-mode-actions .big-btn {
+  min-height: 70px;
+  font-size: 1.3rem;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 400px) {
+  .review-mode-title {
+    font-size: 1.8rem;
+  }
+  .rm-target-emoji {
+    font-size: 4rem;
+  }
+  .rm-target-name {
+    font-size: 1.2rem;
+  }
+  .rm-mastered {
+    font-size: 2rem;
+  }
+}

@@ -91,25 +91,25 @@ function showOfflineMessage() {
     'top: 50%',
     'left: 50%',
     'transform: translate(-50%, -50%)',
-    'background: linear-gradient(135deg, #2a2a4a, #1a1a2e)',
-    'border: 3px solid #feca57',
+    'background: #FFF8E7',
+    'border: 3px solid #FFD93D',
     'border-radius: 24px',
     'padding: 32px 24px',
     'text-align: center',
     'z-index: 9999',
     'max-width: 320px',
     'width: 85%',
-    'box-shadow: 0 8px 32px rgba(0,0,0,0.5)',
+    'box-shadow: 0 14px 40px rgba(74,55,40,0.25)',
     'animation: fadeIn 0.3s ease'
   ].join(';');
 
   msg.innerHTML = [
     '<div style="font-size: 4rem; margin-bottom: 12px;">📡</div>',
-    '<h2 style="color: #feca57; font-size: 1.5rem; margin: 0 0 8px;">No Internet!</h2>',
-    '<p style="color: rgba(255,255,255,0.8); font-size: 1.1rem; margin: 0 0 20px;">',
+    '<h2 style="color: #4A3728; font-size: 1.5rem; margin: 0 0 8px;">No Internet!</h2>',
+    '<p style="color: #6B5240; font-size: 1.1rem; margin: 0 0 20px;">',
     'We need the internet to check your photo.<br>Try again in a moment!</p>',
     '<button onclick="this.parentElement.remove()" ',
-    'style="background: #feca57; color: #1a1a2e; border: none; border-radius: 16px; ',
+    'style="background: linear-gradient(135deg, #6ECB63, #5BB855); color: #FFFFFF; border: none; border-radius: 16px; ',
     'padding: 16px 40px; font-size: 1.3rem; font-weight: bold; cursor: pointer; ',
     'min-height: 60px;">OK! 👍</button>'
   ].join('');

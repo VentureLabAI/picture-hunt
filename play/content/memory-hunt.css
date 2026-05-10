@@ -1,0 +1,271 @@
+/* ============================================================
+   Picture Hunt — Memory Hunt Styles
+   ============================================================ */
+
+/* Splash card (sits alongside Daily Challenge card) */
+.mh-splash-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: transform 0.15s ease;
+  min-height: 80px;
+}
+.mh-splash-card:active {
+  transform: scale(0.96);
+}
+.mh-splash-emoji {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+.mh-splash-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mh-splash-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.mh-splash-sub {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* Full-screen overlay */
+.memory-hunt-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  z-index: 50;
+  display: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.memory-hunt-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.memory-hunt-content {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: flex-start;
+  padding-top: 10px;
+}
+
+/* Header */
+.memory-hunt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.memory-hunt-level {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #FFD700;
+}
+
+/* Title */
+.memory-hunt-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.memory-hunt-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* Sequence display — the row of items to remember */
+.memory-hunt-sequence {
+  width: 100%;
+  margin-bottom: 16px;
+}
+.mh-sequence-items {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mh-seq-item {
+  width: 90px;
+  height: 90px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.mh-seq-item .mh-item-emoji {
+  font-size: 2.5rem;
+}
+.mh-seq-item .mh-item-img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+}
+
+/* Current target indicator */
+.mh-seq-item.current {
+  border-color: #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  transform: scale(1.05);
+}
+
+/* Flash during sequence announcement */
+.mh-seq-item.flash {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.3);
+  box-shadow: 0 0 25px rgba(76, 175, 80, 0.6);
+  transform: scale(1.1);
+}
+
+/* Done items */
+.mh-seq-item.done {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.2);
+  opacity: 0.7;
+}
+.mh-seq-item.done::after {
+  content: '✅';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 1.2rem;
+}
+
+/* Current target display */
+.memory-hunt-current {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  min-height: 80px;
+}
+.mh-target-emoji {
+  font-size: 4rem;
+  animation: mhBounce 0.6s ease infinite alternate;
+}
+.mh-target-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  animation: mhBounce 0.6s ease infinite alternate;
+}
+.mh-target-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  margin-top: 4px;
+}
+
+@keyframes mhBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+/* Feedback */
+.memory-hunt-feedback {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.mh-success-big {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #FFD700;
+  animation: mhPopIn 0.4s ease;
+}
+.mh-success {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4CAF50;
+}
+.mh-miss {
+  font-size: 1.1rem;
+  color: #ff6b6b;
+}
+
+@keyframes mhPopIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Camera button */
+.memory-hunt-camera {
+  margin-bottom: 12px;
+}
+.memory-hunt-camera-btn {
+  min-height: 100px;
+  min-width: 100px;
+  font-size: 3rem;
+}
+
+/* Action buttons */
+.memory-hunt-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  gap: 8px;
+}
+
+/* Photo preview reuse */
+.memory-hunt-overlay .photo-preview {
+  margin: 8px 0;
+}
+.memory-hunt-overlay .preview-img {
+  max-width: 250px;
+  max-height: 250px;
+  border-radius: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+.memory-hunt-overlay .loading {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 8px 0;
+}
+
+/* Level indicator stars */
+.memory-hunt-overlay .home-btn {
+  /* reuse existing home-btn style */
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .mh-seq-item {
+    width: 75px;
+    height: 75px;
+  }
+  .mh-seq-item .mh-item-emoji {
+    font-size: 2rem;
+  }
+  .memory-hunt-title {
+    font-size: 1.5rem;
+  }
+}

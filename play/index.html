@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Picture Hunt! 📸</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFF8E7">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=69">
+  <link rel="stylesheet" href="parent-dashboard.css?v=69">
+  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=69">
+  <link rel="stylesheet" href="content/sticker-book.css?v=69">
+  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=69">
+  <link rel="stylesheet" href="content/memory-hunt.css?v=69">
+  <link rel="stylesheet" href="content/review-mode.css?v=69">
+  <link rel="stylesheet" href="content/sorting-safari.css?v=69">
+  <link rel="stylesheet" href="paywall.css?v=69">
+</head>
+<body>
+  <!-- Landing Screen -->
+  <div id="landing" class="screen active">
+    <div class="landing-content">
+      <h1 class="title-bounce">📸 Picture Hunt!</h1>
+      <p class="landing-sub">A photo adventure awaits!</p>
+      <button class="landing-play-btn pulse" onclick="startFromLanding()">
+        📷 Let's Play!
+      </button>
+    </div>
+  </div>
+
+  <!-- Home Screen (Category Select) -->
+  <div id="splash" class="screen">
+    <div class="splash-content">
+      <h1 class="home-title">Choose a Category</h1>
+      <div id="category-grid" class="category-grid"></div>
+      <div class="splash-bottom">
+        <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()">⚙️</button>
+        <button id="sound-toggle" class="setup-icon-btn" onclick="toggleSound()">🔊</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Screen -->
+  <div id="setup" class="screen">
+    <div class="setup-container">
+      <h1 class="setup-header">⚙️ Pick the items!</h1>
+      <div id="category-tabs" class="category-tabs"></div>
+      <div class="setup-toolbar">
+        <button id="select-all-btn" class="setup-tool-btn">✅ All</button>
+        <button id="clear-all-btn" class="setup-tool-btn">❌ Clear</button>
+      </div>
+      <p id="setup-msg" class="setup-msg">0 items selected</p>
+      <div id="setup-grid" class="setup-grid"></div>
+      <button id="setup-done-btn" class="big-btn play-btn setup-done-btn">Done ✅</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game" class="screen">
+    <div class="game-top">
+      <button class="home-btn" onclick="goHome()">🏠</button>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </div>
+    <div id="target-area" class="target-area">
+      <div id="target-emoji" class="target-emoji"></div>
+      <div id="target-text" class="target-text"></div>
+      <button class="repeat-btn" onclick="repeatPrompt()">🔊</button>
+    </div>
+    <div id="feedback-area" class="feedback-area"></div>
+    <div id="camera-area" class="camera-area">
+      <label id="camera-label" class="big-btn camera-btn">
+        📷
+        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)">
+      </label>
+    </div>
+    <div class="skip-area">
+      <button class="skip-btn" onclick="skipItem()">⏭️</button>
+    </div>
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Looking at your photo...</p>
+    </div>
+  </div>
+
+  <!-- Victory Screen -->
+  <div id="victory" class="screen">
+    <div class="victory-content">
+      <h1 class="victory-title">🎉 You Did It! 🎉</h1>
+      <div class="victory-emoji">⭐🏆⭐</div>
+      <p id="victory-sub" class="victory-sub">You found everything!</p>
+      <div id="victory-stats" class="victory-stats"></div>
+      <div class="victory-buttons">
+        <button class="big-btn play-btn" onclick="startNewGame()">
+          🔄 Play Again!
+        </button>
+        <button class="big-btn setup-btn" onclick="resetGame()">
+          🏠 Home
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <script src="content/translations/languages-config.js?v=69"></script>
+  <script src="content/translations/all-translations.js?v=69"></script>
+  <script src="app.js?v=69"></script>
+  <script src="paywall.js?v=69"></script>
+  <script src="progress-sync.js?v=69"></script>
+  <script src="install-prompt.js?v=69"></script>
+  <script src="content/rich-sound-fx.js?v=69"></script>
+  <script src="hint-system.js?v=69"></script>
+  <script src="content/animations/new-celebrations.js?v=69"></script>
+  <script src="content/sticker-book.js?v=69"></script>
+  <script src="content/daily-challenge-streak.js?v=69"></script>
+  <script src="parent-dashboard.js?v=69"></script>
+  <script src="storyline-mode.js?v=69"></script>
+  <script src="content/seasonal-manager.js?v=69"></script>
+  <script src="content/memory-hunt.js?v=69"></script>
+  <script src="content/review-mode.js?v=69"></script>
+  <script src="content/sorting-safari.js?v=69"></script>
+  <script src="sw-register.js?v=69"></script>
+</body>
+</html>

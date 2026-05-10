@@ -1,0 +1,308 @@
+// Picture Hunt — Paywall + Free-Tier Gating
+//
+// Free tier: 3 categories (household, shapes, colors), 5 plays/day, no game modes.
+// Premium:   everything.
+//
+// Premium is unlocked by entering a code that the worker validates against KV.
+// Code lifetimes are managed by the worker — this module just stores the latest
+// validation result and a `validUntil` timestamp from the worker response.
+//
+// localStorage keys:
+//   PH_PREMIUM = { code, validUntil (ISO), validatedAt (ISO), email? }
+//   PH_PLAY_LOG = { "YYYY-MM-DD": <count> }   // free-tier daily play counter
+
+var Paywall = (function() {
+  'use strict';
+
+  var STORE_KEY = 'PH_PREMIUM';
+  var PLAY_LOG_KEY = 'PH_PLAY_LOG';
+  var FREE_CATEGORIES = ['household', 'shapes', 'colors'];
+  var FREE_DAILY_CAP = 5;
+
+  // Worker endpoint. Same origin as the AI proxy — extends with /validate-code path.
+  // Falls back to client-side acceptance of a small allowlist if the worker is
+  // unreachable (e.g. Boss Man hasn't deployed the new worker yet).
+  var VALIDATE_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/validate-code';
+
+  // Stripe Payment Link — REPLACE with real link in Stripe dashboard.
+  // See deploy doc: docs/PAYWALL-DEPLOY.md
+  var STRIPE_LINK_MONTHLY = 'https://buy.stripe.com/PLACEHOLDER_MONTHLY';
+  var STRIPE_LINK_YEARLY  = 'https://buy.stripe.com/PLACEHOLDER_YEARLY';
+
+  // Codes accepted client-side as a fallback when the worker is unreachable.
+  // Boss Man can use these for personal testing or the first paying customer.
+  // Real codes should always go through the worker — these are training wheels.
+  var FALLBACK_CODES = ['LAUNCH2026', 'FOUNDERSPECIAL'];
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function getStored() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch(e) { return null; }
+  }
+
+  function setStored(obj) {
+    if (obj) localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    else localStorage.removeItem(STORE_KEY);
+  }
+
+  function getPlayLog() {
+    try { return JSON.parse(localStorage.getItem(PLAY_LOG_KEY) || '{}'); } catch(e) { return {}; }
+  }
+
+  function setPlayLog(log) {
+    localStorage.setItem(PLAY_LOG_KEY, JSON.stringify(log));
+  }
+
+  // ── Public API ──
+
+  function isPremium() {
+    var s = getStored();
+    if (!s || !s.validUntil) return false;
+    return new Date(s.validUntil) > new Date();
+  }
+
+  function isFreeCategory(catId) {
+    return FREE_CATEGORIES.indexOf(catId) !== -1;
+  }
+
+  function playsToday() {
+    return getPlayLog()[todayKey()] || 0;
+  }
+
+  function playsRemaining() {
+    if (isPremium()) return Infinity;
+    return Math.max(0, FREE_DAILY_CAP - playsToday());
+  }
+
+  function recordPlay() {
+    if (isPremium()) return;
+    var log = getPlayLog();
+    var k = todayKey();
+    log[k] = (log[k] || 0) + 1;
+    // Trim old entries — keep last 14 days for any future analytics
+    var keys = Object.keys(log).sort();
+    while (keys.length > 14) {
+      delete log[keys.shift()];
+    }
+    setPlayLog(log);
+  }
+
+  // Returns { ok: true } or { ok: false, reason: 'locked-category'|'daily-cap' }
+  function canPlay(catId) {
+    if (isPremium()) return { ok: true };
+    if (!isFreeCategory(catId)) return { ok: false, reason: 'locked-category', catId: catId };
+    if (playsToday() >= FREE_DAILY_CAP) return { ok: false, reason: 'daily-cap' };
+    return { ok: true };
+  }
+
+  // ── UI ──
+
+  function show(reason, catId) {
+    if (document.getElementById('paywall-overlay')) return;
+
+    var headline, sub;
+    if (reason === 'locked-category') {
+      headline = '🔒 Premium Category';
+      var catName = (typeof CATEGORIES !== 'undefined' && catId && CATEGORIES[catId])
+        ? CATEGORIES[catId].name : 'this category';
+      sub = 'Unlock <b>' + catName + '</b> and 6 other categories with Premium.';
+    } else if (reason === 'daily-cap') {
+      headline = '🌙 That\'s 5 plays today!';
+      sub = 'Free plays reset tomorrow, or unlock unlimited play with Premium.';
+    } else {
+      headline = '⭐ Unlock Picture Hunt Premium';
+      sub = 'All 10 categories, all 4 game modes, storyline adventures, and unlimited play.';
+    }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'paywall-overlay';
+    overlay.className = 'paywall-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) close(); };
+
+    // If the Stripe links haven't been swapped from placeholders yet, render a
+    // "checkout coming soon" notice instead of buttons that 404. The codes flow
+    // still works, so users with a code can unlock.
+    var stripeReady = STRIPE_LINK_MONTHLY.indexOf('PLACEHOLDER') === -1
+                   && STRIPE_LINK_YEARLY.indexOf('PLACEHOLDER') === -1;
+
+    var plansBlock = stripeReady
+      ? ''
+        + '<div class="paywall-plans">'
+        +   '<a class="paywall-plan" href="' + STRIPE_LINK_MONTHLY + '" target="_blank" rel="noopener">'
+        +     '<div class="plan-price">$4.99<span>/mo</span></div>'
+        +     '<div class="plan-name">Monthly</div>'
+        +   '</a>'
+        +   '<a class="paywall-plan paywall-plan-best" href="' + STRIPE_LINK_YEARLY + '" target="_blank" rel="noopener">'
+        +     '<div class="plan-badge">SAVE $20</div>'
+        +     '<div class="plan-price">$39<span>/yr</span></div>'
+        +     '<div class="plan-name">Yearly</div>'
+        +   '</a>'
+        + '</div>'
+      : ''
+        + '<div class="paywall-coming-soon">'
+        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access">hello@venturelab.ai</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
+        + '</div>';
+
+    overlay.innerHTML = ''
+      + '<div class="paywall-modal">'
+      +   '<button class="paywall-close" onclick="Paywall.close()" aria-label="Close">×</button>'
+      +   '<h2 class="paywall-headline">' + headline + '</h2>'
+      +   '<p class="paywall-sub">' + sub + '</p>'
+
+      +   '<div class="paywall-features">'
+      +     '<div class="pf">✨ All 10 categories (78+ items)</div>'
+      +     '<div class="pf">🎮 4 game modes</div>'
+      +     '<div class="pf">📖 Storyline adventures</div>'
+      +     '<div class="pf">📊 Parent dashboard</div>'
+      +     '<div class="pf">♾️ Unlimited plays</div>'
+      +     '<div class="pf">🌍 10 languages</div>'
+      +   '</div>'
+
+      +   plansBlock
+
+      +   '<div class="paywall-code">'
+      +     '<p class="paywall-code-label">Already paid? Enter your unlock code:</p>'
+      +     '<div class="paywall-code-row">'
+      +       '<input type="text" id="paywall-code-input" placeholder="ABC123" maxlength="20" autocapitalize="characters" autocomplete="off">'
+      +       '<button onclick="Paywall.redeem()" class="paywall-redeem-btn">Unlock</button>'
+      +     '</div>'
+      +     '<p id="paywall-code-msg" class="paywall-code-msg"></p>'
+      +   '</div>'
+
+      + '</div>';
+
+    document.body.appendChild(overlay);
+    setTimeout(function() {
+      var input = document.getElementById('paywall-code-input');
+      if (input && reason === 'has-code') input.focus();
+    }, 50);
+  }
+
+  function close() {
+    var el = document.getElementById('paywall-overlay');
+    if (el) el.remove();
+  }
+
+  function setMsg(text, kind) {
+    var el = document.getElementById('paywall-code-msg');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'paywall-code-msg' + (kind ? ' ' + kind : '');
+  }
+
+  function redeem() {
+    var input = document.getElementById('paywall-code-input');
+    if (!input) return;
+    var code = input.value.trim().toUpperCase();
+    if (!code) { setMsg('Please enter your code.', 'err'); return; }
+
+    setMsg('Checking…');
+
+    fetch(VALIDATE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code })
+    }).then(function(r) {
+      return r.json().then(function(data) { return { status: r.status, data: data }; });
+    }).then(function(res) {
+      if (res.status === 200 && res.data && res.data.valid) {
+        unlock(code, res.data.validUntil, res.data.email);
+      } else {
+        // Worker said invalid — try fallback list before giving up
+        if (FALLBACK_CODES.indexOf(code) !== -1) {
+          unlockWithFallback(code);
+        } else {
+          setMsg('That code didn\'t work. Double-check and try again, or email hello@venturelab.ai.', 'err');
+        }
+      }
+    }).catch(function() {
+      // Worker unreachable — accept fallback codes
+      if (FALLBACK_CODES.indexOf(code) !== -1) {
+        unlockWithFallback(code);
+      } else {
+        setMsg('Couldn\'t reach the unlock server. Check your internet and try again.', 'err');
+      }
+    });
+  }
+
+  function refreshSplashAfterUnlock() {
+    if (typeof renderSplash === 'function') renderSplash();
+    // Game-mode buttons live behind the More-games drawer for premium users
+    if (typeof MemoryHunt !== 'undefined') MemoryHunt.addButtonToSplash();
+    if (typeof ReviewMode !== 'undefined') ReviewMode.addButtonToSplash();
+    if (typeof SortingSafari !== 'undefined') SortingSafari.addButtonToSplash();
+  }
+
+  function unlock(code, validUntil, email) {
+    setStored({
+      code: code,
+      validUntil: validUntil || new Date(Date.now() + 31*24*3600*1000).toISOString(),
+      validatedAt: new Date().toISOString(),
+      email: email || null
+    });
+    setMsg('Unlocked! Enjoy.', 'ok');
+    if (typeof ProgressSync !== 'undefined' && ProgressSync.onUnlock) ProgressSync.onUnlock();
+    setTimeout(function() {
+      close();
+      refreshSplashAfterUnlock();
+    }, 800);
+  }
+
+  function unlockWithFallback(code) {
+    // Fallback gives 30 days while we wait for the proper worker. Boss Man can
+    // re-enter their real code later when the worker is deployed.
+    var until = new Date(Date.now() + 30*24*3600*1000).toISOString();
+    setStored({
+      code: code,
+      validUntil: until,
+      validatedAt: new Date().toISOString(),
+      fallback: true
+    });
+    setMsg('Unlocked! (offline mode — will sync next time online)', 'ok');
+    setTimeout(function() {
+      close();
+      refreshSplashAfterUnlock();
+    }, 1000);
+  }
+
+  function init() {
+    // ?upgrade=1 → open the paywall on load (linked from landing page)
+    // ?code=XYZ  → auto-validate and unlock (delivered in Stripe receipt URL)
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('upgrade') === '1') {
+        // Defer until app is ready
+        setTimeout(function() { show('upgrade'); }, 1200);
+      }
+      var urlCode = params.get('code');
+      if (urlCode) {
+        // Strip the param so refreshes don't re-validate
+        var clean = window.location.pathname + window.location.hash;
+        history.replaceState(null, '', clean);
+        // Open paywall, prefill code, and auto-redeem
+        setTimeout(function() {
+          show('has-code');
+          setTimeout(function() {
+            var inp = document.getElementById('paywall-code-input');
+            if (inp) { inp.value = urlCode; redeem(); }
+          }, 100);
+        }, 800);
+      }
+    } catch(e) {}
+  }
+
+  return {
+    init: init,
+    isPremium: isPremium,
+    isFreeCategory: isFreeCategory,
+    canPlay: canPlay,
+    recordPlay: recordPlay,
+    playsRemaining: playsRemaining,
+    show: show,
+    close: close,
+    redeem: redeem
+  };
+})();

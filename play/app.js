@@ -528,6 +528,12 @@ function onSplashEnter() {
   renderSplash();
   if (typeof StickerBook !== 'undefined') StickerBook.addButtonToSplash();
   if (typeof DailyStreak !== 'undefined') DailyStreak.addCardToSplash();
+  // Premium-only game modes — gated by Paywall
+  if (typeof Paywall === 'undefined' || Paywall.isPremium()) {
+    if (typeof MemoryHunt !== 'undefined') MemoryHunt.addButtonToSplash();
+    if (typeof ReviewMode !== 'undefined') ReviewMode.addButtonToSplash();
+    if (typeof SortingSafari !== 'undefined') SortingSafari.addButtonToSplash();
+  }
   // Block ghost taps for 400ms after landing (touch bleed from landing screen)
   var splash = document.getElementById('splash');
   if (splash) {
@@ -581,6 +587,8 @@ function renderSplash() {
     ? SeasonalManager.filterVisibleCategories(CATEGORY_ORDER)
     : CATEGORY_ORDER.filter(function(catId) { return !CATEGORIES[catId].seasonal; });
 
+  var premium = (typeof Paywall === 'undefined') || Paywall.isPremium();
+
   var html = '';
   visibleCategories.forEach(function(catId) {
     var cat = CATEGORIES[catId];
@@ -589,8 +597,10 @@ function renderSplash() {
     var hasContinue = savedGame && savedGame.category === catId;
     var complete = found >= total;
     var badge = (typeof SeasonalManager !== 'undefined') ? SeasonalManager.getInSeasonBadge(catId) : '';
+    var locked = !premium && typeof Paywall !== 'undefined' && !Paywall.isFreeCategory(catId);
+    var classes = 'category-card' + (hasContinue ? ' has-continue' : '') + (locked ? ' locked' : '');
 
-    html += '<button class="category-card' + (hasContinue ? ' has-continue' : '') + '" '
+    html += '<button class="' + classes + '" '
       + 'style="background:' + cat.gradient + '" '
       + 'onclick="playCategory(\'' + catId + '\')">'
       + '<div class="cat-emoji">' + cat.emoji + '</div>'
@@ -602,18 +612,72 @@ function renderSplash() {
   });
   grid.innerHTML = html;
 
-  // Storyline mode button
-  var storyBtn = document.getElementById('story-btn');
-  if (!storyBtn) {
+  // Free-tier play meter + upgrade CTA. Re-render-safe (uses fixed IDs).
+  var meter = document.getElementById('play-meter');
+  if (meter) meter.remove();
+  var upBtn = document.getElementById('upgrade-cta');
+  if (upBtn) upBtn.remove();
+  var pBadge = document.getElementById('premium-badge');
+  if (pBadge) pBadge.remove();
+
+  // Re-render-safe: also remove any prior more-games toggle
+  var oldMore = document.getElementById('more-games-toggle');
+  if (oldMore) oldMore.remove();
+
+  if (typeof Paywall !== 'undefined') {
+    if (premium) {
+      var pb = document.createElement('div');
+      pb.id = 'premium-badge';
+      pb.className = 'premium-badge';
+      pb.style.textAlign = 'center';
+      pb.textContent = '⭐ PREMIUM';
+      grid.parentNode.insertBefore(pb, grid);
+
+      // "More games" toggle — keeps the splash uncluttered by default
+      var more = document.createElement('button');
+      more.id = 'more-games-toggle';
+      more.className = 'more-games-toggle';
+      more.textContent = '🎮 More games ▾';
+      more.onclick = function() {
+        var splashContent = document.querySelector('.splash-content');
+        if (!splashContent) return;
+        var open = splashContent.classList.toggle('more-games-open');
+        more.textContent = open ? '🎮 More games ▴' : '🎮 More games ▾';
+      };
+      grid.parentNode.insertBefore(more, grid);
+    } else {
+      var remaining = Paywall.playsRemaining();
+      var btn = document.createElement('button');
+      btn.id = 'upgrade-cta';
+      btn.className = 'upgrade-cta';
+      btn.textContent = '⭐ Unlock Everything';
+      btn.onclick = function() { if (typeof Paywall !== 'undefined') Paywall.show('upgrade'); };
+      grid.parentNode.insertBefore(btn, grid);
+
+      var pm = document.createElement('div');
+      pm.id = 'play-meter';
+      pm.className = 'play-meter' + (remaining <= 1 ? ' warn' : '');
+      pm.textContent = remaining === 0
+        ? 'No free plays left today — come back tomorrow, or unlock premium ↑'
+        : remaining + ' free play' + (remaining === 1 ? '' : 's') + ' left today';
+      grid.parentNode.insertBefore(pm, grid);
+    }
+  }
+
+  // Storyline mode button — premium-only
+  var storyBtnExisting = document.getElementById('story-btn');
+  if (premium && !storyBtnExisting) {
     var btnContainer = document.querySelector('.splash-bottom');
     if (btnContainer) {
-      storyBtn = document.createElement('button');
-      storyBtn.id = 'story-btn';
-      storyBtn.className = 'setup-icon-btn';
-      storyBtn.textContent = '📖';
-      storyBtn.onclick = function() { if (typeof openStorySelector === 'function') openStorySelector(); };
-      btnContainer.insertBefore(storyBtn, btnContainer.firstChild);
+      var sBtn = document.createElement('button');
+      sBtn.id = 'story-btn';
+      sBtn.className = 'setup-icon-btn';
+      sBtn.textContent = '📖';
+      sBtn.onclick = function() { if (typeof openStorySelector === 'function') openStorySelector(); };
+      btnContainer.insertBefore(sBtn, btnContainer.firstChild);
     }
+  } else if (!premium && storyBtnExisting) {
+    storyBtnExisting.remove();
   }
 
   var btn = document.getElementById('sound-toggle');
@@ -628,7 +692,7 @@ var setupCategory = 'household';
 var setupSelection = new Set();
 
 function openSetup() {
-  setupCategory = 'household';
+  setupCategory = 'household';  // always a free category, safe under paywall
   setupSelection = new Set(getSelectedNames(setupCategory));
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
 }
@@ -639,6 +703,10 @@ function renderSetupTabs() {
   var visibleTabs = (typeof SeasonalManager !== 'undefined')
     ? SeasonalManager.filterVisibleCategories(CATEGORY_ORDER)
     : CATEGORY_ORDER.filter(function(catId) { return !CATEGORIES[catId].seasonal; });
+  // Free tier: only show free categories in the setup picker.
+  if (typeof Paywall !== 'undefined' && !Paywall.isPremium()) {
+    visibleTabs = visibleTabs.filter(function(catId) { return Paywall.isFreeCategory(catId); });
+  }
   visibleTabs.forEach(function(catId) {
     var cat = CATEGORIES[catId];
     html += '<button class="cat-tab' + (catId === setupCategory ? ' active' : '') + '" '
@@ -793,23 +861,13 @@ function speak(text, onEnd) {
   if (currentAudioSource) { try { currentAudioSource.stop(); } catch(e) {} currentAudioSource = null; }
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-  // Try Web Audio buffer first (works on iOS without user gesture)
+  // Web Audio buffer first (works on iOS without user gesture).
+  // If buffer isn't loaded yet, kick off async load and fall back to speechSynthesis.
+  // NEVER use new Audio() — fails on iOS Safari outside user gesture (LESSONS-LEARNED).
   var key = textToAudioKey(text);
   if (key) {
     if (playBuffer(key, onEnd)) return;
-    // Buffer not loaded yet — try loading and playing
     preloadAudio(key);
-    // Fallback: try HTML5 Audio
-    var src = 'audio/' + key + '.mp3';
-    var audio = new Audio(src);
-    var done = false;
-    function finish() { if (done) return; done = true; if (onEnd) onEnd(); }
-    audio.onended = finish;
-    audio.onerror = finish;
-    audio.play().then(function() {
-      setTimeout(finish, (audio.duration || 5) * 1000 + 500);
-    }).catch(finish);
-    return;
   }
 
   speakFallback(text, onEnd);
@@ -842,6 +900,14 @@ function shuffle(arr) {
 // ═══════════════════════════════════════════════════════════════
 function playCategory(catId) {
   playClick();
+  // Paywall gate — locked category or daily cap exceeded
+  if (typeof Paywall !== 'undefined') {
+    var gate = Paywall.canPlay(catId);
+    if (!gate.ok) {
+      Paywall.show(gate.reason, gate.catId);
+      return;
+    }
+  }
   stopAllPulses();
   currentCategory = catId;
   var cat = CATEGORIES[catId];
@@ -1063,6 +1129,7 @@ async function submitPhoto() {
       // Storyline mode: handle success in story context
       if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
+      if (typeof Paywall !== 'undefined') Paywall.recordPlay();
       // Streak sound: fire after 3+ consecutive finds
       if (!window._phStreak) window._phStreak = 0;
       window._phStreak++;
@@ -1181,9 +1248,6 @@ async function identifyObject(base64Data, mimeType) {
   var item = shuffledItems[currentIndex];
   var url = PROXY_URL
     ? PROXY_URL
-    : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=' + GEMINI_API_KEY;
-  var fallbackUrl = PROXY_URL
-    ? null
     : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
   var body = {
     contents: [{ parts: [
@@ -1193,11 +1257,6 @@ async function identifyObject(base64Data, mimeType) {
     generationConfig: { temperature: 0 }
   };
   var resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  // If primary fails with 5xx, try fallback (direct API only — worker handles its own fallback)
-  if (!resp.ok && resp.status >= 500 && fallbackUrl) {
-    console.warn('Primary model failed (' + resp.status + '), trying fallback...');
-    resp = await fetch(fallbackUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  }
   if (!resp.ok) {
     // Check for offline response from service worker
     if (resp.status === 503) {
@@ -1344,9 +1403,11 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   // Initialize drop-in modules
   if (typeof initDashboard === 'function') initDashboard();
-  if (typeof DailyChallenge !== 'undefined') DailyChallenge.init();
   if (typeof initHintSystem === 'function') initHintSystem();
   if (typeof initStorylineMode === 'function') initStorylineMode();
   if (typeof StickerBook !== 'undefined') StickerBook.init();
   if (typeof DailyStreak !== 'undefined') DailyStreak.init();
+  if (typeof Paywall !== 'undefined') Paywall.init();
+  if (typeof ProgressSync !== 'undefined') ProgressSync.init();
+  if (typeof InstallPrompt !== 'undefined') InstallPrompt.init();
 });

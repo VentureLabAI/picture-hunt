@@ -2,121 +2,199 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Picture Hunt! 📸</title>
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#1a1a2e">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=65">
-  <link rel="stylesheet" href="parent-dashboard.css?v=65">
-  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=65">
-  <link rel="stylesheet" href="content/sticker-book.css?v=65">
-  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=65">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Picture Hunt — The AI Scavenger Hunt That Gets Kids Off the Couch</title>
+  <meta name="description" content="An AI-powered camera scavenger hunt for ages 2–5. Your kid moves around the house finding real objects. AI checks their photos. No reading required.">
+  <meta name="theme-color" content="#FFF8E7">
+
+  <meta property="og:title" content="Picture Hunt — The AI scavenger hunt for ages 2–5">
+  <meta property="og:description" content="Your kid moves around the house finding real objects. AI checks their photos. No reading required.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://venturelabai.github.io/picture-hunt/">
+
+  <link rel="stylesheet" href="landing.css?v=1">
 </head>
 <body>
-  <!-- Landing Screen -->
-  <div id="landing" class="screen active">
-    <div class="landing-content">
-      <h1 class="title-bounce">📸 Picture Hunt!</h1>
-      <p class="landing-sub">A photo adventure awaits!</p>
-      <button class="landing-play-btn pulse" onclick="startFromLanding()">
-        📷 Let's Play!
-      </button>
-    </div>
-  </div>
 
-  <!-- Home Screen (Category Select) -->
-  <div id="splash" class="screen">
-    <div class="splash-content">
-      <h1 class="home-title">Choose a Category</h1>
-      <div id="daily-challenge-container"></div>
-      <div id="category-grid" class="category-grid"></div>
-      <div class="splash-bottom">
-        <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()">⚙️</button>
-        <button id="sound-toggle" class="setup-icon-btn" onclick="toggleSound()">🔊</button>
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <h1>Your kid moves. Not just the screen.</h1>
+      <p class="lede">An AI-powered scavenger hunt for ages 2–5. They hear "Can you find a shoe?" — they run around the house, snap a photo, and AI tells them they got it. No reading required.</p>
+      <div class="cta-row">
+        <a href="play/" class="btn btn-primary">📷 Try Free</a>
+        <a href="#how" class="btn btn-secondary">How it works</a>
+      </div>
+      <p class="hero-meta">Free forever: 3 categories, 5 plays a day. Premium: $4.99/mo or $39/year unlocks everything.</p>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-emoji">🧸</div>
+          <div class="phone-prompt">Can you find a teddy bear?</div>
+          <div class="phone-cam">📷</div>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Setup Screen -->
-  <div id="setup" class="screen">
-    <div class="setup-container">
-      <h1 class="setup-header">⚙️ Pick the items!</h1>
-      <div id="category-tabs" class="category-tabs"></div>
-      <div class="setup-toolbar">
-        <button id="select-all-btn" class="setup-tool-btn">✅ All</button>
-        <button id="clear-all-btn" class="setup-tool-btn">❌ Clear</button>
-      </div>
-      <p id="setup-msg" class="setup-msg">0 items selected</p>
-      <div id="setup-grid" class="setup-grid"></div>
-      <button id="setup-done-btn" class="big-btn play-btn setup-done-btn">Done ✅</button>
+<!-- ─── The Pitch ─── -->
+<section class="pitch">
+  <h2>Most kids' apps make the kid sit still.</h2>
+  <p>Picture Hunt is the opposite. It hands the kid a camera, names something, and lets them go find it — in their bedroom, the kitchen, the backyard. The AI checks every photo. Right answer? Confetti and a new sticker. Wrong? "Try again!" — gentle, never frustrating.</p>
+  <p>It's the only kids' app that turns the room into the gameboard.</p>
+</section>
+
+<!-- ─── How It Works ─── -->
+<section id="how" class="how">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Pick a category</h3>
+      <p>Animals, shapes, colors, food, furniture, clothes — 10 categories with 78+ items, all with audio prompts. No reading needed.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Hear the prompt</h3>
+      <p>"Can you find a shoe?" The kid hears it in a friendly voice and starts looking around the room.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Snap a photo</h3>
+      <p>One giant green button opens the camera. They point, tap, done. Big tap targets sized for tiny fingers.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>AI says yes or no</h3>
+      <p>Google's Gemini Vision checks the photo instantly. Right? Celebration sound, sticker earned, on to the next. Wrong? Gentle "try again!" — never harsh.</p>
     </div>
   </div>
+</section>
 
-  <!-- Game Screen -->
-  <div id="game" class="screen">
-    <div class="game-top">
-      <button class="home-btn" onclick="goHome()">🏠</button>
-      <div class="progress-bar">
-        <div id="progress-fill" class="progress-fill"></div>
-      </div>
+<!-- ─── Why Parents Like It ─── -->
+<section class="parents">
+  <h2>Why parents like it</h2>
+  <div class="benefit-grid">
+    <div class="benefit">
+      <div class="benefit-icon">🏃</div>
+      <h3>Active, not passive</h3>
+      <p>Other apps are tap-tap-tap. This one has them on their feet, exploring real space.</p>
     </div>
-    <div id="target-area" class="target-area">
-      <div id="target-emoji" class="target-emoji"></div>
-      <div id="target-text" class="target-text"></div>
-      <button class="repeat-btn" onclick="repeatPrompt()">🔊</button>
+    <div class="benefit">
+      <div class="benefit-icon">🗣️</div>
+      <h3>Audio-first</h3>
+      <p>No reading required. Built for the pre-reader brain.</p>
     </div>
-    <div id="feedback-area" class="feedback-area"></div>
-    <div id="camera-area" class="camera-area">
-      <label id="camera-label" class="big-btn camera-btn">
-        📷
-        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)">
-      </label>
+    <div class="benefit">
+      <div class="benefit-icon">🎓</div>
+      <h3>Real learning</h3>
+      <p>Object recognition, shape and color identification, vocabulary building. Memory game, sorting game, daily challenges.</p>
     </div>
-    <div class="skip-area">
-      <button class="skip-btn" onclick="skipItem()">⏭️</button>
+    <div class="benefit">
+      <div class="benefit-icon">🔒</div>
+      <h3>Privacy by default</h3>
+      <p>Photos are sent to Google's vision API for matching, never stored. Progress lives on your device. No accounts. No ads. No data collection.</p>
     </div>
-    <div id="loading" class="loading hidden">
-      <div class="spinner"></div>
-      <p>Looking at your photo...</p>
+    <div class="benefit">
+      <div class="benefit-icon">📱</div>
+      <h3>Works on any device</h3>
+      <p>iPhone, iPad, Android, Fire tablet. Installs as an app from the browser — no App Store needed.</p>
+    </div>
+    <div class="benefit">
+      <div class="benefit-icon">👨‍👩‍👧</div>
+      <h3>You stay in control</h3>
+      <p>Pick which categories your kid sees. Override the AI when it gets one wrong. See progress in the parent dashboard.</p>
     </div>
   </div>
+</section>
 
-  <!-- Victory Screen -->
-  <div id="victory" class="screen">
-    <div class="victory-content">
-      <h1 class="victory-title">🎉 You Did It! 🎉</h1>
-      <div class="victory-emoji">⭐🏆⭐</div>
-      <p id="victory-sub" class="victory-sub">You found everything!</p>
-      <div id="victory-stats" class="victory-stats"></div>
-      <div class="victory-buttons">
-        <button class="big-btn play-btn" onclick="startNewGame()">
-          🔄 Play Again!
-        </button>
-        <button class="big-btn setup-btn" onclick="resetGame()">
-          🏠 Home
-        </button>
-      </div>
+<!-- ─── Pricing ─── -->
+<section id="pricing" class="pricing">
+  <h2>Simple pricing</h2>
+  <div class="plans">
+    <div class="plan">
+      <h3>Free</h3>
+      <p class="price">$0</p>
+      <ul>
+        <li>3 categories: Things, Shapes, Colors</li>
+        <li>5 plays a day</li>
+        <li>Sticker book</li>
+        <li>No ads, no signup</li>
+      </ul>
+      <a href="play/" class="btn btn-secondary">Start free</a>
+    </div>
+    <div class="plan plan-featured">
+      <h3>Premium</h3>
+      <p class="price">$4.99<span>/mo</span></p>
+      <p class="price-alt">or $39/year (save $20)</p>
+      <ul>
+        <li>All 10 categories (78+ items)</li>
+        <li>Unlimited plays</li>
+        <li>4 game modes (Memory, Review, Sorting, Daily Challenge)</li>
+        <li>Storyline adventures (8 stories)</li>
+        <li>Cross-device progress sync</li>
+        <li>Parent dashboard with analytics</li>
+        <li>10 languages</li>
+      </ul>
+      <a href="play/?upgrade=1" class="btn btn-primary">Try free, then upgrade</a>
     </div>
   </div>
+  <p class="pricing-note">No subscription traps. Cancel anytime. Single $39/year covers all your devices.</p>
+</section>
 
-  <!-- Confetti Canvas -->
-  <canvas id="confetti-canvas"></canvas>
+<!-- ─── FAQ ─── -->
+<section class="faq">
+  <h2>Questions</h2>
 
-  <script src="content/translations/languages-config.js?v=65"></script>
-  <script src="content/translations/all-translations.js?v=65"></script>
-  <script src="app.js?v=65"></script>
-  <script src="content/rich-sound-fx.js?v=65"></script>
-  <script src="hint-system.js?v=65"></script>
-  <script src="content/animations/new-celebrations.js?v=65"></script>
-  <script src="content/sticker-book.js?v=65"></script>
-  <script src="content/daily-challenge-streak.js?v=65"></script>
-  <script src="parent-dashboard.js?v=65"></script>
-  <script src="daily-challenge.js?v=65"></script>
-  <script src="storyline-mode.js?v=65"></script>
-  <script src="content/seasonal-manager.js?v=65"></script>
-  <script src="sw-register.js?v=65"></script>
+  <details>
+    <summary>What ages is this for?</summary>
+    <p>Built for 2–5. The youngest target is 2-year-olds who can point a camera; the oldest is pre-K kids learning shapes, colors, and early vocabulary. The audio-first design and giant tap targets are sized for that range.</p>
+  </details>
+
+  <details>
+    <summary>Does it use my kid's photos?</summary>
+    <p>No. Photos go to Google's Gemini Vision API for one-time matching, then disappear. Nothing is stored, nothing is trained on, nothing is shared. The app itself stores zero personal data — there's no signup, no account, no email collection. Progress lives in your browser.</p>
+  </details>
+
+  <details>
+    <summary>Will the AI always get it right?</summary>
+    <p>Mostly. Modern vision AI is impressive but not perfect — and a 3-year-old's photos are particularly hard (blurry, off-center, weird angles). We tuned the AI prompts to be permissive (a sippy cup counts as a cup, a stuffed lion counts as a lion). When it does get it wrong, you can tap the parent override to mark it correct. Better to err on celebration than frustration.</p>
+  </details>
+
+  <details>
+    <summary>Does it work offline?</summary>
+    <p>The app shell loads offline (great for spotty WiFi). The AI photo-matching needs internet — that part can't work offline. If your kid takes a photo while you're traveling, they'll get a friendly "no internet" message.</p>
+  </details>
+
+  <details>
+    <summary>How is this different from Khan Academy Kids or Sago Mini?</summary>
+    <p>Those are great apps but they're tap-the-screen. Picture Hunt is the only app we know of that combines AI camera validation with a toddler-first UX and a real learning curriculum. Your kid actually moves through their physical environment — that's the entire point.</p>
+  </details>
+
+  <details>
+    <summary>Why not on the App Store?</summary>
+    <p>For now, it runs in your browser and installs to your home screen as a "PWA" (progressive web app). It feels like a native app once installed. We may build a proper iOS/Android app if enough parents subscribe — that's the ladder we're climbing.</p>
+  </details>
+
+  <details>
+    <summary>Who built this?</summary>
+    <p>One dad, one 3-year-old, one coffee. The 3-year-old loved it. We're seeing if other parents do too.</p>
+  </details>
+</section>
+
+<!-- ─── Bottom CTA ─── -->
+<section class="bottom-cta">
+  <h2>Ready to try it?</h2>
+  <p>Free, no signup, takes 30 seconds. If your kid likes it, upgrade. If not, no harm done.</p>
+  <a href="play/" class="btn btn-primary btn-big">📷 Start Picture Hunt</a>
+</section>
+
+<footer>
+  <p>© 2026 Venture Lab · <a href="play/">Open the app</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:hello@venturelab.ai">hello@venturelab.ai</a></p>
+</footer>
+
 </body>
 </html>

@@ -24,23 +24,40 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v2';
+var CACHE_VERSION = 'ph-v69';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
 var PRECACHE_URLS = [
   './',
   './index.html',
+  './manifest.json',
   './style.css',
   './app.js',
   './hint-system.js',
-  './daily-challenge.js',
+  './storyline-mode.js',
   './parent-dashboard.js',
   './parent-dashboard.css',
+  './content/rich-sound-fx.js',
+  './content/seasonal-manager.js',
+  './content/sticker-book.js',
+  './content/sticker-book.css',
+  './content/daily-challenge-streak.js',
+  './content/daily-challenge-streak.css',
+  './content/memory-hunt.js',
+  './content/memory-hunt.css',
+  './content/review-mode.js',
+  './content/review-mode.css',
+  './content/sorting-safari.js',
+  './content/sorting-safari.css',
   './content/animations/new-celebrations.js',
   './content/animations/new-celebrations.css',
   './content/translations/languages-config.js',
   './content/translations/all-translations.js',
+  './paywall.js',
+  './paywall.css',
+  './progress-sync.js',
+  './install-prompt.js',
   './sw-register.js',
   // Custom item images
   './img/blanket.png',
@@ -61,6 +78,9 @@ var PRECACHE_URLS = [
   './audio/cat-furniture.mp3',
   './audio/cat-shapes.mp3',
   './audio/cat-things.mp3',
+  './audio/cat-halloween.mp3',
+  './audio/cat-christmas.mp3',
+  './audio/cat-spring.mp3',
   // Audio — system prompts
   './audio/champion.mp3',
   './audio/great-job.mp3',
@@ -70,6 +90,9 @@ var PRECACHE_URLS = [
   './audio/try-again.mp3',
   './audio/you-did-it.mp3',
   './audio/you-found-it.mp3',
+  './audio/halloween-victory.mp3',
+  './audio/christmas-victory.mp3',
+  './audio/spring-victory.mp3',
   // Audio — item prompts (Things)
   './audio/find-ball.mp3',
   './audio/find-blanket.mp3',
