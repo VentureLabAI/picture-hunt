@@ -841,7 +841,8 @@ function textToAudioKey(text) {
     'Spring Hunt! Find signs of spring!': 'cat-spring',
     'You found all the spooky things! Happy Halloween!': 'halloween-victory',
     'You found all the holiday magic! Merry Christmas!': 'christmas-victory',
-    'You found all the signs of spring! Great job!': 'spring-victory'
+    'You found all the signs of spring! Great job!': 'spring-victory',
+    'Need a hint? Tap the light bulb!': 'hint-tap-lightbulb'
   };
   if (map[text]) return map[text];
   // Champion messages

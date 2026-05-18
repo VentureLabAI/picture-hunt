@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v72';
+var CACHE_VERSION = 'ph-v73';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -172,7 +172,8 @@ var PRECACHE_URLS = [
   './audio/find-jacket.mp3',
   './audio/find-pants.mp3',
   './audio/find-scarf.mp3',
-  './audio/find-shirt.mp3'
+  './audio/find-shirt.mp3',
+  './audio/hint-tap-lightbulb.mp3'
   // Note: find-chair, find-lamp, find-hat, find-sock already listed above (shared with Things)
 ];
 
