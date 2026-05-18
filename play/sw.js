@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v69';
+var CACHE_VERSION = 'ph-v72';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -133,7 +133,7 @@ var PRECACHE_URLS = [
   './audio/find-banana.mp3',
   './audio/find-bread.mp3',
   './audio/find-carrot.mp3',
-  './audio/find-cereal.mp3',
+  './audio/find-cereal-box.mp3',
   './audio/find-cookie.mp3',
   './audio/find-egg.mp3',
   './audio/find-juice.mp3',
@@ -153,7 +153,6 @@ var PRECACHE_URLS = [
   './audio/find-blue.mp3',
   './audio/find-brown.mp3',
   './audio/find-green.mp3',
-  './audio/find-orange.mp3',
   './audio/find-pink.mp3',
   './audio/find-purple.mp3',
   './audio/find-red.mp3',

@@ -1,0 +1,443 @@
+/* ============================================================
+ * Picture Hunt — Phonics Hunt Styles
+ * A letter-sound camera game for ages 2-5
+ * ============================================================ */
+
+/* ── Overlay ──────────────────────────────────────────────── */
+.phonics-hunt-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #FFF8E7 0%, #FFECD2 50%, #FCB69F 100%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.phonics-screen {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px 20px;
+  text-align: center;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* ── Intro Screen ─────────────────────────────────────────── */
+.phonics-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #d32f2f;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+}
+
+.phonics-subtitle {
+  font-size: 1.15rem;
+  color: #795548;
+  margin-bottom: 20px;
+}
+
+.phonics-level-badge {
+  display: inline-block;
+  background: #e91e63;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Letters Preview ──────────────────────────────────────── */
+.phonics-preview-letters {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.phonics-preview-letter {
+  width: 60px;
+  height: 70px;
+  border-radius: 14px;
+  border: 3px solid;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.phonics-preview-char {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.phonics-preview-emoji {
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+/* ── Game Screen ──────────────────────────────────────────── */
+.phonics-game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.phonics-progress-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #795548;
+}
+
+.phonics-progress-bar {
+  height: 8px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.phonics-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #ff9800);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Big Letter Display ───────────────────────────────────── */
+.phonics-letter-display {
+  margin: 16px 0;
+}
+
+.phonics-big-letter {
+  font-size: 8rem;
+  font-weight: 900;
+  line-height: 1;
+  display: inline-block;
+  animation: phonicsBounce 1.2s ease-in-out infinite;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.08);
+}
+
+@keyframes phonicsBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+.phonics-sound-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #5d4037;
+  margin-bottom: 12px;
+}
+
+/* ── Example Hints ────────────────────────────────────────── */
+.phonics-hint-label {
+  font-size: 0.95rem;
+  color: #9e9e9e;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.phonics-hints {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.phonics-hint-item {
+  background: rgba(255,255,255,0.7);
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6d4c41;
+}
+
+.phonics-prompt {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #d32f2f;
+  margin-bottom: 16px;
+}
+
+/* ── Feedback ──────────────────────────────────────────────── */
+.phonics-feedback-success {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2e7d32;
+  padding: 12px;
+  background: rgba(76, 175, 80, 0.15);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  animation: phonicsPopIn 0.4s ease;
+}
+
+.phonics-feedback-miss {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #c62828;
+  padding: 12px;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  animation: phonicsShake 0.4s ease;
+}
+
+@keyframes phonicsPopIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes phonicsShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* ── Camera ────────────────────────────────────────────────── */
+.phonics-camera-btn {
+  min-height: 100px !important;
+  font-size: 3rem !important;
+}
+
+/* ── Photo Preview ─────────────────────────────────────────── */
+.phonics-photo-preview {
+  margin: 12px 0;
+}
+
+.phonics-photo-preview img {
+  max-width: 100%;
+  max-height: 250px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.phonics-preview-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* ── Loading ──────────────────────────────────────────────── */
+.phonics-loading {
+  margin: 20px 0;
+  color: #795548;
+}
+
+.phonics-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0,0,0,0.1);
+  border-top-color: #e91e63;
+  border-radius: 50%;
+  animation: phonicsSpin 0.8s linear infinite;
+  margin: 0 auto 8px;
+}
+
+@keyframes phonicsSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Victory ──────────────────────────────────────────────── */
+.phonics-victory-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #d32f2f;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+}
+
+.phonics-victory-emoji {
+  font-size: 3.5rem;
+  margin: 12px 0;
+  animation: phonicsSpin 2s ease-in-out infinite;
+}
+
+.phonics-victory-sub {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #5d4037;
+  margin-bottom: 16px;
+}
+
+.phonics-victory-letters {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.phonics-victory-letter {
+  width: 50px;
+  height: 56px;
+  border-radius: 12px;
+  border: 3px solid;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  animation: phonicsFloat 2s ease-in-out infinite;
+}
+
+.phonics-victory-letter:nth-child(2n) {
+  animation-delay: 0.3s;
+}
+.phonics-victory-letter:nth-child(3n) {
+  animation-delay: 0.6s;
+}
+
+@keyframes phonicsFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.phonics-victory-stats {
+  margin-bottom: 20px;
+}
+
+.phonics-stat {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #6d4c41;
+  margin-bottom: 4px;
+}
+
+.phonics-level-up {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #d32f2f;
+  margin: 12px 0;
+  text-shadow: 0 0 10px rgba(211, 47, 47, 0.3);
+  animation: phonicsGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes phonicsGlow {
+  from { text-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
+  to { text-shadow: 0 0 20px rgba(211, 47, 47, 0.5); }
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.phonics-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 10px auto;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease;
+  min-height: 64px;
+}
+
+.phonics-btn:active {
+  transform: scale(0.96);
+}
+
+.phonics-start-btn {
+  background: linear-gradient(135deg, #e91e63, #c2185b);
+  color: #fff;
+  min-height: 80px;
+  font-size: 1.5rem;
+}
+
+.phonics-submit-btn {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #fff;
+  min-height: 70px;
+  font-size: 1.3rem;
+}
+
+.phonics-redo-btn {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #fff;
+  min-height: 60px;
+}
+
+.phonics-again-btn {
+  background: linear-gradient(135deg, #2196f3, #1565c0);
+  color: #fff;
+  min-height: 70px;
+}
+
+.phonics-quit-btn {
+  background: rgba(0,0,0,0.08);
+  color: #795548;
+  border: 2px solid rgba(0,0,0,0.1);
+  min-height: 56px;
+  font-size: 1rem;
+}
+
+/* ── Splash Button ────────────────────────────────────────── */
+.phonics-splash-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: linear-gradient(135deg, #FFF8E7, #FFECD2);
+  border: 3px solid #e91e63;
+  border-radius: 18px;
+  color: #d32f2f;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.25);
+}
+
+.phonics-splash-btn span {
+  font-size: 0.85rem;
+  margin-top: 2px;
+  color: #ad1457;
+  font-weight: 600;
+}
+
+.phonics-splash-btn:active {
+  transform: scale(0.96);
+}
+
+/* ── Hidden utility ───────────────────────────────────────── */
+.phonics-hunt-overlay .hidden {
+  display: none !important;
+}
+
+/* ── Mobile (small screens) ───────────────────────────────── */
+@media (max-width: 420px) {
+  .phonics-title { font-size: 1.7rem; }
+  .phonics-big-letter { font-size: 6rem; }
+  .phonics-sound-text { font-size: 1.15rem; }
+  .phonics-prompt { font-size: 1.1rem; }
+  .phonics-hint-item { font-size: 0.9rem; padding: 4px 10px; }
+  .phonics-splash-btn { min-height: 70px; font-size: 1.4rem; }
+  .phonics-btn { font-size: 1.05rem; min-height: 56px; }
+  .phonics-start-btn { min-height: 70px; font-size: 1.3rem; }
+  .phonics-preview-letter { width: 50px; height: 58px; }
+  .phonics-preview-char { font-size: 1.5rem; }
+}

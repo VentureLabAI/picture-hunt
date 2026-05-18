@@ -58,7 +58,7 @@ var STORIES = [
     id: 'bear-breakfast',
     title: "Bear's Breakfast",
     emoji: '🐻',
-    gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+    gradient: 'linear-gradient(140deg, #FFC93C 0%, #FF8A3D 100%)',
     ageRange: '2-3',
     intro: "Oh no! Bear just woke up and his tummy is rumbling! Let's help Bear find his breakfast! Ready? Let's go!",
     steps: [
@@ -75,7 +75,7 @@ var STORIES = [
     id: 'space-explorer',
     title: 'Space Explorer',
     emoji: '🚀',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    gradient: 'linear-gradient(140deg, #4CC9FF 0%, #6F4BFF 100%)',
     ageRange: '3-5',
     intro: "3, 2, 1, blast off! You're an astronaut on a space mission! You need to find things for your spaceship! Let's go!",
     steps: [
@@ -93,7 +93,7 @@ var STORIES = [
     id: 'color-garden',
     title: 'Color Garden',
     emoji: '🌺',
-    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    gradient: 'linear-gradient(140deg, #2DD4A4 0%, #4CC9FF 100%)',
     ageRange: '2-3',
     intro: "Welcome to the magic color garden! Every color you find makes a new flower grow! Let's fill the garden with colors!",
     steps: [
@@ -110,7 +110,7 @@ var STORIES = [
     id: 'dino-day',
     title: "Dino's Big Day",
     emoji: '🦕',
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    gradient: 'linear-gradient(140deg, #FF8A3D 0%, #FF4FA8 100%)',
     ageRange: '3-5',
     intro: "Dino is going on a big adventure today! But first, Dino needs to find some things! Can you help Dino?",
     steps: [
@@ -128,7 +128,7 @@ var STORIES = [
     id: 'bedtime-routine',
     title: 'Bedtime Routine',
     emoji: '🌙',
-    gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    gradient: 'linear-gradient(140deg, #B79CFF 0%, #FF4FA8 100%)',
     ageRange: '2-3',
     intro: "It's almost bedtime! Let's find everything we need to get ready for sleep! Are you ready?",
     steps: [
@@ -145,7 +145,7 @@ var STORIES = [
     id: 'pet-shop',
     title: 'Pet Shop Day',
     emoji: '🐾',
-    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    gradient: 'linear-gradient(140deg, #FF6B6B 0%, #FF4FA8 100%)',
     ageRange: '3-5',
     intro: "Welcome to the pet shop! We need to find things for all the animals! Can you help?",
     steps: [
@@ -163,7 +163,7 @@ var STORIES = [
     id: 'treasure-hunt',
     title: 'Treasure Hunt',
     emoji: '🏴‍☠️',
-    gradient: 'linear-gradient(135deg, #f5af19 0%, #f12711 100%)',
+    gradient: 'linear-gradient(140deg, #FFC93C 0%, #E04545 100%)',
     ageRange: '4-5',
     intro: "Ahoy, pirate! You're on a treasure hunt! Find each clue and you'll find the treasure! Are you ready to search?",
     steps: [
@@ -182,7 +182,7 @@ var STORIES = [
     id: 'dress-up-party',
     title: 'Dress-Up Party',
     emoji: '👗',
-    gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+    gradient: 'linear-gradient(140deg, #4CC9FF 0%, #2DD4A4 100%)',
     ageRange: '2-3',
     intro: "It's dress-up party time! Let's find all the clothes and get ready to party!",
     steps: [

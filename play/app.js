@@ -59,7 +59,7 @@ if (!hasApiAccess()) {
 var CATEGORIES = {
   household: {
     id: 'household', name: 'Things', emoji: '🏠',
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    gradient: 'linear-gradient(140deg, #FF8A3D 0%, #FF4FA8 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Things! Find stuff around the house!',
     aiPrompt: function(n) {
@@ -103,7 +103,7 @@ var CATEGORIES = {
   },
   shapes: {
     id: 'shapes', name: 'Shapes', emoji: '🔷',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    gradient: 'linear-gradient(140deg, #4CC9FF 0%, #6F4BFF 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Shapes! Find circles, squares, and more!',
     aiPrompt: function(n) {
@@ -118,7 +118,7 @@ var CATEGORIES = {
   },
   colors: {
     id: 'colors', name: 'Colors', emoji: '🌈',
-    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 50%, #feca57 100%)',
+    gradient: 'linear-gradient(140deg, #2DD4A4 0%, #4CC9FF 100%)',
     speakPrompt: function(n) { return 'Can you find something ' + n + '?'; },
     speakName: 'Colors! Find red, blue, green, and more!',
     aiPrompt: function(n) {
@@ -134,7 +134,7 @@ var CATEGORIES = {
   },
   animals: {
     id: 'animals', name: 'Animals', emoji: '🐾',
-    gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+    gradient: 'linear-gradient(140deg, #FFC93C 0%, #FF8A3D 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Animals! Find dogs, cats, and more!',
     aiPrompt: function(n) {
@@ -151,7 +151,7 @@ var CATEGORIES = {
   },
   food: {
     id: 'food', name: 'Food', emoji: '🍎',
-    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    gradient: 'linear-gradient(140deg, #FF6B6B 0%, #FF4FA8 100%)',
     speakPrompt: function(n) { if (n === 'cereal') return 'Can you find a cereal box?'; return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Food! Find yummy things to eat!',
     aiPrompt: function(n) {
@@ -168,7 +168,7 @@ var CATEGORIES = {
   },
   furniture: {
     id: 'furniture', name: 'Furniture', emoji: '🛋️',
-    gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    gradient: 'linear-gradient(140deg, #B79CFF 0%, #FF4FA8 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Furniture! Find things around the house!',
     aiPrompt: function(n) {
@@ -184,7 +184,7 @@ var CATEGORIES = {
   },
   clothing: {
     id: 'clothing', name: 'Clothing', emoji: '👕',
-    gradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+    gradient: 'linear-gradient(140deg, #4CC9FF 0%, #2DD4A4 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Clothing! Find things you can wear!',
     aiPrompt: function(n) {
@@ -199,7 +199,7 @@ var CATEGORIES = {
   },
   halloween: {
     id: 'halloween', name: 'Halloween', emoji: '🎃',
-    gradient: 'linear-gradient(135deg, #FF6B00 0%, #1A0033 50%, #FFD700 100%)',
+    gradient: 'linear-gradient(140deg, #FF7A1A 0%, #2B0B5C 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Halloween Hunt! Find spooky things!',
     aiPrompt: function(n) {
@@ -216,7 +216,7 @@ var CATEGORIES = {
   },
   christmas: {
     id: 'christmas', name: 'Christmas', emoji: '🎄',
-    gradient: 'linear-gradient(135deg, #C8102E 0%, #006747 50%, #FFD700 100%)',
+    gradient: 'linear-gradient(140deg, #E63946 0%, #006E3C 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Christmas Hunt! Find holiday magic!',
     aiPrompt: function(n) {
@@ -234,7 +234,7 @@ var CATEGORIES = {
   },
   spring: {
     id: 'spring', name: 'Spring', emoji: '🌸',
-    gradient: 'linear-gradient(135deg, #FF69B4 0%, #4CAF50 50%, #FFD700 100%)',
+    gradient: 'linear-gradient(140deg, #95F0B5 0%, #FF7AB6 100%)',
     speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
     speakName: 'Spring Hunt! Find signs of spring!',
     aiPrompt: function(n) {
