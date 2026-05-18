@@ -786,7 +786,7 @@ function preloadAllAudio() {
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
     'cat-halloween','cat-christmas','cat-spring',
-    'halloween-victory','christmas-victory','spring-victory'
+    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb'
   ];
   // Preload all find prompts
   Object.keys(CATEGORIES).forEach(function(catId) {
