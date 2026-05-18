@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v74';
+var CACHE_VERSION = 'ph-v75';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -173,7 +173,23 @@ var PRECACHE_URLS = [
   './audio/find-pants.mp3',
   './audio/find-scarf.mp3',
   './audio/find-shirt.mp3',
-  './audio/hint-tap-lightbulb.mp3'
+  './audio/hint-tap-lightbulb.mp3',
+  './audio/keep-looking.mp3',
+  './audio/lets-try-next.mp3',
+  './audio/pick-category-first.mp3',
+  './audio/ready-next-level.mp3',
+  './audio/found-now-next.mp3',
+  './audio/not-quite.mp3',
+  './audio/sticker-book-empty.mp3',
+  './audio/sort-need-more.mp3',
+  './audio/sorting-victory.mp3',
+  './audio/sorting-safari-intro.mp3',
+  './audio/phonics-hunt-intro.mp3',
+  './audio/practice-need-more.mp3',
+  './audio/practice-complete.mp3',
+  './audio/round-complete.mp3',
+  './audio/stickers-amazing.mp3',
+  './audio/memory-amazing.mp3'
   // Note: find-chair, find-lamp, find-hat, find-sock already listed above (shared with Things)
 ];
 

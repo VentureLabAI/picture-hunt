@@ -786,7 +786,7 @@ function preloadAllAudio() {
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
     'cat-halloween','cat-christmas','cat-spring',
-    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb'
+    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sort-need-more','sorting-victory','sorting-safari-intro','phonics-hunt-intro','practice-need-more','practice-complete','round-complete','stickers-amazing','memory-amazing'
   ];
   // Preload all find prompts
   Object.keys(CATEGORIES).forEach(function(catId) {
@@ -842,11 +842,27 @@ function textToAudioKey(text) {
     'You found all the spooky things! Happy Halloween!': 'halloween-victory',
     'You found all the holiday magic! Merry Christmas!': 'christmas-victory',
     'You found all the signs of spring! Great job!': 'spring-victory',
-    'Need a hint? Tap the light bulb!': 'hint-tap-lightbulb'
+    'Need a hint? Tap the light bulb!': 'hint-tap-lightbulb',
+    'Keep looking! You can do it!': 'keep-looking',
+    "Let's try the next one!": 'lets-try-next',
+    'Pick a category first!': 'pick-category-first',
+    'Ready for the next level?': 'ready-next-level',
+    'You found it! Now find the next one!': 'found-now-next',
+    'Not quite! Try again!': 'not-quite',
+    'Your sticker book is empty! Find items to earn stickers!': 'sticker-book-empty',
+    'Find more things first, then come sort them!': 'sort-need-more',
+    'Great sorting! You put everything in the right group!': 'sorting-victory',
+    'Sorting Safari! Put things in the right group!': 'sorting-safari-intro',
+    'Phonics Hunt! Find things that start with each letter!': 'phonics-hunt-intro',
+    'Find more things first, then come practice!': 'practice-need-more',
+    'Practice complete! You did great!': 'practice-complete',
+    'Round complete! Great practice!': 'round-complete',
+    'You collected all the stickers! Amazing!': 'stickers-amazing',
+    'You remembered them all! Amazing!': 'memory-amazing'
   };
   if (map[text]) return map[text];
   // Champion messages
-  if (text.indexOf('champion') >= 0 || text.indexOf('Amazing') >= 0) return 'champion';
+  if (text.indexOf('champion') >= 0) return 'champion';
   if (text.indexOf('You did it') >= 0) return 'you-did-it';
   // Find prompts: "Can you find a shoe?" → "find-shoe"
   var m = text.match(/^Can you find (?:a |an |some |something )?(.+)\?$/);
@@ -880,6 +896,8 @@ function speakFallback(text, onEnd) {
   utter.rate = 0.85; utter.pitch = 1.2; utter.volume = 1;
   var voices = speechSynthesis.getVoices();
   var preferred = voices.find(function(v) { return v.name.indexOf('Samantha') >= 0; }) ||
+                  voices.find(function(v) { return v.name.indexOf('Zira') >= 0; }) ||
+                  voices.find(function(v) { return /female/i.test(v.name) && v.lang.indexOf('en') === 0; }) ||
                   voices.find(function(v) { return v.lang.indexOf('en') === 0 && v.localService; });
   if (preferred) utter.voice = preferred;
   if (onEnd) utter.onend = onEnd;

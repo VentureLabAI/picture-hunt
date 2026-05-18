@@ -281,8 +281,9 @@ function onHintTap() {
   // Show visual hint bubble
   showHintBubble(hintText, hintTier);
 
-  // Speak the hint
-  speak(hintText, function() {
+  // Speak the hint - try pre-generated MP3 first, fall back to TTS
+  var hintKey = getHintAudioKey(currentCategory, item.name, hintTier);
+  var afterHint = function() {
     hintCooldown = false;
 
     // After tier 3, disable further hints for this item
@@ -297,7 +298,13 @@ function onHintTap() {
       // Update button to show remaining hints
       updateHintButton();
     }
-  });
+  };
+  if (typeof playBuffer === 'function' && playBuffer(hintKey, afterHint)) {
+    // Buffer played; afterHint fires when audio ends
+  } else {
+    if (typeof preloadAudio === 'function') preloadAudio(hintKey);
+    speak(hintText, afterHint);
+  }
 }
 
 /**
