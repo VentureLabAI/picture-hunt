@@ -94,7 +94,7 @@ var CATEGORIES = {
       { name: 'pillow', emoji: '🛏️', img: 'img/pillow.png', d: 1 }, { name: 'blanket', emoji: '🧣', img: 'img/blanket.png', d: 2 },
       { name: 'remote control', emoji: '📺', img: 'img/remote-control.png', d: 2 }, { name: 'toothbrush', emoji: '🪥', d: 1 },
       { name: 'chair', emoji: '🪑', d: 1 }, { name: 'sock', emoji: '🧦', d: 1 },
-      { name: 'hat', emoji: '🧢', d: 1 }, { name: 'keys', emoji: '🔑', d: 2 },
+      { name: 'hat', emoji: '🧢', d: 1 }, { name: 'keys', emoji: '🔑', d: 2, speakOverride: 'Can you find keys?' },
       { name: 'water bottle', emoji: '🍼', img: 'img/water-bottle.png', d: 2 }, { name: 'crayon', emoji: '🖍️', d: 2 },
       { name: 'plate', emoji: '🍽️', d: 2 }, { name: 'towel', emoji: '🧻', img: 'img/towel.png', d: 2 },
       { name: 'lamp', emoji: '💡', img: 'img/lamp.png', d: 3 }, { name: 'clock', emoji: '⏰', d: 3 },
@@ -159,11 +159,11 @@ var CATEGORIES = {
     },
     items: [
       { name: 'apple', emoji: '🍎', d: 1 }, { name: 'banana', emoji: '🍌', d: 1 },
-      { name: 'orange', emoji: '🍊', d: 1 }, { name: 'bread', emoji: '🍞', d: 1 },
+      { name: 'orange', emoji: '🍊', d: 1 }, { name: 'bread', emoji: '🍞', d: 1, speakOverride: 'Can you find bread?' },
       { name: 'egg', emoji: '🥚', d: 1 }, { name: 'carrot', emoji: '🥕', d: 2 },
       { name: 'cookie', emoji: '🍪', d: 2 }, { name: 'cereal', emoji: '🥣', d: 2 },
-      { name: 'milk', emoji: '🥛', d: 2 }, { name: 'yogurt', emoji: '🫙', d: 3 },
-      { name: 'juice', emoji: '🧃', d: 3 }
+      { name: 'milk', emoji: '🥛', d: 2, speakOverride: 'Can you find milk?' }, { name: 'yogurt', emoji: '🫙', d: 3, speakOverride: 'Can you find yogurt?' },
+      { name: 'juice', emoji: '🧃', d: 3, speakOverride: 'Can you find juice?' }
     ]
   },
   furniture: {
@@ -191,7 +191,7 @@ var CATEGORIES = {
       return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. The clothing does not need to be centered or the only thing visible — a toddler took this photo. It can be worn by someone or lying on a surface. But a completely different type of clothing should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'shirt', emoji: '👕', d: 1 }, { name: 'pants', emoji: '👖', d: 1 },
+      { name: 'shirt', emoji: '👕', d: 1 }, { name: 'pants', emoji: '👖', d: 1, speakOverride: 'Can you find pants?' },
       { name: 'dress', emoji: '👗', d: 1 }, { name: 'jacket', emoji: '🧥', d: 1 },
       { name: 'hat', emoji: '🧢', d: 2 }, { name: 'glove', emoji: '🧤', d: 2 },
       { name: 'scarf', emoji: '🧣', d: 3 }, { name: 'sock', emoji: '🧦', d: 2 }
@@ -225,7 +225,7 @@ var CATEGORIES = {
     items: [
       { name: 'Christmas tree', emoji: '🎄', d: 1 }, { name: 'ornament', emoji: '🔮', d: 1 },
       { name: 'star', emoji: '⭐', d: 1 }, { name: 'stocking', emoji: '🧦', d: 1 },
-      { name: 'Christmas lights', emoji: '💡', d: 1 }, { name: 'Santa', emoji: '🎅', d: 1 },
+      { name: 'Christmas lights', emoji: '💡', d: 1, speakOverride: 'Can you find Christmas lights?' }, { name: 'Santa', emoji: '🎅', d: 1, speakOverride: 'Can you find Santa?' },
       { name: 'gift', emoji: '🎁', d: 1 }, { name: 'wreath', emoji: '💚', d: 2 },
       { name: 'snowman', emoji: '⛄', d: 2 }, { name: 'candy cane', emoji: '🍭', d: 2 },
       { name: 'reindeer', emoji: '🦌', d: 3 }
@@ -243,15 +243,32 @@ var CATEGORIES = {
     items: [
       { name: 'flower', emoji: '🌸', d: 1 }, { name: 'butterfly', emoji: '🦋', d: 2 },
       { name: 'bird', emoji: '🐦', d: 2 }, { name: 'rainbow', emoji: '🌈', d: 1 },
-      { name: 'umbrella', emoji: '☂️', d: 1 }, { name: 'rain boots', emoji: '🥾', d: 1 },
+      { name: 'umbrella', emoji: '☂️', d: 1 }, { name: 'rain boots', emoji: '🥾', d: 1, speakOverride: 'Can you find rain boots?' },
       { name: 'bee', emoji: '🐝', d: 2 }, { name: 'Easter egg', emoji: '🥚', d: 1 },
-      { name: 'bunny', emoji: '🐰', d: 1 }, { name: 'sunshine', emoji: '☀️', d: 1 }
+      { name: 'bunny', emoji: '🐰', d: 1 }, { name: 'sunshine', emoji: '☀️', d: 1, speakOverride: 'Can you find sunshine?' }
     ],
     seasonal: true
   }
 };
 
 var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing', 'halloween', 'christmas', 'spring'];
+
+// Items can set speakOverride to bypass the category-level speakPrompt logic
+// (used for mass nouns, plurale tantum, and proper nouns where article rules
+// break — e.g. "Can you find bread?" not "Can you find a bread?"). When an
+// override is present, audio uses speechSynthesis instead of the cached MP3,
+// because the cached file still has the old wording until re-recorded.
+function promptFor(item, cat) {
+  return item.speakOverride || cat.speakPrompt(item.name);
+}
+function speakItem(item, cat, onEnd) {
+  var text = promptFor(item, cat);
+  if (item.speakOverride) {
+    speakFallback(text, onEnd);
+  } else {
+    speak(text, onEnd);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════
 // SOUND EFFECTS (Web Audio API)
@@ -559,12 +576,19 @@ function renderSplash() {
     + '<button class="diff-btn' + (currentDifficulty === 'hard' ? ' active' : '') + '" onclick="setDifficulty(\'hard\')">⭐⭐⭐ Hard</button>'
     + '</div>';
 
-  // Language selector HTML (below difficulty)
+  // Language selector — bilingual mode is a core feature, copy reflects that
   var langHtml = '';
   if (typeof SUPPORTED_LANGUAGES !== 'undefined') {
     var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
+    var langLabel = currentLang.code === 'none'
+      ? '🌍 Learn a Language'
+      : currentLang.emoji + ' Learning ' + currentLang.name;
+    var langSubLabel = currentLang.code === 'none'
+      ? 'Tap to add bilingual mode'
+      : 'Tap to change';
     langHtml = '<div class="lang-selector">'
-      + '<button class="lang-btn" onclick="openLangPicker()">' + currentLang.emoji + ' ' + (currentLang.code === 'none' ? 'Language' : currentLang.name) + '</button>'
+      + '<button class="lang-btn" onclick="openLangPicker()">' + langLabel + '</button>'
+      + '<div class="lang-sub">' + langSubLabel + '</div>'
       + '</div>';
   }
 
@@ -788,10 +812,11 @@ function preloadAllAudio() {
     'cat-halloween','cat-christmas','cat-spring',
     'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sort-need-more','sorting-victory','sorting-safari-intro','phonics-hunt-intro','practice-need-more','practice-complete','round-complete','stickers-amazing','memory-amazing'
   ];
-  // Preload all find prompts
+  // Preload all find prompts (skip items with speakOverride — those use TTS)
   Object.keys(CATEGORIES).forEach(function(catId) {
     var cat = CATEGORIES[catId];
     cat.items.forEach(function(item) {
+      if (item.speakOverride) return;
       var k = textToAudioKey(cat.speakPrompt(item.name));
       if (k) keys.push(k);
     });
@@ -991,12 +1016,13 @@ function showCurrentItem() {
     targetEmoji.textContent = item.emoji;
   }
   // Show English prompt + foreign word if language mode active
+  var displayPrompt = promptFor(item, cat);
   var langResult = (typeof getTranslationByName === 'function') ? getTranslationByName(item.name) : null;
   if (langResult) {
-    targetText.innerHTML = cat.speakPrompt(item.name)
+    targetText.innerHTML = displayPrompt
       + '<span class="target-translation">' + langResult.emoji + ' ' + langResult.word + '</span>';
   } else {
-    targetText.textContent = cat.speakPrompt(item.name);
+    targetText.textContent = displayPrompt;
   }
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((currentIndex / shuffledItems.length) * 100) + '%';
@@ -1008,12 +1034,32 @@ function showCurrentItem() {
   var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = '';
 
-  // Speak the prompt, then start pulsing camera + inactivity
-  speak(cat.speakPrompt(item.name), function() {
+  // Speak the prompt, then (in bilingual mode) speak the foreign word, then
+  // start pulsing camera + inactivity.
+  speakItem(item, cat, function() {
     console.log('[PH] Prompt spoken, starting camera pulse + inactivity');
-    startPulse(cameraLabel, 'camera');
-    startInactivity();
+    speakForeignWordForItem(item, function() {
+      startPulse(cameraLabel, 'camera');
+      startInactivity();
+    });
   });
+}
+
+// Speak the target-language word for `item` if bilingual mode is on. No-op
+// otherwise. Calls onEnd in all cases.
+function speakForeignWordForItem(item, onEnd) {
+  if (typeof getTranslationByName !== 'function' || typeof speakTranslation !== 'function') {
+    if (onEnd) onEnd();
+    return;
+  }
+  var trans = getTranslationByName(item.name);
+  if (!trans) { if (onEnd) onEnd(); return; }
+  // Brief gap after English so the words don't run together
+  setTimeout(function() {
+    speakTranslation(trans.word, trans.speechLang);
+    // Web Speech API doesn't fire a reliable onend across browsers — estimate
+    setTimeout(function() { if (onEnd) onEnd(); }, 1500);
+  }, 400);
 }
 
 function repeatPrompt() {
@@ -1023,9 +1069,11 @@ function repeatPrompt() {
   if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleRepeat === 'function' && storylineHandleRepeat()) return;
   var item = shuffledItems[currentIndex];
   var cat = CATEGORIES[currentCategory];
-  speak(cat.speakPrompt(item.name), function() {
-    startPulse(cameraLabel, 'camera');
-    startInactivity();
+  speakItem(item, cat, function() {
+    speakForeignWordForItem(item, function() {
+      startPulse(cameraLabel, 'camera');
+      startInactivity();
+    });
   });
 }
 
@@ -1375,7 +1423,9 @@ function openLangPicker() {
 
   var modal = document.createElement('div');
   modal.className = 'lang-picker-modal';
-  modal.innerHTML = '<div class="lang-picker-title">Choose a Language</div>';
+  modal.innerHTML = ''
+    + '<div class="lang-picker-title">Bilingual Mode</div>'
+    + '<div class="lang-picker-sub">When on, your child hears each prompt in English and the target language. Foreign words are also shown on screen.</div>';
 
   SUPPORTED_LANGUAGES.forEach(function(lang) {
     var btn = document.createElement('button');

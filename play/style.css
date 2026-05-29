@@ -1290,6 +1290,20 @@ html, body {
   transform: translateY(3px);
   box-shadow: 0 0 0 var(--ink);
 }
+.lang-sub {
+  font-size: 0.8rem;
+  color: var(--ink-soft, #6B5240);
+  margin-top: 4px;
+  font-weight: var(--fw-reg, 600);
+}
+.lang-picker-sub {
+  font-size: 0.95rem;
+  color: var(--ink-soft, #6B5240);
+  text-align: center;
+  margin: 6px 0 16px;
+  line-height: 1.4;
+  padding: 0 4px;
+}
 
 
 /* ════════════════════════════════════════════════════════════
