@@ -1,11 +1,11 @@
 // Picture Hunt — Paywall + Free-Tier Gating
 //
-// Free tier: 3 categories (household, shapes, colors), 5 plays/day, no game modes.
-// Premium:   everything.
+// Free tier: 3 categories (household, shapes, colors), 5 plays/day, no premium modes.
+// Full Access: one-time $19.99 unlock — everything, forever, all devices.
 //
-// Premium is unlocked by entering a code that the worker validates against KV.
-// Code lifetimes are managed by the worker — this module just stores the latest
-// validation result and a `validUntil` timestamp from the worker response.
+// Full Access is unlocked by entering a code that the worker validates against KV.
+// The worker still returns a `validUntil` (we set it far in the future for the
+// lifetime product); this module stores the latest validation result.
 //
 // localStorage keys:
 //   PH_PREMIUM = { code, validUntil (ISO), validatedAt (ISO), email? }
@@ -24,10 +24,10 @@ var Paywall = (function() {
   // unreachable (e.g. Boss Man hasn't deployed the new worker yet).
   var VALIDATE_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/validate-code';
 
-  // Stripe Payment Link — REPLACE with real link in Stripe dashboard.
-  // See deploy doc: docs/PAYWALL-DEPLOY.md
-  var STRIPE_LINK_MONTHLY = 'https://buy.stripe.com/PLACEHOLDER_MONTHLY';
-  var STRIPE_LINK_YEARLY  = 'https://buy.stripe.com/PLACEHOLDER_YEARLY';
+  // Stripe Payment Link for the one-time $19.99 Full Access unlock.
+  // REPLACE the placeholder with the real Payment Link from the Stripe dashboard
+  // (create a one-time, non-recurring product). See docs/PAYWALL-DEPLOY.md.
+  var STRIPE_LINK = 'https://buy.stripe.com/PLACEHOLDER_LIFETIME';
 
   // Codes accepted client-side as a fallback when the worker is unreachable.
   // Boss Man can use these for personal testing or the first paying customer.
@@ -128,22 +128,15 @@ var Paywall = (function() {
     // If the Stripe links haven't been swapped from placeholders yet, render a
     // "checkout coming soon" notice instead of buttons that 404. The codes flow
     // still works, so users with a code can unlock.
-    var stripeReady = STRIPE_LINK_MONTHLY.indexOf('PLACEHOLDER') === -1
-                   && STRIPE_LINK_YEARLY.indexOf('PLACEHOLDER') === -1;
+    var stripeReady = STRIPE_LINK.indexOf('PLACEHOLDER') === -1;
 
     var plansBlock = stripeReady
       ? ''
-        + '<div class="paywall-plans">'
-        +   '<a class="paywall-plan" href="' + STRIPE_LINK_MONTHLY + '" target="_blank" rel="noopener">'
-        +     '<div class="plan-price">$4.99<span>/mo</span></div>'
-        +     '<div class="plan-name">Monthly</div>'
-        +   '</a>'
-        +   '<a class="paywall-plan paywall-plan-best" href="' + STRIPE_LINK_YEARLY + '" target="_blank" rel="noopener">'
-        +     '<div class="plan-badge">SAVE $20</div>'
-        +     '<div class="plan-price">$39<span>/yr</span></div>'
-        +     '<div class="plan-name">Yearly</div>'
-        +   '</a>'
-        + '</div>'
+        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener">'
+        +   '<span class="paywall-buy-price">$19.99</span>'
+        +   '<span class="paywall-buy-label">Unlock everything — one time</span>'
+        + '</a>'
+        + '<p class="paywall-buy-note">No subscription. Yours forever, on every device.</p>'
       : ''
         + '<div class="paywall-coming-soon">'
         +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access">hello@venturelab.ai</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
