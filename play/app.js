@@ -545,12 +545,9 @@ function onSplashEnter() {
   renderSplash();
   if (typeof StickerBook !== 'undefined') StickerBook.addButtonToSplash();
   if (typeof DailyStreak !== 'undefined') DailyStreak.addCardToSplash();
-  // Premium-only game modes — gated by Paywall
-  if (typeof Paywall === 'undefined' || Paywall.isPremium()) {
-    if (typeof MemoryHunt !== 'undefined') MemoryHunt.addButtonToSplash();
-    if (typeof ReviewMode !== 'undefined') ReviewMode.addButtonToSplash();
-    if (typeof SortingSafari !== 'undefined') SortingSafari.addButtonToSplash();
-  }
+  // Memory Hunt / Review Mode / Sorting Safari were cut 2026-05-18 (mechanical
+  // drills, low retention). Storyline is now the primary engagement mode and is
+  // rendered as a prominent card in renderSplash().
   // Block ghost taps for 400ms after landing (touch bleed from landing screen)
   var splash = document.getElementById('splash');
   if (splash) {
@@ -644,9 +641,8 @@ function renderSplash() {
   var pBadge = document.getElementById('premium-badge');
   if (pBadge) pBadge.remove();
 
-  // Re-render-safe: also remove any prior more-games toggle
-  var oldMore = document.getElementById('more-games-toggle');
-  if (oldMore) oldMore.remove();
+  // Promoted Storyline entry (replaces the old buried 📖 icon + More-games drawer)
+  renderStorylineFeature(premium);
 
   if (typeof Paywall !== 'undefined') {
     if (premium) {
@@ -656,19 +652,6 @@ function renderSplash() {
       pb.style.textAlign = 'center';
       pb.textContent = '⭐ PREMIUM';
       grid.parentNode.insertBefore(pb, grid);
-
-      // "More games" toggle — keeps the splash uncluttered by default
-      var more = document.createElement('button');
-      more.id = 'more-games-toggle';
-      more.className = 'more-games-toggle';
-      more.textContent = '🎮 More games ▾';
-      more.onclick = function() {
-        var splashContent = document.querySelector('.splash-content');
-        if (!splashContent) return;
-        var open = splashContent.classList.toggle('more-games-open');
-        more.textContent = open ? '🎮 More games ▴' : '🎮 More games ▾';
-      };
-      grid.parentNode.insertBefore(more, grid);
     } else {
       var remaining = Paywall.playsRemaining();
       var btn = document.createElement('button');
@@ -688,25 +671,41 @@ function renderSplash() {
     }
   }
 
-  // Storyline mode button — premium-only
-  var storyBtnExisting = document.getElementById('story-btn');
-  if (premium && !storyBtnExisting) {
-    var btnContainer = document.querySelector('.splash-bottom');
-    if (btnContainer) {
-      var sBtn = document.createElement('button');
-      sBtn.id = 'story-btn';
-      sBtn.className = 'setup-icon-btn';
-      sBtn.textContent = '📖';
-      sBtn.onclick = function() { if (typeof openStorySelector === 'function') openStorySelector(); };
-      btnContainer.insertBefore(sBtn, btnContainer.firstChild);
-    }
-  } else if (!premium && storyBtnExisting) {
-    storyBtnExisting.remove();
-  }
-
   var btn = document.getElementById('sound-toggle');
   if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
 
+}
+
+// Storyline is the primary engagement mode (the "treasure hunt" framing that
+// beats toddler boredom — see docs/STRATEGY.md). It renders as a prominent
+// hero card above the category grid, visible to everyone. Premium users launch
+// it directly; free users get the paywall (Storyline quests are a paid value).
+function renderStorylineFeature(premium) {
+  var container = document.getElementById('storyline-feature');
+  if (!container) return;
+  if (typeof STORIES === 'undefined' || typeof openStorySelector !== 'function') {
+    container.innerHTML = '';
+    return;
+  }
+  var locked = (typeof Paywall !== 'undefined') && !premium;
+  container.innerHTML = '<button class="storyline-hero' + (locked ? ' locked' : '') + '" id="storyline-hero-btn">'
+    + '<span class="storyline-hero-emoji">🗺️</span>'
+    + '<span class="storyline-hero-text">'
+    + '<span class="storyline-hero-title">Story Quests' + (locked ? ' 🔒' : '') + '</span>'
+    + '<span class="storyline-hero-sub">Go on an adventure to find things!</span>'
+    + '</span>'
+    + '</button>';
+  var heroBtn = document.getElementById('storyline-hero-btn');
+  if (heroBtn) {
+    heroBtn.onclick = function() {
+      playClick();
+      if (locked) {
+        if (typeof Paywall !== 'undefined') Paywall.show('storyline');
+        return;
+      }
+      openStorySelector();
+    };
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════

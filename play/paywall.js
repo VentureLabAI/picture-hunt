@@ -108,13 +108,16 @@ var Paywall = (function() {
       headline = '🔒 Premium Category';
       var catName = (typeof CATEGORIES !== 'undefined' && catId && CATEGORIES[catId])
         ? CATEGORIES[catId].name : 'this category';
-      sub = 'Unlock <b>' + catName + '</b> and 6 other categories with Premium.';
+      sub = 'Unlock <b>' + catName + '</b> and all 10 categories with Premium.';
     } else if (reason === 'daily-cap') {
       headline = '🌙 That\'s 5 plays today!';
       sub = 'Free plays reset tomorrow, or unlock unlimited play with Premium.';
+    } else if (reason === 'storyline') {
+      headline = '🗺️ Story Quests';
+      sub = 'Go on guided treasure-hunt adventures — and learn a second language along the way. Unlock with Premium.';
     } else {
       headline = '⭐ Unlock Picture Hunt Premium';
-      sub = 'All 10 categories, all 4 game modes, storyline adventures, and unlimited play.';
+      sub = 'All 10 categories, bilingual learning mode, story quests, and unlimited play.';
     }
 
     var overlay = document.createElement('div');
@@ -153,12 +156,12 @@ var Paywall = (function() {
       +   '<p class="paywall-sub">' + sub + '</p>'
 
       +   '<div class="paywall-features">'
+      +     '<div class="pf">🌍 Bilingual learning mode</div>'
       +     '<div class="pf">✨ All 10 categories (78+ items)</div>'
-      +     '<div class="pf">🎮 4 game modes</div>'
-      +     '<div class="pf">📖 Storyline adventures</div>'
-      +     '<div class="pf">📊 Parent dashboard</div>'
+      +     '<div class="pf">🗺️ Story quests</div>'
+      +     '<div class="pf">📅 Daily challenge + streak</div>'
       +     '<div class="pf">♾️ Unlimited plays</div>'
-      +     '<div class="pf">🌍 10 languages</div>'
+      +     '<div class="pf">📲 Works on all your devices</div>'
       +   '</div>'
 
       +   plansBlock
@@ -229,11 +232,9 @@ var Paywall = (function() {
   }
 
   function refreshSplashAfterUnlock() {
+    // renderSplash() re-renders the Storyline hero + premium badge for the
+    // now-unlocked user. Memory/Review/Sorting were cut 2026-05-18.
     if (typeof renderSplash === 'function') renderSplash();
-    // Game-mode buttons live behind the More-games drawer for premium users
-    if (typeof MemoryHunt !== 'undefined') MemoryHunt.addButtonToSplash();
-    if (typeof ReviewMode !== 'undefined') ReviewMode.addButtonToSplash();
-    if (typeof SortingSafari !== 'undefined') SortingSafari.addButtonToSplash();
   }
 
   function unlock(code, validUntil, email) {

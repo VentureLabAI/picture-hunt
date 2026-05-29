@@ -30,6 +30,13 @@ var DailyStreak = (function() {
   var STREAK_MILESTONES = [3, 7, 14, 30];
   var FREEZES_PER_WEEK = 1;
 
+  // Respect per-item speakOverride so mass/proper nouns read correctly
+  // ("Can you find bread?" not "a bread"). Falls back to "Can you find a X?".
+  function dailyPromptText(item) {
+    if (item && item.speakOverride) return item.speakOverride;
+    return 'Can you find a ' + (item ? item.name : '') + '?';
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // STORAGE
   // ═══════════════════════════════════════════════════════════════
@@ -238,7 +245,7 @@ var DailyStreak = (function() {
       + '</div>'
       + '<div class="daily-item">'
       + '<span class="daily-emoji">' + daily.item.emoji + '</span>'
-      + '<span class="daily-name">Can you find a ' + daily.item.name + '?</span>'
+      + '<span class="daily-name">' + dailyPromptText(daily.item) + '</span>'
       + '</div>'
       + statusHtml;
 

@@ -379,30 +379,6 @@
 }
 .install-pill-x:hover { background: rgba(27,17,64,0.08); }
 
-/* Collapse extra game-mode buttons under a "More games" toggle (premium only). */
-.splash-content:not(.more-games-open) #mh-splash-btn,
-.splash-content:not(.more-games-open) #rm-splash-btn,
-.splash-content:not(.more-games-open) #sorting-safari-btn {
-  display: none;
-}
-.more-games-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 8px auto 12px;
-  background: #FFFFFF;
-  color: #1B1140;
-  border: 2px dashed #44366E;
-  border-radius: 999px;
-  padding: 10px 24px;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  min-height: 46px;
-}
-.more-games-toggle:active { transform: scale(0.96); }
-
 /* Premium badge for already-unlocked users */
 .premium-badge {
   display: inline-block;

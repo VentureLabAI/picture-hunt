@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v76';
+var CACHE_VERSION = 'ph-v77';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -44,12 +44,6 @@ var PRECACHE_URLS = [
   './content/sticker-book.css',
   './content/daily-challenge-streak.js',
   './content/daily-challenge-streak.css',
-  './content/memory-hunt.js',
-  './content/memory-hunt.css',
-  './content/review-mode.js',
-  './content/review-mode.css',
-  './content/sorting-safari.js',
-  './content/sorting-safari.css',
   './content/animations/new-celebrations.js',
   './content/animations/new-celebrations.css',
   './content/translations/languages-config.js',
