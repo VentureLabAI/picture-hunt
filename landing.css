@@ -11,6 +11,10 @@
   --peach: #FFAB76;
   --coral: #FF6B6B;
   --rose: #F472B6;
+  /* Deeper variants for white-text surfaces (the bright coral/rose fail 4.5:1) */
+  --coral-deep: #C73B43;
+  --rose-deep: #C9347D;
+  --link: #C2410C;
   --sky: #60C5F1;
   --mint: #6ECB63;
   --lavender: #C4A1FF;
@@ -18,7 +22,7 @@
   --shadow-sm: 0 2px 8px rgba(74,55,40,0.10);
   --shadow-md: 0 6px 20px rgba(74,55,40,0.15);
   --shadow-lg: 0 14px 40px rgba(74,55,40,0.20);
-  --font-main: 'Arial Rounded MT Bold', 'Nunito', 'Quicksand', system-ui, sans-serif;
+  --font-main: 'Arial Rounded MT Bold', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,8 +38,14 @@ body {
   font-size: 17px;
 }
 
-a { color: var(--coral); text-decoration: none; }
+a { color: var(--link); text-decoration: underline; }
 a:hover { text-decoration: underline; }
+
+:focus-visible {
+  outline: 3px solid var(--bark);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
 
 section { padding: 80px 24px; }
 
@@ -62,7 +72,7 @@ p { margin-bottom: 14px; color: var(--bark-light); }
 .btn:active { transform: translateY(0); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--coral) 0%, var(--rose) 100%);
+  background: linear-gradient(135deg, var(--coral-deep) 0%, var(--rose-deep) 100%);
   color: var(--white);
   box-shadow: var(--shadow-sm);
 }
@@ -160,48 +170,6 @@ p { margin-bottom: 14px; color: var(--bark-light); }
 @media (prefers-reduced-motion: reduce) {
   .hero-fox { animation: none; }
 }
-.phone-frame {
-  width: 240px;
-  height: 440px;
-  background: var(--bark);
-  border-radius: 40px;
-  padding: 14px;
-  box-shadow: var(--shadow-lg), 0 0 0 4px rgba(74,55,40,0.1);
-}
-.phone-screen {
-  width: 100%;
-  height: 100%;
-  background: var(--cream);
-  border-radius: 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  padding: 30px 20px;
-  text-align: center;
-}
-.phone-emoji { font-size: 5rem; }
-.phone-prompt { font-weight: 800; color: var(--bark); font-size: 1.1rem; line-height: 1.3; }
-.phone-translation {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--bark);
-  background: var(--sun-yellow);
-  padding: 3px 12px;
-  border-radius: 999px;
-}
-.phone-cam {
-  font-size: 3rem;
-  background: linear-gradient(135deg, var(--mint) 0%, #5BB855 100%);
-  width: 100px; height: 100px;
-  border-radius: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(110,203,99,0.4);
-}
 
 /* ── Language strip ── */
 .lang-strip {
@@ -248,7 +216,7 @@ p { margin-bottom: 14px; color: var(--bark-light); }
   justify-content: center;
   width: 44px; height: 44px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--coral) 0%, var(--rose) 100%);
+  background: linear-gradient(135deg, var(--coral-deep) 0%, var(--rose-deep) 100%);
   color: var(--white);
   font-weight: 800;
   font-size: 1.3rem;
@@ -305,7 +273,7 @@ p { margin-bottom: 14px; color: var(--bark-light); }
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--coral);
+  background: var(--coral-deep);
   color: var(--white);
   font-size: 0.8rem;
   font-weight: 800;
@@ -366,7 +334,7 @@ p { margin-bottom: 14px; color: var(--bark-light); }
 .faq summary::after {
   content: '+';
   font-size: 1.6rem;
-  color: var(--coral);
+  color: var(--coral-deep);
   margin-left: 16px;
   transition: transform 0.2s ease;
 }
@@ -376,12 +344,12 @@ p { margin-bottom: 14px; color: var(--bark-light); }
 
 /* ── Bottom CTA ── */
 .bottom-cta {
-  background: linear-gradient(160deg, var(--coral) 0%, var(--rose) 100%);
+  background: linear-gradient(160deg, var(--coral-deep) 0%, var(--rose-deep) 100%);
   text-align: center;
   color: var(--white);
 }
 .bottom-cta h2 { color: var(--white); }
-.bottom-cta p { color: rgba(255,255,255,0.92); font-size: 1.15rem; margin-bottom: 32px; }
+.bottom-cta p { color: var(--white); font-size: 1.15rem; margin-bottom: 32px; }
 
 /* ── Footer ── */
 footer {
@@ -397,7 +365,6 @@ footer a { color: var(--sun-yellow); }
 @media (max-width: 860px) {
   .hero-inner { grid-template-columns: 1fr; gap: 40px; text-align: center; }
   .hero-visual { order: -1; }
-  .phone-frame { width: 200px; height: 360px; }
   .cta-row { justify-content: center; }
   .steps { grid-template-columns: repeat(2, 1fr); }
   .benefit-grid { grid-template-columns: repeat(2, 1fr); }
