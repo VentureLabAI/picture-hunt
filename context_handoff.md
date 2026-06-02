@@ -20,7 +20,9 @@ Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — 
 
 ## Phase 10 — Custom illustrations (IN PROGRESS, resumable)
 
-Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`) and the **household** (22) + **animals** (11) item sets. **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn). Cache at **v88**.
+Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`), the **household** (22) + **animals** (11) item sets, and the **food** (11) set. **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn) — `applyItemIllustrations()` now hard-skips those two categories, which also stops shared slugs from leaking (e.g. food `orange` vs the colour `orange`, christmas `star` vs the shape `star`). Cache at **v90**.
+
+**Processor recreated** at `C:\dev\ph-tools\proc.py` (lives OUTSIDE the repo so it's never committed; the deleted in-repo `_proc.py` is not coming back). It reads a `<cat>_jobs.json` of `{slug: rawUrl}`, caches raws under `ph-tools/raw/`, flood-fills ONLY the outer white bg (connectivity stops at the model's own gray drop-shadow ring, so the white sticker-border + interior whites survive), feathers the cut edge, trims, and resizes longest-side→360px RGBA. Verified the nano output already contains the white border + soft shadow, so NO border/shadow synthesis is needed — just the outer-white flood. Build a contact sheet on a coloured bg before shipping to catch any halo.
 
 **Locked style anchor:** the apple, generate_image job `28b15feb-be58-46de-a458-03f1f7e1194a` (Higgsfield MCP, server `83e72cad…`). Pass it as `medias:[{value:"28b15feb-...", role:"image"}]` to keep every illustration on-model. See [[reference_image_gen_mcp]].
 
@@ -30,13 +32,15 @@ Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all
 
 **Wiring (already in place — just append slugs):** `app.js` has `phSlug()` + an `ITEM_ILLUSTRATIONS` allowlist + a post-load pass that sets `item.img='img/items/<slug>.png'` for listed slugs (emoji fallback otherwise, so no 404s). To light up a category: generate+process its items, add their slugs to `ITEM_ILLUSTRATIONS`, bump cache, push. Setup grid / game target / storyline already render `item.img`.
 
-**Remaining to generate (~65 slugs):**
-- food: apple (just process the anchor → apple.png), banana, orange, bread, egg, carrot, cookie, cereal, milk, yogurt, juice
-- furniture (chair, lamp already done): table, couch, bed, tv, door, window, shelf
-- clothing (hat, sock done): shirt, pants, dress, jacket, glove, scarf
-- halloween: pumpkin, ghost, candy, witch-hat, spider, spider-web, black-cat, bat, skeleton, treat-bag
-- christmas: christmas-tree, ornament, star, stocking, christmas-lights, santa, gift, wreath, snowman, candy-cane, reindeer
-- spring (bird done): flower, butterfly, rainbow, umbrella, rain-boots, bee, easter-egg, bunny, sunshine
+**Remaining to generate (43 slugs — exact, derived from `CATEGORIES`, not estimated):**
+- ~~food (11): done~~
+- furniture (7) (chair, lamp already done): table, couch, bed, tv, door, window, shelf
+- clothing (6) (hat, sock done): shirt, pants, dress, jacket, glove, scarf
+- halloween (10): pumpkin, ghost, candy, witch-hat, spider, spider-web, black-cat, bat, skeleton, treat-bag
+- christmas (11): christmas-tree, ornament, star, stocking, christmas-lights, santa, gift, wreath, snowman, candy-cane, reindeer
+- spring (9) (bird done): flower, butterfly, rainbow, umbrella, rain-boots, bee, easter-egg, bunny, sunshine
+
+Note: `black-cat`/`bunny`/`easter-egg`/`stocking`/`star` are deliberately distinct slugs from the already-done `cat`/`rabbit`/`egg`/`sock` — generate them fresh, don't alias.
 
 Items are lazy-loaded (NOT precached) to protect install size; runtime-cached after first view. Minor open polish: the Daily Challenge card (`daily-challenge-streak.js`) still shows `item.emoji`, not `item.img`.
 

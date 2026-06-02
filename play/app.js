@@ -266,10 +266,15 @@ var ITEM_ILLUSTRATIONS = {
   'blanket':1, 'remote-control':1, 'toothbrush':1, 'chair':1, 'sock':1, 'hat':1,
   'keys':1, 'water-bottle':1, 'crayon':1, 'plate':1, 'towel':1, 'lamp':1, 'clock':1,
   'fork':1, 'brush':1,
-  'dog':1, 'cat':1, 'duck':1, 'dinosaur':1, 'elephant':1, 'lion':1, 'pig':1, 'frog':1, 'rabbit':1, 'bird':1, 'fish':1
+  'dog':1, 'cat':1, 'duck':1, 'dinosaur':1, 'elephant':1, 'lion':1, 'pig':1, 'frog':1, 'rabbit':1, 'bird':1, 'fish':1,
+  'apple':1, 'banana':1, 'orange':1, 'bread':1, 'egg':1, 'carrot':1, 'cookie':1, 'cereal':1, 'milk':1, 'yogurt':1, 'juice':1
 };
 (function applyItemIllustrations() {
   Object.keys(CATEGORIES).forEach(function(cid) {
+    // Shapes & Colors intentionally stay on emoji (clean abstract icons beat
+    // hand-drawn). Skipping them here also prevents shared slugs from leaking an
+    // illustration into them (e.g. food 'orange' vs the colour 'orange').
+    if (cid === 'shapes' || cid === 'colors') return;
     (CATEGORIES[cid].items || []).forEach(function(it) {
       var s = phSlug(it.name);
       if (ITEM_ILLUSTRATIONS[s]) it.img = 'img/items/' + s + '.png';
