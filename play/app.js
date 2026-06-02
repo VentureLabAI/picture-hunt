@@ -314,11 +314,15 @@ function playVictorySound() {
 }
 function playClick() { playTone(800,0.06,0,'sine',0.12); }
 
+// Inline SVG icons for the sound toggle (consistent across platforms vs emoji)
+var SVG_VOL_ON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>';
+var SVG_VOL_OFF = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+
 function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
   var btn = document.getElementById('sound-toggle');
-  if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+  if (btn) btn.innerHTML = soundEnabled ? SVG_VOL_ON : SVG_VOL_OFF;
   if (soundEnabled) playClick();
 }
 
@@ -672,7 +676,7 @@ function renderSplash() {
   }
 
   var btn = document.getElementById('sound-toggle');
-  if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+  if (btn) btn.innerHTML = soundEnabled ? SVG_VOL_ON : SVG_VOL_OFF;
 
 }
 

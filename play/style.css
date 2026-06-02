@@ -1076,6 +1076,12 @@ body.ph-install-open .splash-content {
   box-shadow: 0 0 0 var(--ink);
 }
 
+/* Inline SVG control icons sit centered in their toy buttons */
+.setup-icon-btn svg, .home-btn svg, .skip-btn svg, .repeat-btn svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .repeat-btn {
   background: linear-gradient(180deg, #FFE38B 0%, #FFC93C 100%);
   border: 3px solid var(--sun-deep);
