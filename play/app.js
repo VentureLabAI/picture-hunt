@@ -267,7 +267,17 @@ var ITEM_ILLUSTRATIONS = {
   'keys':1, 'water-bottle':1, 'crayon':1, 'plate':1, 'towel':1, 'lamp':1, 'clock':1,
   'fork':1, 'brush':1,
   'dog':1, 'cat':1, 'duck':1, 'dinosaur':1, 'elephant':1, 'lion':1, 'pig':1, 'frog':1, 'rabbit':1, 'bird':1, 'fish':1,
-  'apple':1, 'banana':1, 'orange':1, 'bread':1, 'egg':1, 'carrot':1, 'cookie':1, 'cereal':1, 'milk':1, 'yogurt':1, 'juice':1
+  'apple':1, 'banana':1, 'orange':1, 'bread':1, 'egg':1, 'carrot':1, 'cookie':1, 'cereal':1, 'milk':1, 'yogurt':1, 'juice':1,
+  // furniture (chair, lamp already shared from above)
+  'table':1, 'couch':1, 'bed':1, 'tv':1, 'door':1, 'window':1, 'shelf':1,
+  // clothing (hat, sock already shared from above)
+  'shirt':1, 'pants':1, 'dress':1, 'jacket':1, 'glove':1, 'scarf':1,
+  // halloween
+  'pumpkin':1, 'ghost':1, 'candy':1, 'witch-hat':1, 'spider':1, 'spider-web':1, 'black-cat':1, 'bat':1, 'skeleton':1, 'treat-bag':1,
+  // christmas
+  'christmas-tree':1, 'ornament':1, 'star':1, 'stocking':1, 'christmas-lights':1, 'santa':1, 'gift':1, 'wreath':1, 'snowman':1, 'candy-cane':1, 'reindeer':1,
+  // spring (bird already shared from above)
+  'flower':1, 'butterfly':1, 'rainbow':1, 'umbrella':1, 'rain-boots':1, 'bee':1, 'easter-egg':1, 'bunny':1, 'sunshine':1
 };
 (function applyItemIllustrations() {
   Object.keys(CATEGORIES).forEach(function(cid) {

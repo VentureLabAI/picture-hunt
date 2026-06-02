@@ -18,9 +18,9 @@ Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — 
 - **All identity assets verified live** (curl: icons/favicon/og-card 200 image/png; manifest serves PNG icons, no emoji).
 - **Decision (don't re-litigate):** fox chosen over raccoon/red panda after differentiation research (Pinkfong is a pink fox for ages 1–5; our orange explorer-fox is distinct). The patches 0001–0006 described further below were applied and have been live since 2026-05-18 (see `git log`) — that older "until pushed, nothing is live" note is resolved.
 
-## Phase 10 — Custom illustrations (IN PROGRESS, resumable)
+## Phase 10 — Custom illustrations (COMPLETE — every non-abstract item illustrated)
 
-Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`), the **household** (22) + **animals** (11) item sets, and the **food** (11) set. **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn) — `applyItemIllustrations()` now hard-skips those two categories, which also stops shared slugs from leaking (e.g. food `orange` vs the colour `orange`, christmas `star` vs the shape `star`). Cache at **v90**.
+Replacing emoji with consistent flat-sticker illustrations. **DONE + live — every non-abstract item is now illustrated:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`) plus **87 item illustrations** at `play/img/items/<slug>.png` covering household (22), animals (11), food (11), furniture (7), clothing (6), halloween (10), christmas (11), spring (9). Shared slugs (chair, lamp, hat, sock, bird) light up across categories. **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn) — `applyItemIllustrations()` hard-skips those two categories, which also stops shared slugs from leaking (e.g. food `orange` vs the colour `orange`, christmas `star` vs the shape `star`). Cache at **v91**.
 
 **Processor recreated** at `C:\dev\ph-tools\proc.py` (lives OUTSIDE the repo so it's never committed; the deleted in-repo `_proc.py` is not coming back). It reads a `<cat>_jobs.json` of `{slug: rawUrl}`, caches raws under `ph-tools/raw/`, flood-fills ONLY the outer white bg (connectivity stops at the model's own gray drop-shadow ring, so the white sticker-border + interior whites survive), feathers the cut edge, trims, and resizes longest-side→360px RGBA. Verified the nano output already contains the white border + soft shadow, so NO border/shadow synthesis is needed — just the outer-white flood. Build a contact sheet on a coloured bg before shipping to catch any halo.
 
@@ -32,15 +32,9 @@ Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all
 
 **Wiring (already in place — just append slugs):** `app.js` has `phSlug()` + an `ITEM_ILLUSTRATIONS` allowlist + a post-load pass that sets `item.img='img/items/<slug>.png'` for listed slugs (emoji fallback otherwise, so no 404s). To light up a category: generate+process its items, add their slugs to `ITEM_ILLUSTRATIONS`, bump cache, push. Setup grid / game target / storyline already render `item.img`.
 
-**Remaining to generate (43 slugs — exact, derived from `CATEGORIES`, not estimated):**
-- ~~food (11): done~~
-- furniture (7) (chair, lamp already done): table, couch, bed, tv, door, window, shelf
-- clothing (6) (hat, sock done): shirt, pants, dress, jacket, glove, scarf
-- halloween (10): pumpkin, ghost, candy, witch-hat, spider, spider-web, black-cat, bat, skeleton, treat-bag
-- christmas (11): christmas-tree, ornament, star, stocking, christmas-lights, santa, gift, wreath, snowman, candy-cane, reindeer
-- spring (9) (bird done): flower, butterfly, rainbow, umbrella, rain-boots, bee, easter-egg, bunny, sunshine
+**Remaining to generate: NONE.** Every item slug in `CATEGORIES` (except the intentionally-emoji shapes & colors) is illustrated and wired in `ITEM_ILLUSTRATIONS`. A validation pass confirmed **87 slugs ↔ 87 PNGs**, zero missing (no 404s), zero orphans, zero duplicates. If a new item is ever added to a category, generate it with `C:\dev\ph-tools\proc.py` (anchor `28b15feb-…`) and append its slug.
 
-Note: `black-cat`/`bunny`/`easter-egg`/`stocking`/`star` are deliberately distinct slugs from the already-done `cat`/`rabbit`/`egg`/`sock` — generate them fresh, don't alias.
+Note: `black-cat`/`bunny`/`easter-egg`/`stocking`/`star` are deliberately distinct slugs from `cat`/`rabbit`/`egg`/`sock` and were generated fresh (not aliased). `star` lives only in christmas now (shapes stays emoji via the category guard).
 
 Items are lazy-loaded (NOT precached) to protect install size; runtime-cached after first view. Minor open polish: the Daily Challenge card (`daily-challenge-streak.js`) still shows `item.emoji`, not `item.img`.
 
