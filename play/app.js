@@ -1319,9 +1319,28 @@ function showMissResult() {
   feedbackArea.innerHTML = '<img class="miss-fox" src="img/mascot/fox-think.png" alt="" aria-hidden="true">'
     + '<div class="result-msg fail">Not quite! Let\'s try again.</div>'
     + '<div class="result-buttons">'
-    + '<button class="result-btn result-green" onclick="retakeFromMiss()"><span class="result-icon">📷</span></button>'
-    + '<button class="result-btn result-yellow" onclick="skipFromMiss()"><span class="result-icon">⏭️</span></button>'
+    + '<button class="result-btn result-green" onclick="retakeFromMiss()" aria-label="Retake photo" title="Tap to retake · parents: hold to mark correct"><span class="result-icon" aria-hidden="true">📷</span></button>'
+    + '<button class="result-btn result-yellow" onclick="skipFromMiss()" aria-label="Skip to the next one"><span class="result-icon" aria-hidden="true">⏭️</span></button>'
     + '</div>';
+
+  // Parent override: hold the green button to mark a wrongly-rejected photo as
+  // correct. (The AI isn't perfect on toddler photos — don't frustrate the child.)
+  var greenBtn = feedbackArea.querySelector('.result-green');
+  if (greenBtn) {
+    var lpTimer = null, lpFired = false;
+    var startLP = function() { lpFired = false; lpTimer = setTimeout(function() { lpFired = true; forceAccept(); }, 650); };
+    var cancelLP = function() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
+    greenBtn.addEventListener('touchstart', startLP, { passive: true });
+    greenBtn.addEventListener('touchend', cancelLP);
+    greenBtn.addEventListener('touchmove', cancelLP, { passive: true });
+    greenBtn.addEventListener('mousedown', startLP);
+    greenBtn.addEventListener('mouseup', cancelLP);
+    greenBtn.addEventListener('mouseleave', cancelLP);
+    // If the hold fired forceAccept, swallow the trailing retake click.
+    greenBtn.addEventListener('click', function(e) {
+      if (lpFired) { e.preventDefault(); e.stopImmediatePropagation(); lpFired = false; }
+    }, true);
+  }
 
   // Voice guide + pulse
   speak('Try again, or skip to the next one!', function() {
