@@ -6,7 +6,8 @@
    Toddler-first: 100px+ tap targets, springy feedback.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
+/* Fredoka is loaded via <link rel="preconnect"> + stylesheet in index.html
+   <head> — faster first paint than a render-blocking CSS @import. */
 
 /* ─── Design Tokens ───────────────────────────────────────── */
 :root {
@@ -477,7 +478,7 @@ body.ph-install-open .splash-content {
   cursor: pointer;
   transition: transform var(--dur-fast) var(--ease-bounce),
               box-shadow var(--dur-fast);
-  min-height: 84px;
+  min-height: 100px;
   min-width: 200px;
   text-align: center;
   position: relative;
@@ -590,6 +591,7 @@ body.ph-install-open .splash-content {
 .setup-container {
   overflow-y: auto;
   max-height: 100vh;
+  max-height: 100dvh;
   width: 100%;
   max-width: 720px;
   padding: var(--sp-10) var(--sp-5) var(--sp-10);
@@ -625,7 +627,7 @@ body.ph-install-open .splash-content {
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-bounce);
+  transition: transform var(--dur-fast) var(--ease-bounce), background-color var(--dur-fast) ease, color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
   box-shadow: 0 3px 0 var(--ink);
   min-height: 42px;
 }
@@ -1095,7 +1097,7 @@ body.ph-install-open .splash-content {
   cursor: pointer;
   box-shadow: 0 4px 0 var(--ink), 0 8px 14px rgba(27,17,64,0.12);
   transition: transform var(--dur-fast) var(--ease-bounce);
-  min-height: 56px;
+  min-height: 72px;
 }
 .skip-btn:active {
   transform: translateY(4px);
@@ -1121,7 +1123,7 @@ body.ph-install-open .splash-content {
   margin-top: var(--sp-2);
   box-shadow: 0 4px 0 var(--sun-deep), 0 8px 16px rgba(255,201,60,0.45);
   transition: transform var(--dur-fast) var(--ease-bounce);
-  min-height: 48px;
+  min-height: 72px;
 }
 .repeat-btn:active {
   transform: translateY(4px);
@@ -1325,7 +1327,7 @@ body.ph-install-open .splash-content {
   font-weight: var(--fw-semi);
   color: var(--ink);
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-bounce);
+  transition: transform var(--dur-fast) var(--ease-bounce), background-color var(--dur-fast) ease, color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
   min-height: 48px;
   box-shadow: 0 3px 0 var(--ink);
 }
@@ -1356,7 +1358,7 @@ body.ph-install-open .splash-content {
   font-weight: var(--fw-semi);
   color: var(--ink);
   cursor: pointer;
-  transition: all var(--dur-fast);
+  transition: transform var(--dur-fast), background-color var(--dur-fast) ease, color var(--dur-fast) ease;
   min-height: 44px;
   box-shadow: 0 3px 0 var(--ink);
 }
