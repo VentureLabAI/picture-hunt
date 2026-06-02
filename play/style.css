@@ -160,6 +160,16 @@ html, body {
   z-index: 1;
 }
 
+/* Hunt-buddy greeter on the entry screen */
+.landing-fox {
+  display: block;
+  width: clamp(150px, 42vw, 232px);
+  height: auto;
+  margin: 0 auto var(--sp-3);
+  filter: drop-shadow(0 14px 22px rgba(27,17,64,0.30));
+  animation: float 3.6s ease-in-out infinite;
+}
+
 .title-bounce {
   font-size: clamp(3rem, 12vw, 5.5rem);
   font-weight: var(--fw-bold);
@@ -244,6 +254,11 @@ html, body {
   width: 100%;
   max-width: 560px;
   padding: var(--sp-10) var(--sp-5) var(--sp-10);
+}
+
+/* When the install pill is showing, reserve space so it never covers the grid */
+body.ph-install-open .splash-content {
+  padding-bottom: calc(var(--sp-10) + 96px);
 }
 
 .home-title {
@@ -1688,6 +1703,7 @@ html, body {
 
 /* Landscape phones — compress vertical space */
 @media (max-height: 500px) {
+  .landing-fox { width: clamp(72px, 16vh, 120px); margin-bottom: var(--sp-1); }
   .landing-sub { margin: var(--sp-3) 0 var(--sp-6); }
   .landing-play-btn { padding: var(--sp-4) var(--sp-10); min-height: 88px; }
   .target-emoji { font-size: clamp(3.5rem, 15vw, 6rem); }

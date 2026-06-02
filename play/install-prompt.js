@@ -86,6 +86,7 @@ var InstallPrompt = (function() {
     }
 
     document.body.appendChild(pill);
+    document.body.classList.add('ph-install-open');
     setTimeout(function() { pill.classList.add('install-pill-visible'); }, 50);
   }
 
@@ -106,13 +107,15 @@ var InstallPrompt = (function() {
   function removePill() {
     var p = document.getElementById('install-pill');
     if (p) p.remove();
+    document.body.classList.remove('ph-install-open');
   }
 
   function init() {
     if (isInstalled()) return;
     captureBeforeInstall();
-    // For iOS or browsers that already fired beforeinstallprompt at load
-    setTimeout(maybeShowPill, 1500);
+    // For iOS or browsers that already fired beforeinstallprompt at load.
+    // Delayed so the splash content lands first instead of the pill popping over it.
+    setTimeout(maybeShowPill, 3200);
   }
 
   return {

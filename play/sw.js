@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v78';
+var CACHE_VERSION = 'ph-v79';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -64,6 +64,13 @@ var PRECACHE_URLS = [
   './img/square.png',
   './img/towel.png',
   './img/water-bottle.png',
+  // Mascot — Hunt-buddy fox poses
+  './img/mascot/fox-hero.png',
+  './img/mascot/fox-celebrate.png',
+  './img/mascot/fox-point.png',
+  './img/mascot/fox-search.png',
+  './img/mascot/fox-key.png',
+  './img/mascot/fox-think.png',
   // Audio — category intros
   './audio/cat-animals.mp3',
   './audio/cat-clothing.mp3',
