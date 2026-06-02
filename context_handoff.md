@@ -141,7 +141,47 @@ git push origin main
 
 ## Source of truth
 
-This repo (`VentureLabAI/picture-hunt`) is both dev AND deploy. GitHub Pages serves `main` directly. **Push = deploy.** The monorepo (`VentureLabAI/venture-lab`) has a tombstone at `picture-hunt/` — frozen on 2026-05-18, OpenClaw cron does not touch it, you should not write to it.
+This repo (`VentureLabAI/picture-hunt`) is both dev AND deploy. GitHub Pages serves `main` directly, so for the **frontend** (everything under `play/` plus the marketing `index.html` / `landing.css`) **push = deploy** — `git push origin main` and it's live within ~1 min. ⚠️ **The backend worker is the ONE exception: `git push` does NOT deploy it.** Editing `worker/worker.js` and pushing changes nothing on the live API until you run `wrangler deploy` — see the next section. The monorepo (`VentureLabAI/venture-lab`) has a tombstone at `picture-hunt/` — frozen on 2026-05-18, OpenClaw cron does not touch it, you should not write to it.
+
+## Deploying the Cloudflare worker (`worker/worker.js`) — READ THIS, it works differently from the frontend
+
+**Plain-English version:** the app has two halves that ship in two different ways.
+
+- The **app you see** (game UI, pages, images — everything in `play/`) goes live the moment you `git push`. Nothing else to do.
+- The **worker** is a small backend program living at `https://picture-hunt-api.aidevlab3.workers.dev`. The app calls it to **(1) check the kid's photo with AI** (the core "did they find it?" magic — a Gemini proxy), **(2)** validate unlock codes, **(3)** sync progress across devices, **(4)** receive Stripe payment webhooks. It runs on **Cloudflare**, not GitHub — so `git push` does **not** update it. Changing `worker/worker.js` in the repo does nothing to the live API on its own; it has to be **deployed** separately.
+
+**⚠️ Stakes:** because the worker proxies the AI photo-check, a broken worker = the game can't tell whether a photo is correct = core gameplay breaks. Change `worker/worker.js` deliberately, and always verify after deploying (commands at the bottom).
+
+**How to deploy the worker (exact steps):**
+```bash
+cd /c/dev/picture-hunt/worker
+npx wrangler deploy
+```
+On success it prints a new `Current Version ID` and lists the `UNLOCK_CODES` KV binding.
+
+**The login catch (this is the "wrangler login / API token" thing Boss Man asked about):** Cloudflare requires you to be authenticated before deploying. There's a saved login on this machine, but **it expires periodically**, and there is **no `CLOUDFLARE_API_TOKEN` set** as a permanent alternative. So a deploy can fail purely because the login lapsed.
+
+- **Symptom you're logged out:** `npx wrangler deploy` (or `npx wrangler whoami`) fails with *"Failed to automatically retrieve account IDs… your authentication may have expired."*
+- **Fix — log in again (~30 seconds):**
+  ```bash
+  npx wrangler login
+  ```
+  This opens Boss Man's browser to a Cloudflare page → he clicks **"Allow"** → done. Then re-run `npx wrangler deploy`.
+- **If you're a Claude Code session:** run `npx wrangler login` in the **background** (it won't return until the click happens), tell Boss Man *"your browser will open — click Allow,"* wait for it to finish, then `npx wrangler deploy`. This is exactly how the 2026-06-02 promo-code fix shipped.
+- **Optional permanent fix (no browser step ever again):** Boss Man creates a Cloudflare **API token** (Cloudflare dashboard → My Profile → API Tokens → Create Token → permissions *Workers Scripts: Edit* + *Workers KV Storage: Edit*) and it gets saved as a `CLOUDFLARE_API_TOKEN` environment variable on the machine. After that `wrangler deploy` works headlessly forever. **Not set up yet** — propose this if worker deploys become frequent.
+
+**Verify a worker deploy worked:**
+```bash
+# a promo code should be valid:
+curl -X POST https://picture-hunt-api.aidevlab3.workers.dev/validate-code -H 'Content-Type: application/json' -d '{"code":"LAUNCH2026"}'
+# → {"valid":true,"promo":true,...}
+# a fake code should be rejected:
+curl -X POST https://picture-hunt-api.aidevlab3.workers.dev/validate-code -H 'Content-Type: application/json' -d '{"code":"NOTREAL"}'
+# → {"valid":false}
+```
+For an AI-photo-check change, also do one real photo run in the live app.
+
+**Housekeeping:** `worker/.wrangler/` is local login/cache state — it's gitignored; never commit it. The KV namespace is already bound in `worker/wrangler.toml` (id `3984b5b16694406590dca6f5c6238a8b`), so a fresh deploy keeps unlock codes + synced progress intact.
 
 ## When Boss Man returns
 
