@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v86';
+var CACHE_VERSION = 'ph-v87';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -77,6 +77,11 @@ var PRECACHE_URLS = [
   './img/icon-180.png',
   './img/icon-32.png',
   './img/icon-16.png',
+  // Category tiles (custom illustrations)
+  './img/tiles/household.png', './img/tiles/animals.png', './img/tiles/food.png',
+  './img/tiles/shapes.png', './img/tiles/colors.png', './img/tiles/furniture.png',
+  './img/tiles/clothing.png', './img/tiles/halloween.png', './img/tiles/christmas.png',
+  './img/tiles/spring.png',
   // Audio — category intros
   './audio/cat-animals.mp3',
   './audio/cat-clothing.mp3',

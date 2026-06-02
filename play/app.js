@@ -628,7 +628,7 @@ function renderSplash() {
     html += '<button class="' + classes + '" '
       + 'style="background:' + cat.gradient + '" '
       + 'onclick="playCategory(\'' + catId + '\')">'
-      + '<div class="cat-emoji">' + cat.emoji + '</div>'
+      + '<div class="cat-emoji"><img class="cat-tile-img" src="img/tiles/' + catId + '.png" alt="" loading="lazy"></div>'
       + '<div class="cat-info">'
       + '<div class="cat-name">' + cat.name + badge + '</div>'
       + '<div class="cat-progress">'
