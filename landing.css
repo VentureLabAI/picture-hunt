@@ -44,7 +44,6 @@ a:hover { text-decoration: underline; }
 :focus-visible {
   outline: 3px solid var(--bark);
   outline-offset: 3px;
-  border-radius: 6px;
 }
 
 section { padding: 80px 24px; }

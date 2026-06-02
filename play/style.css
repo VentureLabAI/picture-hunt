@@ -116,7 +116,6 @@ html, body {
 :focus-visible {
   outline: 4px solid var(--grape);
   outline-offset: 3px;
-  border-radius: var(--r-sm);
 }
 /* On dark/bright surfaces a light halo keeps the ring readable */
 .camera-btn:focus-visible,
