@@ -113,7 +113,7 @@
 }
 .dashboard-big-number .dashboard-total {
   font-size: 28px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.66);
   font-weight: 400;
 }
 
@@ -226,7 +226,7 @@
 }
 .dashboard-item.missing {
   background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.66);
 }
 
 /* ── Achievements ── */
@@ -269,13 +269,13 @@
   font-weight: 600;
 }
 .dashboard-ach-desc {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.66);
   font-size: 13px;
 }
 
 .dashboard-ach-summary {
   text-align: center;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.66);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -298,7 +298,7 @@
 }
 
 .dashboard-day-label {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.66);
   font-size: 11px;
 }
 
@@ -347,19 +347,47 @@
 }
 
 .dashboard-session-date {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.62);
   font-size: 12px;
   flex-shrink: 0;
 }
 
 .dashboard-playtime {
   text-align: center;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.66);
   font-size: 14px;
   margin-top: 12px;
   padding: 10px;
   background: rgba(255,255,255,0.05);
   border-radius: 10px;
+}
+
+/* ── Empty state + reset toast ── */
+.dashboard-empty {
+  text-align: center;
+  color: rgba(255,255,255,0.78);
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 24px 12px;
+}
+.dashboard-toast {
+  position: fixed;
+  left: 50%; bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2100;
+  background: #1a1a2e;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.25);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: dashToastIn 0.25s ease;
+}
+@keyframes dashToastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* ── Reset Button ── */

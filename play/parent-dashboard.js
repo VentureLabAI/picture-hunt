@@ -158,8 +158,8 @@ function _createDashboardScreen() {
 
   screen.innerHTML = '<div class="dashboard-container">'
     + '<div class="dashboard-header">'
-    + '  <button class="dashboard-back-btn" onclick="closeDashboard()">🏠</button>'
-    + '  <h1 class="dashboard-title">📊 Progress</h1>'
+    + '  <button class="dashboard-back-btn" onclick="closeDashboard()" aria-label="Back to home"><span aria-hidden="true">🏠</span></button>'
+    + '  <h2 class="dashboard-title">📊 Progress</h2>'
     + '</div>'
     + '<div id="dashboard-content" class="dashboard-content"></div>'
     + '</div>';
@@ -201,6 +201,9 @@ function _renderDashboard() {
   });
 
   var html = '';
+  if (totalFound === 0) {
+    html += '<p class="dashboard-empty">Stats will appear here once your child starts playing. 🦊</p>';
+  }
 
   // ── Overall Progress ──
   var overallPct = totalItems > 0 ? Math.round((totalFound / totalItems) * 100) : 0;
@@ -389,4 +392,11 @@ function _doReset() {
   var overlay = document.getElementById('dashboard-confirm-reset');
   if (overlay) overlay.remove();
   _renderDashboard(); // re-render with empty state
+  // Confirm the destructive action (it otherwise succeeds silently).
+  var toast = document.createElement('div');
+  toast.className = 'dashboard-toast';
+  toast.setAttribute('role', 'status');
+  toast.textContent = 'All progress reset.';
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2600);
 }
