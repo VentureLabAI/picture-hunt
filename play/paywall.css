@@ -63,6 +63,14 @@
 .paywall-close:hover { background: #FFF3B0; }
 .paywall-close:active { transform: translateY(3px); box-shadow: 0 0 0 #1B1140; }
 
+.paywall-fox {
+  display: block;
+  width: clamp(104px, 28vw, 138px);
+  height: auto;
+  margin: 4px auto -4px;
+  filter: drop-shadow(0 8px 16px rgba(27,17,64,0.26));
+}
+
 .paywall-headline {
   font-size: 1.7rem;
   font-weight: 700;
