@@ -261,6 +261,12 @@ var DailyStreak = (function() {
         }
       };
       card.style.cursor = 'pointer';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', 'Daily challenge: ' + dailyPromptText(daily.item));
+      card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.onclick(); }
+      });
     }
 
     grid.insertBefore(card, grid.firstChild);

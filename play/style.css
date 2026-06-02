@@ -111,6 +111,20 @@ html, body {
 }
 .screen.active { display: flex; }
 
+/* ─── Focus visibility (keyboard / switch-access) ──────────── */
+:focus-visible {
+  outline: 4px solid var(--grape);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+/* On dark/bright surfaces a light halo keeps the ring readable */
+.camera-btn:focus-visible,
+.result-btn:focus-visible,
+.cat-tab:focus-visible {
+  outline-color: #fff;
+  box-shadow: 0 0 0 8px rgba(27,17,64,0.55);
+}
+
 
 /* ════════════════════════════════════════════════════════════
    LANDING — First hello, mesh-gradient sky + chunky title

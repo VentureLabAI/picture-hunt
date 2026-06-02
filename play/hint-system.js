@@ -197,8 +197,9 @@ function createHintButton() {
   var btn = document.createElement('button');
   btn.id = 'hint-btn';
   btn.className = 'hint-btn';
-  btn.innerHTML = '💡';
+  btn.innerHTML = '<span aria-hidden="true">💡</span>';
   btn.title = 'Get a hint!';
+  btn.setAttribute('aria-label', 'Get a hint');
   btn.style.display = 'none';
   btn.addEventListener('click', onHintTap);
 

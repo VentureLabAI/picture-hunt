@@ -550,6 +550,13 @@ function showScreen(name) {
   Object.values(screens).forEach(function(s) { s.classList.remove('active'); });
   var el = screens[name];
   el.classList.add('active');
+  // Move focus into the new screen so keyboard / screen-reader users follow the
+  // transition instead of being stranded on the now-hidden previous screen.
+  try {
+    var focusTarget = el.querySelector('h1') || el;
+    focusTarget.setAttribute('tabindex', '-1');
+    focusTarget.focus({ preventScroll: true });
+  } catch (e) {}
   // Brief ghost-tap guard on ALL screen transitions
   el.style.pointerEvents = 'none';
   setTimeout(function() { el.style.pointerEvents = ''; }, 350);
@@ -792,6 +799,10 @@ function renderSetupGrid() {
   cat.items.forEach(function(item) {
     var card = document.createElement('div');
     card.className = 'setup-card' + (setupSelection.has(item.name) ? ' selected' : '');
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', item.name);
+    card.setAttribute('aria-pressed', setupSelection.has(item.name) ? 'true' : 'false');
     var iconHtml = item.img
       ? '<img src="' + item.img + '" class="setup-card-img" alt="' + item.name + '">'
       : '<span class="setup-card-emoji">' + item.emoji + '</span>';
@@ -805,9 +816,13 @@ function renderSetupGrid() {
       if (setupSelection.has(item.name)) setupSelection.delete(item.name);
       else setupSelection.add(item.name);
       card.classList.toggle('selected');
+      card.setAttribute('aria-pressed', setupSelection.has(item.name) ? 'true' : 'false');
       card.classList.add('bounce-tap');
       setTimeout(function() { card.classList.remove('bounce-tap'); }, 300);
       updateSetupMsg();
+    });
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
     });
     setupGrid.appendChild(card);
   });
@@ -1067,7 +1082,9 @@ function showCurrentItem() {
     targetText.textContent = displayPrompt;
   }
   feedbackArea.innerHTML = '';
-  progressFill.style.width = ((currentIndex / shuffledItems.length) * 100) + '%';
+  var progressPct = Math.round((currentIndex / shuffledItems.length) * 100);
+  progressFill.style.width = progressPct + '%';
+  if (progressFill.parentElement) progressFill.parentElement.setAttribute('aria-valuenow', progressPct);
 
   cameraInput.value = '';
   cameraLabel.style.display = '';
