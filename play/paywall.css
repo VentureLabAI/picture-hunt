@@ -116,23 +116,27 @@
   align-items: center;
   gap: 2px;
   text-decoration: none;
-  background: linear-gradient(180deg, #FF6BB6 0%, #E03A8E 100%);
+  background: linear-gradient(180deg, #D62A87 0%, #B8226A 100%);
   color: #FFFFFF;
   border-radius: 22px;
   padding: 18px 20px;
   margin-bottom: 6px;
-  box-shadow: 0 5px 0 #B8226A, 0 12px 24px rgba(224,58,142,0.30);
+  box-shadow: 0 5px 0 #8E1A52, 0 12px 24px rgba(184,34,106,0.32);
   transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.15s ease;
   font-family: inherit;
 }
 .paywall-buy:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 0 #B8226A, 0 16px 30px rgba(224,58,142,0.34);
+  box-shadow: 0 7px 0 #8E1A52, 0 16px 30px rgba(184,34,106,0.36);
 }
 .paywall-buy:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 #B8226A;
+  box-shadow: 0 1px 0 #8E1A52;
+}
+.paywall-buy.is-loading {
+  opacity: 0.85;
+  pointer-events: none;
 }
 .paywall-buy-price {
   font-size: 2.2rem;
@@ -167,7 +171,7 @@
   font-weight: 600;
   line-height: 1.45;
 }
-.paywall-coming-soon a { color: #D62A87; font-weight: 700; }
+.paywall-coming-soon a { color: #B8226A; font-weight: 700; text-decoration: underline; }
 
 .paywall-code {
   border-top: 2px dashed #44366E;
@@ -182,10 +186,12 @@
 }
 .paywall-code-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 .paywall-code-row input {
-  flex: 1;
+  flex: 1 1 140px;
+  min-width: 0;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -204,8 +210,8 @@
   box-shadow: 0 0 0 3px rgba(45,212,164,0.30);
 }
 .paywall-redeem-btn {
-  background: linear-gradient(180deg, #4FE3B6 0%, #2DD4A4 50%, #14A981 100%);
-  color: #FFFFFF;
+  background: linear-gradient(180deg, #5FEAC0 0%, #34D6A4 100%);
+  color: #0A3D2C;
   border: 3px solid #0F8666;
   border-radius: 16px;
   padding: 12px 20px;
@@ -216,6 +222,7 @@
   white-space: nowrap;
   box-shadow: 0 4px 0 #0F8666, 0 8px 16px rgba(45,212,164,0.35);
   transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex: 1 1 auto;
 }
 .paywall-redeem-btn:active {
   transform: translateY(3px);
@@ -230,8 +237,8 @@
   min-height: 18px;
   font-weight: 500;
 }
-.paywall-code-msg.err { color: #D62A87; font-weight: 700; }
-.paywall-code-msg.ok  { color: #14A981; font-weight: 700; }
+.paywall-code-msg.err { color: #B8226A; font-weight: 700; }
+.paywall-code-msg.ok  { color: #0C7A59; font-weight: 700; }
 
 /* Splash: lock badge on premium category cards */
 .category-card.locked {
@@ -271,7 +278,7 @@
   align-items: center;
   justify-content: center;
   margin: 14px auto 8px;
-  background: linear-gradient(180deg, #FF6BB6 0%, #FF4FA8 50%, #E03A8E 100%);
+  background: linear-gradient(180deg, #D62A87 0%, #B8226A 100%);
   color: #FFFFFF;
   border: 3px solid #FFFFFF;
   border-radius: 999px;
@@ -283,13 +290,13 @@
   min-height: 52px;
   letter-spacing: 0.02em;
   box-shadow:
-    0 5px 0 #B8226A,
-    0 12px 24px rgba(255,79,168,0.45);
+    0 5px 0 #8E1A52,
+    0 12px 24px rgba(184,34,106,0.45);
   transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .upgrade-cta:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 #B8226A, 0 4px 10px rgba(255,79,168,0.30);
+  box-shadow: 0 1px 0 #8E1A52, 0 4px 10px rgba(184,34,106,0.30);
 }
 
 /* PWA install prompt pill */
@@ -326,8 +333,8 @@
 }
 .install-pill-text b { font-weight: 700; }
 .install-pill-btn {
-  background: linear-gradient(180deg, #4FE3B6 0%, #2DD4A4 50%, #14A981 100%);
-  color: #FFFFFF;
+  background: linear-gradient(180deg, #5FEAC0 0%, #34D6A4 100%);
+  color: #0A3D2C;
   border: 2px solid #0F8666;
   border-radius: 999px;
   padding: 8px 16px;

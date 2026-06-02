@@ -132,7 +132,8 @@ var Paywall = (function() {
 
     var plansBlock = stripeReady
       ? ''
-        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener">'
+        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener" aria-label="Unlock everything for $19.99, one time"'
+        +   ' onclick="this.classList.add(\'is-loading\'); var l=this.querySelector(\'.paywall-buy-label\'); if(l)l.textContent=\'Opening checkout…\';">'
         +   '<span class="paywall-buy-price">$19.99</span>'
         +   '<span class="paywall-buy-label">Unlock everything — one time</span>'
         + '</a>'
@@ -163,10 +164,10 @@ var Paywall = (function() {
       +   '<div class="paywall-code">'
       +     '<p class="paywall-code-label">Already paid? Enter your unlock code:</p>'
       +     '<div class="paywall-code-row">'
-      +       '<input type="text" id="paywall-code-input" placeholder="ABC123" maxlength="20" autocapitalize="characters" autocomplete="off">'
+      +       '<input type="text" id="paywall-code-input" aria-label="Unlock code" placeholder="ABC123" maxlength="20" autocapitalize="characters" autocomplete="off">'
       +       '<button onclick="Paywall.redeem()" class="paywall-redeem-btn">Unlock</button>'
       +     '</div>'
-      +     '<p id="paywall-code-msg" class="paywall-code-msg"></p>'
+      +     '<p id="paywall-code-msg" class="paywall-code-msg" role="status" aria-live="polite"></p>'
       +   '</div>'
 
       + '</div>';
