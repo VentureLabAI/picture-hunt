@@ -1,1 +1,5 @@
 node_modules/
+
+# Wrangler local state / auth cache — machine-local, churns on every login/deploy
+.wrangler/
+.dev.vars
