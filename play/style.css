@@ -945,6 +945,15 @@ body.ph-install-open .splash-content {
   animation: victoryFloat 2.2s ease-in-out infinite;
   filter: drop-shadow(0 8px 16px rgba(27,17,64,0.30));
 }
+/* Hunt-buddy celebrating on the victory screen */
+.victory-fox {
+  display: block;
+  width: clamp(160px, 46vw, 240px);
+  height: auto;
+  margin: var(--sp-4) auto var(--sp-3);
+  animation: victoryFloat 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 14px 22px rgba(27,17,64,0.32));
+}
 
 .victory-sub {
   font-size: clamp(1.3rem, 5.2vw, 2rem);
@@ -1467,6 +1476,13 @@ body.ph-install-open .splash-content {
   flex-shrink: 0;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,0.25));
 }
+/* Hunt-buddy as the Story Quests guide */
+.storyline-hero-fox {
+  width: 58px;
+  height: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.30));
+}
 .storyline-hero-text {
   display: flex;
   flex-direction: column;
@@ -1708,6 +1724,7 @@ body.ph-install-open .splash-content {
   .landing-play-btn { padding: var(--sp-4) var(--sp-10); min-height: 88px; }
   .target-emoji { font-size: clamp(3.5rem, 15vw, 6rem); }
   .victory-emoji { margin: var(--sp-3) 0; }
+  .victory-fox { width: clamp(96px, 26vh, 150px); margin: var(--sp-2) auto; }
   .target-area { padding: var(--sp-3) var(--sp-4); }
 }
 

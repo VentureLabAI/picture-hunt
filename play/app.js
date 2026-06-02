@@ -689,7 +689,7 @@ function renderStorylineFeature(premium) {
   }
   var locked = (typeof Paywall !== 'undefined') && !premium;
   container.innerHTML = '<button class="storyline-hero' + (locked ? ' locked' : '') + '" id="storyline-hero-btn">'
-    + '<span class="storyline-hero-emoji">🗺️</span>'
+    + '<img class="storyline-hero-fox" src="img/mascot/fox-point.png" alt="">'
     + '<span class="storyline-hero-text">'
     + '<span class="storyline-hero-title">Story Quests' + (locked ? ' 🔒' : '') + '</span>'
     + '<span class="storyline-hero-sub">Go on an adventure to find things!</span>'
