@@ -1260,7 +1260,8 @@ function showMissResult() {
   var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = 'none';
 
-  feedbackArea.innerHTML = '<div class="result-msg fail">🤔 Not quite!</div>'
+  feedbackArea.innerHTML = '<img class="miss-fox" src="img/mascot/fox-think.png" alt="" aria-hidden="true">'
+    + '<div class="result-msg fail">Not quite! Let\'s try again.</div>'
     + '<div class="result-buttons">'
     + '<button class="result-btn result-green" onclick="retakeFromMiss()"><span class="result-icon">📷</span></button>'
     + '<button class="result-btn result-yellow" onclick="skipFromMiss()"><span class="result-icon">⏭️</span></button>'

@@ -1106,6 +1106,15 @@ body.ph-install-open .splash-content {
 /* ════════════════════════════════════════════════════════════
    RESULT FLOW — Photo preview + actions
    ════════════════════════════════════════════════════════════ */
+.miss-fox {
+  display: block;
+  width: clamp(84px, 24vw, 116px);
+  height: auto;
+  margin: 0 auto var(--sp-1);
+  filter: drop-shadow(0 8px 14px rgba(27,17,64,0.22));
+  animation: popIn 0.4s var(--ease-bounce);
+}
+
 .result-msg {
   font-size: clamp(1.4rem, 5vw, 1.8rem);
   font-weight: var(--fw-bold);
