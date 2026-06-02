@@ -165,6 +165,7 @@ html, body {
   display: block;
   width: clamp(150px, 42vw, 232px);
   height: auto;
+  aspect-ratio: 577 / 640;
   margin: 0 auto var(--sp-3);
   filter: drop-shadow(0 14px 22px rgba(27,17,64,0.30));
   animation: float 3.6s ease-in-out infinite;
@@ -886,6 +887,7 @@ body.ph-install-open .splash-content {
 .loading-fox {
   width: clamp(120px, 34vw, 168px);
   height: auto;
+  aspect-ratio: 526 / 640;
   filter: drop-shadow(0 10px 18px rgba(0,0,0,0.38));
   animation: float 2.6s ease-in-out infinite;
 }
@@ -958,6 +960,7 @@ body.ph-install-open .splash-content {
   display: block;
   width: clamp(160px, 46vw, 240px);
   height: auto;
+  aspect-ratio: 551 / 640;
   margin: var(--sp-4) auto var(--sp-3);
   animation: victoryFloat 2.2s ease-in-out infinite;
   filter: drop-shadow(0 14px 22px rgba(27,17,64,0.32));
@@ -1110,6 +1113,7 @@ body.ph-install-open .splash-content {
   display: block;
   width: clamp(84px, 24vw, 116px);
   height: auto;
+  aspect-ratio: 503 / 640;
   margin: 0 auto var(--sp-1);
   filter: drop-shadow(0 8px 14px rgba(27,17,64,0.22));
   animation: popIn 0.4s var(--ease-bounce);
@@ -1503,6 +1507,7 @@ body.ph-install-open .splash-content {
 .storyline-hero-fox {
   width: 58px;
   height: auto;
+  aspect-ratio: 578 / 640;
   flex-shrink: 0;
   filter: drop-shadow(0 3px 6px rgba(0,0,0,0.30));
 }
