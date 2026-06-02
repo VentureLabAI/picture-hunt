@@ -1,6 +1,6 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-01 (Hunt-buddy mascot + UI elevation, Phases 0–7 shipped live)
+**Last updated:** 2026-06-01 (Phase 10 custom illustrations **COMPLETE** — all 87 item stickers + 10 tiles live, cache **v91**; earlier this session: Hunt-buddy mascot + UI elevation, Phases 0–7)
 
 ## 2026-06-01 session — Hunt-buddy mascot + UI elevation (SHIPPED, live)
 
