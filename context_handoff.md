@@ -1,8 +1,10 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-02 (UI/UX audit + full fix sweep **SHIPPED**, cache **v94 / ph-v94**)
+**Last updated:** 2026-06-02 (UI/UX audit + full fix sweep **SHIPPED**, cache **v95 / ph-v95**)
 
-## 2026-06-02 session — UI/UX audit + fix sweep (SHIPPED, live, cache v94)
+> **v95 follow-up (`43ad272`):** the screen-transition focus management shipped in v94 made Chromium paint a `:focus-visible` grape outline around screen **headings** (a purple box around "Pick the items!" etc.) because `showScreen` focuses each screen's `h1`/container (`tabindex=-1`). Fixed with `[tabindex="-1"]:focus { outline: none }` — focus still moves for SR/keyboard, but route-change destinations no longer paint a ring (real controls keep theirs). Verified gone across splash/setup; setup's sticky "Done" button (now 100px) still clears the last card (80px grid pad). **Lesson:** programmatic route-change focus + a global `:focus-visible` ring needs the `[tabindex="-1"]` outline suppression, or non-interactive focus destinations flash a ring.
+
+## 2026-06-02 session — UI/UX audit + fix sweep (SHIPPED, live, cache v94→v95)
 
 Ran a full UI/UX audit (ui-ux-pro-max framework + live-browser testing across phone/tablet/landscape + code review of every loaded module) and fixed everything found. 9 surgical commits (`f367da9`..`09fee3a`), all verified in a real browser against a local server before push. Cache bumped v93 → **v94**; landing CSS `?v=4` → `v5`.
 
