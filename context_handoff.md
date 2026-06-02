@@ -1,17 +1,21 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-01 (Hunt-buddy mascot + UI elevation, Phases 0–4 shipped live)
+**Last updated:** 2026-06-01 (Hunt-buddy mascot + UI elevation, Phases 0–7 shipped live)
 
 ## 2026-06-01 session — Hunt-buddy mascot + UI elevation (SHIPPED, live)
 
-Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — woven through every key surface, plus polish. Full plan + rationale in `docs/UI-ELEVATION.md`. All shipped to `main` and verified live; cache is now **v82 / `ph-v82`**.
+Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — woven through every key surface, plus polish. Full plan + rationale in `docs/UI-ELEVATION.md`. All shipped to `main` and verified live; cache is now **v84 / `ph-v84`**.
 
 - **Mascot assets** — `play/img/mascot/`: 6 reference-locked fox poses (`fox-hero`, `fox-celebrate`, `fox-point`, `fox-search`, `fox-key`, `fox-think`), transparent PNG, web-optimized 640px. Generated via Nano Banana Pro (reference-locked off `fox-hero` for character consistency); white bg removed with a PIL border flood-fill (preserves the cream belly). All 6 precached in `sw.js`.
 - **Phase 1** — fox greeter on the app entry (`play/index.html` `#landing` + `.landing-fox`); marketing landing hero (`index.html`) swapped the emoji phone-mockup for the fox + a bilingual speech bubble. Install-pill no longer covers the grid (`install-prompt.js`: `body.ph-install-open` reserves splash bottom space + ~3.2s delay).
 - **Phase 2** — pointing fox is the **Story Quests guide** (`renderStorylineFeature` in `app.js`); celebrating fox on the **Victory** screen (replaced `⭐🏆⭐`).
 - **Phase 3** — (a) **a/an grammar fix**: vowel-initial items now read "an" everywhere — category `speakPrompt()` fns + `dailyPromptText` (daily-challenge-streak.js). Fixes the live "Can you find a orange?" bug. (b) searching fox on the loading overlay (`.loading-fox`). (c) emoji controls (settings/sound/home/skip/repeat) → consistent inline **SVG icons** + aria-labels; `toggleSound` swaps `SVG_VOL_ON`/`SVG_VOL_OFF` (app.js). The big 📷 camera button stays emoji (intentional, kid-facing hero action).
 - **Verified live** via Playwright (portrait 390, landscape 720×380, desktop 1200): entry, landing (mobile+desktop), splash storyline hero, victory, game (icons + grammar in context), loading fox. 0 console errors except a **pre-existing `favicon.ico` 404** (no favicon shipped — trivial add-on if wanted).
-- **Unused-but-ready:** `fox-key` pose (made for locked/paywall states) is not yet wired anywhere — natural next step is the paywall.
+- **Phase 5 (app identity):** real fox **app icon** (`play/img/icon-{16,32,180,192,512}.png`; manifest now PNG `any maskable`, was a 📸-emoji SVG) + **favicon** + **apple-touch-icon** on both app and landing. Fixes the prior favicon 404.
+- **Phase 6 (social):** 1200×630 fox **share card** at repo-root `og-image.png` + `og:image`/`twitter:image` (summary_large_image) on the landing — shared links now render a branded preview (supports the distribution plan; previously no image).
+- **Phase 7 (paywall):** `fox-key` pose leads the paywall modal (`paywall.js` `show()`), tying the mascot to the $19.99 unlock.
+- **Still unused:** `fox-think` pose (made for gentle "try again" states) — candidate for the fail/retry feedback if wanted.
+- **All identity assets verified live** (curl: icons/favicon/og-card 200 image/png; manifest serves PNG icons, no emoji).
 - **Decision (don't re-litigate):** fox chosen over raccoon/red panda after differentiation research (Pinkfong is a pink fox for ages 1–5; our orange explorer-fox is distinct). The patches 0001–0006 described further below were applied and have been live since 2026-05-18 (see `git log`) — that older "until pushed, nothing is live" note is resolved.
 
 ## Read this first
