@@ -1307,6 +1307,13 @@ async function submitPhoto() {
     console.error('Error:', err);
     loadingOverlay.classList.add('hidden');
     pendingBase64 = null; pendingMimeType = null;
+    // Offline card already shown by identifyObject's 503 path.
+    if (err && err.message === 'offline') return;
+    // First-load (service worker not yet controlling) or timeout/abort: this is
+    // a connectivity problem, not a wrong photo — show the friendly offline card.
+    if (!navigator.onLine || (err && err.name === 'AbortError')) {
+      if (typeof showOfflineMessage === 'function') { showOfflineMessage(); return; }
+    }
     showMissResult();
   }
 }
@@ -1402,7 +1409,16 @@ async function identifyObject(base64Data, mimeType) {
     ]}],
     generationConfig: { temperature: 0 }
   };
-  var resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  // Bound the round-trip so a stalled Worker can't leave "Looking at your
+  // photo…" on screen forever (worst case for a 2-year-old).
+  var ctrl = new AbortController();
+  var timeoutId = setTimeout(function() { ctrl.abort(); }, 15000);
+  var resp;
+  try {
+    resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
   if (!resp.ok) {
     // Check for offline response from service worker
     if (resp.status === 503) {
@@ -1432,6 +1448,9 @@ var confettiAnimId = null;
 function resizeCanvas() { confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
 
 function fireConfetti(durationMs) {
+  // Respect reduced-motion: skip the full-screen particle storm (success is
+  // still conveyed by audio + the on-screen message).
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   durationMs = durationMs || 2000;
   confettiPieces = [];
   var colors = ['#f5576c','#43e97b','#feca57','#667eea','#f093fb','#38f9d7','#ff6b6b','#48dbfb'];
