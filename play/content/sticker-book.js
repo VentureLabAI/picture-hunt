@@ -82,11 +82,13 @@ var StickerBook = (function() {
   // ═══════════════════════════════════════════════════════════════
   // EARN ANIMATION — pop-in sticker when found during gameplay
   // ═══════════════════════════════════════════════════════════════
-  function showEarnAnimation(emoji, itemName) {
+  function showEarnAnimation(emoji, itemName, img) {
     var el = document.createElement('div');
     el.className = 'sticker-earn-popup';
     el.innerHTML = '<div class="sticker-earn-icon">📕</div>'
-      + '<div class="sticker-earn-emoji">' + emoji + '</div>'
+      + '<div class="sticker-earn-emoji">'
+        + (img ? '<img src="' + img + '" class="sticker-earn-img" alt="">' : emoji)
+        + '</div>'
       + '<div class="sticker-earn-label">Sticker!</div>';
     document.body.appendChild(el);
 
@@ -151,11 +153,15 @@ var StickerBook = (function() {
           var found = hasSticker(catId, item.name);
           var slot = document.createElement('div');
           slot.className = 'sticker-slot' + (found ? ' found' : ' unfound');
-          slot.innerHTML = '<div class="sticker-emoji">' + (found ? item.emoji : '❓') + '</div>'
+          // Show the real illustration when collected (emoji fallback); locked = ❓
+          var face = found
+            ? (item.img ? '<img src="' + item.img + '" class="sticker-img" alt="' + item.name + '">' : item.emoji)
+            : '❓';
+          slot.innerHTML = '<div class="sticker-emoji">' + face + '</div>'
             + '<div class="sticker-name">' + (found ? item.name : '???') + '</div>';
           if (found && item.d >= 3) {
             slot.classList.add('rare');
-            slot.innerHTML = '<div class="sticker-emoji">' + item.emoji + '</div>'
+            slot.innerHTML = '<div class="sticker-emoji">' + face + '</div>'
               + '<div class="sticker-name">' + item.name + '</div>'
               + '<div class="sticker-rarity">⭐⭐⭐</div>';
           } else if (found && item.d === 2) {
@@ -301,14 +307,15 @@ var StickerBook = (function() {
         // Then earn sticker
         var isNew = earnSticker(catId, itemName);
         if (isNew) {
-          // Find the item's emoji for the earn animation
+          // Find the item's illustration (emoji fallback) for the earn animation
           var emoji = '⭐';
+          var img = null;
           if (typeof CATEGORIES !== 'undefined' && CATEGORIES[catId]) {
             var item = CATEGORIES[catId].items.find(function(i) { return i.name === itemName; });
-            if (item) emoji = item.emoji;
+            if (item) { emoji = item.emoji; img = item.img || null; }
           }
           // Show sticker earn popup (short, doesn't block gameplay)
-          showEarnAnimation(emoji, itemName);
+          showEarnAnimation(emoji, itemName, img);
         }
       };
     }

@@ -36,7 +36,7 @@ Replacing emoji with consistent flat-sticker illustrations. **DONE + live — ev
 
 Note: `black-cat`/`bunny`/`easter-egg`/`stocking`/`star` are deliberately distinct slugs from `cat`/`rabbit`/`egg`/`sock` and were generated fresh (not aliased). `star` lives only in christmas now (shapes stays emoji via the category guard).
 
-Items are lazy-loaded (NOT precached) to protect install size; runtime-cached after first view. Minor open polish: the Daily Challenge card (`daily-challenge-streak.js`) still shows `item.emoji`, not `item.img`.
+Items are lazy-loaded (NOT precached) to protect install size; runtime-cached after first view. **Every live surface now renders `item.img` with an emoji fallback** (cache **v92**): setup grid, game target, storyline target, the **Daily Challenge card**, and the **Sticker Book** (collected-sticker grid + the "Sticker!" earn popup) — all show the illustrations. Parent dashboard intentionally keeps the small emoji glyph (compact analytics list, not a kid-facing showcase). The cut modes (memory-hunt / review-mode / sorting-safari / phonics-hunt) still reference `item.emoji` but are dead code (not loaded by `index.html`) — left untouched per the anti-pattern guard.
 
 ## Read this first
 

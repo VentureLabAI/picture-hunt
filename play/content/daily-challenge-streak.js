@@ -245,7 +245,9 @@ var DailyStreak = (function() {
       + '<span class="daily-streak">🔥 ' + data.streak + '</span>'
       + '</div>'
       + '<div class="daily-item">'
-      + '<span class="daily-emoji">' + daily.item.emoji + '</span>'
+      + (daily.item.img
+          ? '<img src="' + daily.item.img + '" class="daily-img" alt="">'
+          : '<span class="daily-emoji">' + daily.item.emoji + '</span>')
       + '<span class="daily-name">' + dailyPromptText(daily.item) + '</span>'
       + '</div>'
       + statusHtml;
