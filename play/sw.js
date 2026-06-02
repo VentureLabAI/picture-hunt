@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v82';
+var CACHE_VERSION = 'ph-v83';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -71,6 +71,12 @@ var PRECACHE_URLS = [
   './img/mascot/fox-search.png',
   './img/mascot/fox-key.png',
   './img/mascot/fox-think.png',
+  // App icons
+  './img/icon-192.png',
+  './img/icon-512.png',
+  './img/icon-180.png',
+  './img/icon-32.png',
+  './img/icon-16.png',
   // Audio — category intros
   './audio/cat-animals.mp3',
   './audio/cat-clothing.mp3',
