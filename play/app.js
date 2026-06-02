@@ -265,7 +265,8 @@ var ITEM_ILLUSTRATIONS = {
   'shoe':1, 'cup':1, 'ball':1, 'teddy-bear':1, 'book':1, 'spoon':1, 'pillow':1,
   'blanket':1, 'remote-control':1, 'toothbrush':1, 'chair':1, 'sock':1, 'hat':1,
   'keys':1, 'water-bottle':1, 'crayon':1, 'plate':1, 'towel':1, 'lamp':1, 'clock':1,
-  'fork':1, 'brush':1
+  'fork':1, 'brush':1,
+  'dog':1, 'cat':1, 'duck':1, 'dinosaur':1, 'elephant':1, 'lion':1, 'pig':1, 'frog':1, 'rabbit':1, 'bird':1, 'fish':1
 };
 (function applyItemIllustrations() {
   Object.keys(CATEGORIES).forEach(function(cid) {

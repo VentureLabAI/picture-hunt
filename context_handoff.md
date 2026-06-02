@@ -20,7 +20,7 @@ Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — 
 
 ## Phase 10 — Custom illustrations (IN PROGRESS, resumable)
 
-Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`) and the **household** item set (22 items). **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn). Cache at **v88**.
+Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`) and the **household** (22) + **animals** (11) item sets. **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn). Cache at **v88**.
 
 **Locked style anchor:** the apple, generate_image job `28b15feb-be58-46de-a458-03f1f7e1194a` (Higgsfield MCP, server `83e72cad…`). Pass it as `medias:[{value:"28b15feb-...", role:"image"}]` to keep every illustration on-model. See [[reference_image_gen_mcp]].
 
@@ -31,7 +31,6 @@ Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all
 **Wiring (already in place — just append slugs):** `app.js` has `phSlug()` + an `ITEM_ILLUSTRATIONS` allowlist + a post-load pass that sets `item.img='img/items/<slug>.png'` for listed slugs (emoji fallback otherwise, so no 404s). To light up a category: generate+process its items, add their slugs to `ITEM_ILLUSTRATIONS`, bump cache, push. Setup grid / game target / storyline already render `item.img`.
 
 **Remaining to generate (~65 slugs):**
-- animals: dog, cat, duck, dinosaur, elephant, lion, pig, frog, rabbit, bird, fish
 - food: apple (just process the anchor → apple.png), banana, orange, bread, egg, carrot, cookie, cereal, milk, yogurt, juice
 - furniture (chair, lamp already done): table, couch, bed, tv, door, window, shelf
 - clothing (hat, sock done): shirt, pants, dress, jacket, glove, scarf
