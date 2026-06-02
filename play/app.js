@@ -60,7 +60,7 @@ var CATEGORIES = {
   household: {
     id: 'household', name: 'Things', emoji: '🏠',
     gradient: 'linear-gradient(140deg, #FF8A3D 0%, #FF4FA8 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Things! Find stuff around the house!',
     aiPrompt: function(n) {
       // Item-specific overrides for tricky items
@@ -104,7 +104,7 @@ var CATEGORIES = {
   shapes: {
     id: 'shapes', name: 'Shapes', emoji: '🔷',
     gradient: 'linear-gradient(140deg, #4CC9FF 0%, #6F4BFF 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Shapes! Find circles, squares, and more!',
     aiPrompt: function(n) {
       return 'Does this photo contain an object that has the shape of a ' + n + ' anywhere in the frame? It does not need to be perfectly geometric or centered — a toddler took this photo. Real objects have rounded edges and may appear at an angle. Ovals count as circles, elongated shapes count as rectangles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -135,7 +135,7 @@ var CATEGORIES = {
   animals: {
     id: 'animals', name: 'Animals', emoji: '🐾',
     gradient: 'linear-gradient(140deg, #FFC93C 0%, #FF8A3D 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Animals! Find dogs, cats, and more!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real animals, stuffed animals, toys, figurines, or pictures/images of a ' + n + '. The animal does not need to be centered — a toddler took this photo. But a completely different animal should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -169,7 +169,7 @@ var CATEGORIES = {
   furniture: {
     id: 'furniture', name: 'Furniture', emoji: '🛋️',
     gradient: 'linear-gradient(140deg, #B79CFF 0%, #FF4FA8 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Furniture! Find things around the house!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation of it? A sofa counts as a couch, a monitor or flatscreen counts as a TV. The furniture does not need to be centered or the only thing visible — a toddler took this photo. But a completely different piece of furniture should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -185,7 +185,7 @@ var CATEGORIES = {
   clothing: {
     id: 'clothing', name: 'Clothing', emoji: '👕',
     gradient: 'linear-gradient(140deg, #4CC9FF 0%, #2DD4A4 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Clothing! Find things you can wear!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame, or a very similar common variation? A t-shirt counts as a shirt, jeans count as pants, a coat counts as a jacket. The clothing does not need to be centered or the only thing visible — a toddler took this photo. It can be worn by someone or lying on a surface. But a completely different type of clothing should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -200,7 +200,7 @@ var CATEGORIES = {
   halloween: {
     id: 'halloween', name: 'Halloween', emoji: '🎃',
     gradient: 'linear-gradient(140deg, #FF7A1A 0%, #2B0B5C 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Halloween Hunt! Find spooky things!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, plushies, costumes, or pictures/drawings. The item does not need to be centered — a toddler took this photo during a Halloween activity. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -217,7 +217,7 @@ var CATEGORIES = {
   christmas: {
     id: 'christmas', name: 'Christmas', emoji: '🎄',
     gradient: 'linear-gradient(140deg, #E63946 0%, #006E3C 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Christmas Hunt! Find holiday magic!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, ornaments, wrapping, or pictures. The item does not need to be centered — a toddler took this photo during the Christmas season. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
@@ -235,7 +235,7 @@ var CATEGORIES = {
   spring: {
     id: 'spring', name: 'Spring', emoji: '🌸',
     gradient: 'linear-gradient(140deg, #95F0B5 0%, #FF7AB6 100%)',
-    speakPrompt: function(n) { return 'Can you find a ' + n + '?'; },
+    speakPrompt: function(n) { return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?'; },
     speakName: 'Spring Hunt! Find signs of spring!',
     aiPrompt: function(n) {
       return 'Does this photo contain a ' + n + ' anywhere in the frame? This includes real items, decorations, toys, stuffed animals, or pictures/drawings. The item does not need to be centered — a toddler took this photo exploring springtime. But a completely different object should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';

@@ -34,7 +34,8 @@ var DailyStreak = (function() {
   // ("Can you find bread?" not "a bread"). Falls back to "Can you find a X?".
   function dailyPromptText(item) {
     if (item && item.speakOverride) return item.speakOverride;
-    return 'Can you find a ' + (item ? item.name : '') + '?';
+    var n = item ? item.name : '';
+    return 'Can you find ' + (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n + '?';
   }
 
   // ═══════════════════════════════════════════════════════════════
