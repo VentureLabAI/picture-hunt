@@ -117,6 +117,13 @@ html, body {
   outline: 4px solid var(--grape);
   outline-offset: 3px;
 }
+/* Route-change focus destinations (screen containers + their headings, all
+   tabindex="-1") receive focus for screen-reader / keyboard continuity but are
+   NOT interactive controls — never paint a ring on them. */
+[tabindex="-1"]:focus,
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
 /* On dark/bright surfaces a light halo keeps the ring readable */
 .camera-btn:focus-visible,
 .result-btn:focus-visible,
