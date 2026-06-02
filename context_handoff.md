@@ -18,6 +18,29 @@ Gave the app an ownable brand character — a **fox explorer "hunt buddy"** — 
 - **All identity assets verified live** (curl: icons/favicon/og-card 200 image/png; manifest serves PNG icons, no emoji).
 - **Decision (don't re-litigate):** fox chosen over raccoon/red panda after differentiation research (Pinkfong is a pink fox for ages 1–5; our orange explorer-fox is distinct). The patches 0001–0006 described further below were applied and have been live since 2026-05-18 (see `git log`) — that older "until pushed, nothing is live" note is resolved.
 
+## Phase 10 — Custom illustrations (IN PROGRESS, resumable)
+
+Replacing emoji with consistent flat-sticker illustrations. **Done + live:** all 10 **category tiles** (`play/img/tiles/<catId>.png`, wired in `renderSplash`) and the **household** item set (22 items). **Colors + Shapes items intentionally stay emoji** (clean abstract icons beat hand-drawn). Cache at **v88**.
+
+**Locked style anchor:** the apple, generate_image job `28b15feb-be58-46de-a458-03f1f7e1194a` (Higgsfield MCP, server `83e72cad…`). Pass it as `medias:[{value:"28b15feb-...", role:"image"}]` to keep every illustration on-model. See [[reference_image_gen_mcp]].
+
+**Prompt pattern (per item):** `Using the EXACT same flat sticker art style as the reference image: thick navy outline, white sticker border, soft cel shading, vibrant flat colors, simple iconic, centered, plain solid white background, no text, no characters, no fruit, no apple. Draw ONLY <object>.` (drop "no fruit/apple" for food items.)
+
+**Pipeline (proven):** generate (nano_banana_pro, 1:1, anchor ref) → `show_generations` for rawUrls → download + PIL border-flood-fill bg-removal + trim → `play/img/items/<slug>.png` (slug = `name.toLowerCase().replace(/[^a-z0-9]+/g,'-')`). The processor script is easy to recreate (border flood-fill on white/low-sat pixels, see git history of `play/img/items/_proc.py`, now deleted).
+
+**Wiring (already in place — just append slugs):** `app.js` has `phSlug()` + an `ITEM_ILLUSTRATIONS` allowlist + a post-load pass that sets `item.img='img/items/<slug>.png'` for listed slugs (emoji fallback otherwise, so no 404s). To light up a category: generate+process its items, add their slugs to `ITEM_ILLUSTRATIONS`, bump cache, push. Setup grid / game target / storyline already render `item.img`.
+
+**Remaining to generate (~65 slugs):**
+- animals: dog, cat, duck, dinosaur, elephant, lion, pig, frog, rabbit, bird, fish
+- food: apple (just process the anchor → apple.png), banana, orange, bread, egg, carrot, cookie, cereal, milk, yogurt, juice
+- furniture (chair, lamp already done): table, couch, bed, tv, door, window, shelf
+- clothing (hat, sock done): shirt, pants, dress, jacket, glove, scarf
+- halloween: pumpkin, ghost, candy, witch-hat, spider, spider-web, black-cat, bat, skeleton, treat-bag
+- christmas: christmas-tree, ornament, star, stocking, christmas-lights, santa, gift, wreath, snowman, candy-cane, reindeer
+- spring (bird done): flower, butterfly, rainbow, umbrella, rain-boots, bee, easter-egg, bunny, sunshine
+
+Items are lazy-loaded (NOT precached) to protect install size; runtime-cached after first view. Minor open polish: the Daily Challenge card (`daily-challenge-streak.js`) still shows `item.emoji`, not `item.img`.
+
 ## Read this first
 
 - `docs/STRATEGY.md` — north star. Product thesis, locked decisions, roadmap.
