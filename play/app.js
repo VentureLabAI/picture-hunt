@@ -253,6 +253,29 @@ var CATEGORIES = {
 
 var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing', 'halloween', 'christmas', 'spring'];
 
+// ─── Custom item illustrations ──────────────────────────────────
+// Items whose flat-sticker illustration exists at img/items/<slug>.png.
+// Grown as the illustration set is produced; any item NOT listed falls back
+// to its emoji (so there are never broken-image 404s). Shared item names
+// (chair, lamp, hat, sock, bird, star) light up across every category at once.
+function phSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+var ITEM_ILLUSTRATIONS = {
+  'shoe':1, 'cup':1, 'ball':1, 'teddy-bear':1, 'book':1, 'spoon':1, 'pillow':1,
+  'blanket':1, 'remote-control':1, 'toothbrush':1, 'chair':1, 'sock':1, 'hat':1,
+  'keys':1, 'water-bottle':1, 'crayon':1, 'plate':1, 'towel':1, 'lamp':1, 'clock':1,
+  'fork':1, 'brush':1
+};
+(function applyItemIllustrations() {
+  Object.keys(CATEGORIES).forEach(function(cid) {
+    (CATEGORIES[cid].items || []).forEach(function(it) {
+      var s = phSlug(it.name);
+      if (ITEM_ILLUSTRATIONS[s]) it.img = 'img/items/' + s + '.png';
+    });
+  });
+})();
+
 // Items can set speakOverride to bypass the category-level speakPrompt logic
 // (used for mass nouns, plurale tantum, and proper nouns where article rules
 // break — e.g. "Can you find bread?" not "Can you find a bread?"). When an

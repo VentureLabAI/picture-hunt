@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v87';
+var CACHE_VERSION = 'ph-v88';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
