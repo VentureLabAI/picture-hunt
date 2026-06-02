@@ -208,15 +208,15 @@ var Paywall = (function() {
       if (res.status === 200 && res.data && res.data.valid) {
         unlock(code, res.data.validUntil, res.data.email);
       } else {
-        // Worker said invalid — try fallback list before giving up
-        if (FALLBACK_CODES.indexOf(code) !== -1) {
-          unlockWithFallback(code);
-        } else {
-          setMsg('That code didn\'t work. Double-check and try again, or email hello@venturelab.ai.', 'err');
-        }
+        // Worker is authoritative — if it says invalid, it's invalid. Promo
+        // codes (LAUNCH2026 etc.) now validate server-side, so we no longer
+        // override the verdict here. FALLBACK_CODES is purely an offline safety
+        // net — see the .catch below.
+        setMsg('That code didn\'t work. Double-check and try again, or email hello@venturelab.ai.', 'err');
       }
     }).catch(function() {
-      // Worker unreachable — accept fallback codes
+      // Worker unreachable — accept the offline fallback codes so a known code
+      // still works with no connection.
       if (FALLBACK_CODES.indexOf(code) !== -1) {
         unlockWithFallback(code);
       } else {

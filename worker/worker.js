@@ -97,6 +97,14 @@ async function proxyGemini(request, env, headers) {
 // Codes are written to KV by the Stripe webhook handler (separate worker or
 // handler endpoint — see docs/PAYWALL-DEPLOY.md).
 
+// Launch / comp promo codes — always valid, independent of KV binding. These are
+// SHARED codes (not per-customer), so they unlock everything but do NOT take part
+// in cross-device progress sync (which is keyed per code and would cross-
+// contaminate). Real per-customer codes come from the Stripe webhook and live in
+// KV. This is the single source of truth for promo codes on the server.
+const PROMO_CODES = ['LAUNCH2026', 'FOUNDERSPECIAL'];
+const PROMO_DAYS = 365;
+
 async function validateCode(request, env, headers) {
   let payload;
   try {
@@ -110,17 +118,17 @@ async function validateCode(request, env, headers) {
     return jsonResponse({ valid: false, error: 'Code missing or wrong length' }, 400, headers);
   }
 
-  // KV not bound yet → allow a short hardcoded list so the paywall flow is
-  // testable end-to-end before Boss Man wires up the KV namespace.
+  // Promo codes are always valid here — authoritative, regardless of KV binding.
+  if (PROMO_CODES.includes(code)) {
+    return jsonResponse({
+      valid: true,
+      validUntil: new Date(Date.now() + PROMO_DAYS * 24 * 3600 * 1000).toISOString(),
+      promo: true
+    }, 200, headers);
+  }
+
+  // KV not bound (pre-setup) and not a promo code → nothing else to validate.
   if (!env.UNLOCK_CODES) {
-    const FALLBACK = ['LAUNCH2026', 'FOUNDERSPECIAL'];
-    if (FALLBACK.includes(code)) {
-      return jsonResponse({
-        valid: true,
-        validUntil: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
-        fallback: true
-      }, 200, headers);
-    }
     return jsonResponse({ valid: false }, 200, headers);
   }
 
@@ -171,6 +179,12 @@ async function syncProgress(request, env, headers) {
   const action = payload.action;
   if (!code || (action !== 'upload' && action !== 'download')) {
     return jsonResponse({ ok: false, error: 'code + action required' }, 400, headers);
+  }
+
+  // Promo codes are shared → no cross-device sync. Accept gracefully so the
+  // client never sees a 401: downloads return nothing, uploads are discarded.
+  if (PROMO_CODES.includes(code)) {
+    return jsonResponse(action === 'download' ? { ok: true, data: null } : { ok: true }, 200, headers);
   }
 
   if (!env.UNLOCK_CODES) {

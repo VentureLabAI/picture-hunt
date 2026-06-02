@@ -104,7 +104,7 @@ Full rationale in `docs/STRATEGY.md`. Short form:
 
 ## Known small fixes (bundle into next deploy)
 
-- **"Offline mode" wording when `LAUNCH2026` is redeemed.** Worker's fallback codes only fire when KV is unbound — KV IS bound now, so the worker returns `{valid:false}` for `LAUNCH2026` and the client uses its own fallback list (which adds the "offline mode" label). Fix: move the FALLBACK list above the `if (!env.UNLOCK_CODES)` check in `worker/worker.js validateCode()`. ~3 lines.
+- ~~**"Offline mode" wording when `LAUNCH2026` is redeemed.**~~ **FIXED 2026-06-02 (deployed).** Root cause was two drifting hardcoded promo-code lists. Fix: the worker now has a single `PROMO_CODES` source of truth — `validateCode` returns `{valid:true, promo:true}` for them authoritatively (independent of KV), and `syncProgress` no-ops them (`{ok:true}`) instead of 401-ing (they're shared codes → no cross-device sync). The client (`paywall.js`) no longer overrides the worker's "invalid" verdict — `FALLBACK_CODES` is now purely an offline (`.catch`) safety net. Worker **deployed via `wrangler deploy`** (version `c503f85e`, KV binding intact); client shipped at cache **v93**. Verified live: `LAUNCH2026`→`valid:true`, `NOTREAL`→`valid:false`, promo sync→`{ok:true}`. **Note: deploying the worker needs `wrangler login` first (the cached OAuth token expires); there's no `CLOUDFLARE_API_TOKEN` set.**
 - **`docs/PAYWALL-DEPLOY.md` is STALE.** Still describes the old monthly + yearly two-link Stripe flow. Will be rewritten alongside the live Stripe wiring (one-time product, single Payment Link). Do not follow it as-is.
 
 ## What's blocked on Boss Man (all key/account work)
