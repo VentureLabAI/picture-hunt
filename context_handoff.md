@@ -1,6 +1,30 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-01 (Phase 10 custom illustrations **COMPLETE** — all 87 item stickers + 10 tiles live, cache **v91**; earlier this session: Hunt-buddy mascot + UI elevation, Phases 0–7)
+**Last updated:** 2026-06-02 (UI/UX audit + full fix sweep **SHIPPED**, cache **v94 / ph-v94**)
+
+## 2026-06-02 session — UI/UX audit + fix sweep (SHIPPED, live, cache v94)
+
+Ran a full UI/UX audit (ui-ux-pro-max framework + live-browser testing across phone/tablet/landscape + code review of every loaded module) and fixed everything found. 9 surgical commits (`f367da9`..`09fee3a`), all verified in a real browser against a local server before push. Cache bumped v93 → **v94**; landing CSS `?v=4` → `v5`.
+
+**Two flow-breakers fixed (highest impact):**
+1. **Parent-override was dead code.** `forceAccept()` existed but nothing called it — a wrongly-rejected photo had no recourse (violated the project's own "don't frustrate the child" rule). Now wired to a **~650ms long-press on the green retry button** in `showMissResult()` (trailing tap swallowed). Result buttons also got aria-labels.
+2. **Camera unreachable in landscape.** Fixed-position game screen pushed the camera ~73% below a non-scrolling fold on phones. **Locked to portrait**: `manifest.json` orientation `any`→`portrait` + a `#rotate-lock` overlay (fox-think) shown only on phones in landscape (`@media (orientation:landscape) and (max-height:600px)`). Tablets (height ≥744) + desktop unaffected — verified.
+
+**Accessibility:** global `:focus-visible` rings (app + landing; were zero); camera button `aria-label` (primary action was unnamed); progressbar `role`+`aria-valuenow`; `#feedback-area` `aria-live`; focus moved into each screen on transition (`showScreen`); setup cards + daily card are now keyboard-operable buttons; hint button labeled.
+
+**Conversion-surface contrast (was 1.6–2.8:1, now ≥4.5):** paywall redeem button (1.62→8.16), buy/upgrade/install buttons, success/error messages, the live "coming soon" email link; landing CTAs (2.78→5.08), body/footer links, FAQ glyph, dashboard low-opacity text.
+
+**Paywall layout:** code-row overflow that clipped the "Unlock" button at ≤390px **fixed** (flex-wrap + min-width:0; overflow 43px→0). Code input got `aria-label`, status got `role=status aria-live`, buy link got a loading affordance.
+
+**Robustness:** AI fetch now has a **15s AbortController timeout** (loading overlay could hang forever); `submitPhoto` catch shows the offline card on first-load/timeout (was the misleading "Not quite!"); `fireConfetti` early-returns under `prefers-reduced-motion`.
+
+**Polish:** touch targets repeat/skip 48-56→72, `.big-btn` 84→100; `100vh`→`100dvh` on setup; `transition:all`→explicit; Fredoka moved from `@import` to a preconnected `<link>`; **`terms.html` rewritten subscription → one-time $19.99** (was a direct contradiction of the no-subscription pitch); privacy/terms stale `?v=2`→`v5`; removed ~45 lines of orphaned `.phone-frame` CSS; hero LCP img got width/height + fetchpriority.
+
+**Not done (out of scope / can't auto-fix):** the 137 `AudioContext` warnings on load are benign (eager audio prime before gesture) — left as-is. Buy-button contrast/loading apply only once `STRIPE_LINK` placeholder is replaced.
+
+---
+
+### Earlier — 2026-06-01 (Phase 10 custom illustrations COMPLETE — all 87 item stickers + 10 tiles live, was cache v91; Hunt-buddy mascot + UI elevation, Phases 0–7)
 
 ## 2026-06-01 session — Hunt-buddy mascot + UI elevation (SHIPPED, live)
 
