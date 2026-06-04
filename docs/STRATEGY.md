@@ -1,8 +1,9 @@
 # Picture Hunt — Product Strategy
 
 **Owner:** Caleb
-**Last updated:** 2026-05-18
-**Status:** Strategy locked. Execution sequenced below.
+**Last updated:** 2026-06-04
+**Status:** Strategy locked. Execution sequenced below. (Pricing model revised
+2026-06-04 → freemium funnel + one-time $24.99; see Pricing + decision log.)
 
 This is the north-star doc. When a session is unsure whether to build something,
 the answer is here. If it's not here, it probably shouldn't be built yet.
@@ -98,35 +99,62 @@ dedicated pass.
 
 ---
 
-## Pricing (locked direction, pending live validation)
+## Pricing (locked — freemium funnel → one-time unlock)
 
-**One-time $19.99 lifetime unlock, not a subscription.**
+**Freemium: a real free tier WITH the bilingual hook, then a one-time $24.99
+unlock for everything. NOT a subscription.**
 
-Reasoning:
-- Removes the #1 conversion-killer for indie kids apps: "can I cancel?"
-- Removes churn entirely — the silent killer of subscription metrics at
-  no-acquisition-budget scale.
-- $20 is impulse-buy territory for a parent; "$5/mo for how long?" is a deliberation.
-- 200 one-time buyers (~$4k) is easier to acquire than 800 retained subscribers.
+Freemium because the bilingual learning IS the differentiator, and you can't sell
+a differentiator a parent hasn't felt yet. Give it away as the hook — let them
+watch their kid find an apple and hear "manzana" — then charge for breadth.
 
-**Upsell later:** "Languages Pack — all 10 languages: +$19.99." Gets customer
-LTV to ~$40 with zero churn risk.
+**Why one-time, not subscription (decided 2026-06-04):**
+- **The retention engine isn't built yet.** Toddler boredom is the #1 risk and
+  the fix (the regenerating story-template engine) is still Phase 2. A
+  subscription promises *ongoing* value; charging monthly for a currently-finite
+  experience = churn + cancellations + "got boring after a month" reviews. A
+  one-time matches what the app is today: a great toddler-phase purchase.
+- **Churn is the silent killer for toddler apps** — kids age out of any single
+  app fast. One-time has zero churn by definition.
+- **No acquisition budget** → subscription LTV-over-CAC math doesn't apply.
+  Organic-only, you just want to capture each interested parent's
+  willingness-to-pay now; a one-time does that in one tap.
+- **Ops/infra:** the worker/KV/paywall are already built for one-time unlock
+  codes + a single Stripe link. Subscriptions add renewals, dunning, cancel
+  flows, refund exposure, periodic re-validation — permanent solo-builder
+  overhead.
 
-This overrides the earlier $4.99/mo + $39/yr paywall copy. The paywall
-*infrastructure* (Stripe, KV codes, gating) is reusable as-is; only the
-product/price config changes.
+**Price: $24.99** (up from $19.99). Freemium de-risks the buy (they try it
+first), so there's room to raise. The "don't discount to chase conversion" rule
+still holds — freemium lifts conversion through the funnel, not the price.
+
+**Keep it ONE unlock.** À-la-carte packages cause decision paralysis on a ~$20
+product. One "Unlock Everything," with at most one later upsell ("All Languages
+Pack +$X") once demand for specific languages shows.
+
+**When subscription becomes right (Phase 2+):** once the story-template engine
+ships (regenerating quests = genuine ongoing value) AND there's a channel
+bringing steady new users, "monthly OR lifetime" can capture more LTV. Not
+before — it lines up with the revenue-validation gate below.
+
+The paywall *infrastructure* (Stripe, KV codes, gating) is reused as-is; only the
+free/paid line + price config changed.
 
 ---
 
-## Free vs. Paid line
+## Free vs. Paid line (revised 2026-06-04 — bilingual is the HOOK, not the wall)
 
-- **Free:** 3 categories, English-only, ~5 plays/day, Daily Challenge. Enough to
-  prove the kid likes it and the parent sees the learning angle.
-- **Paid ($19.99):** all 10 categories, **bilingual mode** (the headline value),
-  unlimited plays, all Storyline quests, cross-device sync.
+- **Free:** 3 universal categories (household, animals, food — real, illustrated
+  objects), **Spanish bilingual ON**, the Daily Challenge, and **1 sample Story
+  Quest** (Bear's Breakfast). ~5 plays/day. Enough to feel the bilingual magic
+  and build a habit.
+- **Paid ($24.99 one-time):** all 10 categories, **all 10 languages**, **all
+  Story Quests**, unlimited plays, cross-device sync.
 
-Bilingual mode being paid-only is deliberate — it's the thing parents pay for.
-Don't give it away free.
+This REVERSES the earlier "bilingual is paid-only" line. Gating the
+differentiator is backwards for a freemium funnel — parents won't pay for a value
+they haven't experienced. So bilingual (Spanish) is the free hook; you monetize
+breadth: more languages, more categories, more stories.
 
 ---
 
@@ -134,7 +162,7 @@ Don't give it away free.
 
 ### Phase 0 — Ship what exists (BLOCKER, no new code)
 - Deploy the marketability stack (Stripe + KV + webhook). See `docs/PAYWALL-DEPLOY.md`.
-- Switch paywall config to one-time $19.99.
+- ~~Switch paywall config to one-time $19.99.~~ Done 2026-06-04: freemium funnel → one-time **$24.99** (Spanish bilingual is the free hook).
 - This is the gate. Nothing below matters until the app can take money.
 
 ### Phase 1 — Reposition + promote Storyline (small, do alongside Phase 0)
@@ -194,3 +222,12 @@ Don't give it away free.
   that fell out of it: the real axis isn't "how many modes" but "depleting vs.
   regenerating content" — which is why Phase 2 is the template engine, not more
   hand-authored stories.
+- **2026-06-04:** Pricing pivoted from "$19.99 one-time unlocks everything, with
+  bilingual paid-only" to a **freemium funnel → $24.99 one-time**, with the
+  bilingual hook (Spanish) FREE. Trigger: bilingual is the differentiator, so it
+  has to be experienced before a parent will pay — gating it killed the funnel.
+  Freemium gives away the hook (Spanish + 3 real-object categories + 1 story) and
+  monetizes breadth (all languages/categories/stories). Stayed one-time (not
+  subscription): the retention engine is unbuilt, churn is brutal for toddler
+  apps, there's no ad budget to amortize, and the infra is one-time already.
+  Subscription revisited in Phase 2 once the story-template engine ships.

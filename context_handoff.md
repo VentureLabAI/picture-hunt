@@ -1,6 +1,30 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Adventure-mode light re-theme + Sticker Book splash-count fix + splash overflow-clip fix **SHIPPED + live**, cache **v99 / ph-v99**)
+**Last updated:** 2026-06-04 (FREEMIUM PIVOT — Spanish bilingual free + $24.99 one-time **SHIPPED + live**, cache **v100 / ph-v100**)
+
+## 2026-06-04 session (cont.) — FREEMIUM PIVOT (SHIPPED, cache v100/ph-v100, browser-verified free + premium, 0 console errors)
+
+**Owner-directed strategy change — overrides 2 locked decisions (full rationale in `docs/STRATEGY.md`).** Pricing moved from "$19.99 one-time unlocks everything, bilingual paid-only" → **freemium funnel + $24.99 one-time**, with the bilingual hook FREE. Why: bilingual is the differentiator, so give it away to hook → charge for breadth. Stayed **one-time, NOT subscription** (retention engine unbuilt, toddler churn brutal, no ad budget, infra is one-time already). Subscription = Phase-2 lever once the story-template engine ships.
+
+**New free/paid line:**
+- **Free:** household / animals / food (swapped from household/shapes/colors → real illustrated objects), **Spanish bilingual ON**, Daily Challenge, **1 sample Story Quest** (`bear-breakfast`), 5 plays/day.
+- **Paid $24.99 one-time:** all 10 categories, all 10 languages, all Story Quests, unlimited plays, cross-device sync.
+
+**`paywall.js` is the gating source of truth:** added `FREE_LANGUAGE='es'`, `FREE_STORY='bear-breakfast'`, `FREE_CATEGORIES=['household','animals','food']` + `isFreeLanguage`/`isFreeStory` (exported). Wiring:
+- `bilingualActive()` (app.js) allows the free language for non-premium → **Spanish works free**, other langs blocked.
+- `openLangPicker()` (app.js): no hard paywall; Off + Spanish selectable, other 9 langs `🔒` → `Paywall.show('language')`.
+- Splash lang bar (`renderSplash`): "🇪🇸 Learning Spanish · Free · tap for 9 more" (was the locked "Premium — 10 languages").
+- Story Quests hero (`renderStorylineFeature`): open to everyone ("first quest free!"); gating moved into the selector + `playStory`.
+- Story selector + `playStory` (storyline-mode.js): free story playable, others `🔒` → `Paywall.show('storyline')`.
+- Paywall copy: 'language' reason ("All 10 Languages — Spanish is free"), 'storyline' ("More Story Quests"), default ("Unlock Everything"); price **$24.99**; feature bullet "All 10 languages". `.lang-picker-option.locked` / `.story-card.locked` dim styles added (style.css).
+
+**Stripe still a placeholder** → paywall renders "checkout opens soon" (the $24.99 price shows once `STRIPE_LINK` is set in `paywall.js`). Unlock-code path works; demo code `LAUNCH2026`.
+
+**Copy updated, no `$19.99` left anywhere (html/js/css):** landing `index.html` (hero meta, pricing `$24.99`, Free card now lists "Spanish bilingual — built in", FAQ), `terms.html` (price + free-tier description). `docs/PAYWALL-DEPLOY.md` is still STALE (separate cleanup, flagged below).
+
+**Verified (Playwright, localhost, 0 console errors):** FREE user → Spanish bilingual active, French/others blocked; free cats household/animals/food unlocked + rest 🔒; lang picker Spanish·Free + 9 locked; story selector 1 free + 7 locked; tapping a locked story/language opens the right paywall. PREMIUM → 0 locked categories/languages/stories, any language's bilingual works.
+
+---
 
 ## 2026-06-04 session — Adventure-mode color cohesion (SHIPPED, live, verified 0 console errors, cache v97/ph-v97)
 
