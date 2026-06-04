@@ -1,6 +1,18 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Adventure Trail storybook UI for all Story Quests **SHIPPED**, cache **v102 / ph-v102**)
+**Last updated:** 2026-06-04 (Recorded foreign-word audio PoC — Spanish in the coral fox voice **SHIPPED**, cache **v104 / ph-v104**)
+
+## 2026-06-04 session (cont.) — Recorded foreign-word audio PoC (Spanish, coral voice) (SHIPPED, cache v104/ph-v104, browser-verified, 0 console errors)
+
+Owner asked: can the foreign word use the SAME coral fox voice with correct pronunciation (instead of device TTS that's silent on iOS)? **Yes** — OpenAI `gpt-4o-mini-tts` is multilingual. Shipped a **Spanish proof-of-concept** (8 words) so the owner can hear it; scaling to full Spanish / other languages is pending their sign-off on voice + accuracy.
+
+- **Pipeline** (`C:\dev\ph-tools\`, OUTSIDE the repo): `gen_foreign_audio.py <LangName> [manifest.json]` reads a manifest `{ "lang/<code>/<slug>": "<word>" }`, generates each word in voice **coral** (gpt-4o-mini-tts; fox instruction + "say this single <Lang> word slowly & clearly"), saves to `play/audio/lang/<code>/<slug>.mp3`, loudnorms to −16 LUFS, then **rebuilds `play/content/translations/foreign-audio-manifest.js`** from disk. PoC word list: `ph-tools/foreign-manifest.json`.
+- **App wiring** (`app.js`): `speakForeignWordForItem` builds key `lang/<code>/<phSlug(lookupName)>` → `playForeignClip` plays the **recorded coral clip** via Web Audio (iOS-safe), falling back to `speakTranslation` (browser TTS) for anything not recorded. `foreignClipAvailable()` consults `FOREIGN_AUDIO` (the manifest) so unrecorded words go STRAIGHT to TTS — **no 404s**.
+- **Shipped files:** 8 clips `play/audio/lang/es/` (cup=taza, banana=plátano, cereal, spoon=cuchara, cookie=galleta, dog=perro, apple=manzana, ball=pelota); `foreign-audio-manifest.js` (loaded before app.js, precached in sw.js). Clips are **lazy-loaded** (not precached) to protect install size; SW runtime-caches on first play.
+- **Verified** (localhost v104, 0 errors): recorded item → plays `lang/es/cup.mp3` (1.2s buffer); unrecorded item (star) → TTS 'estrella' with NO fetch/404.
+- **TO SCALE (after owner hears the PoC):** for a language, build the full manifest = `{ 'lang/<code>/<phSlug(phTranslationLookupName(name,cat))>' : getTranslationByName(...).<code> }` over every `CATEGORIES` item (compute it in-browser like the PoC did), save as a manifest JSON, run `gen_foreign_audio.py <LangName> <manifest>`. **Full Spanish ≈ 109 clips** (covers every FREE user + demo). **All 10 languages ≈ ~1,090 clips** — and **spot-check zh/ja/ko/hi/ar** (coral voice is less native there; Latin-script es/fr/de/it/pt are excellent). Then cache-bump + push.
+
+
 
 > **v102 follow-up:** found + fixed a **pre-existing** console error while verifying the quest finale — `new-celebrations.js` `celebrateCombo` (used on BOTH regular victory `app.js:1276` AND story finale) called `ctx.arc()` with a negative radius (`p.size * p.life` when `life` dips below 0 within a frame) → `IndexSizeError` on every win. Clamped to `Math.max(0, …)`. This means earlier "0 console errors" passes were missing a victory-time error; it's gone now.
 

@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v102';
+var CACHE_VERSION = 'ph-v104';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -48,6 +48,7 @@ var PRECACHE_URLS = [
   './content/animations/new-celebrations.css',
   './content/translations/languages-config.js',
   './content/translations/all-translations.js',
+  './content/translations/foreign-audio-manifest.js',
   './paywall.js',
   './paywall.css',
   './progress-sync.js',

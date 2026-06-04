@@ -1179,14 +1179,42 @@ function speakForeignWordForItem(item, onEnd) {
     if (onEnd) onEnd();
     return;
   }
-  var trans = getTranslationByName(phTranslationLookupName(item.name, currentCategory));
+  var lookupName = phTranslationLookupName(item.name, currentCategory);
+  var trans = getTranslationByName(lookupName);
   if (!trans) { if (onEnd) onEnd(); return; }
+  var lang = getSelectedLanguage();
   // Brief gap after English so the words don't run together
   setTimeout(function() {
-    speakTranslation(trans.word, trans.speechLang);
-    // Web Speech API doesn't fire a reliable onend across browsers — estimate
-    setTimeout(function() { if (onEnd) onEnd(); }, 1500);
+    // Prefer the recorded coral-voice clip (same fox voice, reliable on iOS);
+    // fall back to browser TTS for any word/language not yet recorded.
+    var slug = (typeof phSlug === 'function') ? phSlug(lookupName) : lookupName;
+    playForeignClip('lang/' + lang.code + '/' + slug, trans.word, trans.speechLang, onEnd);
   }, 400);
+}
+
+// Play a recorded foreign-word clip (coral voice) the iOS-safe Web Audio way,
+// falling back to browser speech synthesis when there's no recorded clip yet.
+function foreignClipAvailable(key) {
+  // key = 'lang/<code>/<slug>'. Consult the manifest so we only fetch clips that
+  // exist (no 404s) — everything else uses browser TTS.
+  if (typeof FOREIGN_AUDIO === 'undefined') return false;
+  var parts = key.split('/');
+  var byLang = FOREIGN_AUDIO[parts[1]];
+  return !!(byLang && byLang[parts[2]]);
+}
+
+function playForeignClip(key, word, speechLang, onEnd) {
+  if (!soundEnabled) { if (onEnd) onEnd(); return; }
+  var done = false;
+  var finish = function() { if (done) return; done = true; if (onEnd) onEnd(); };
+  if (foreignClipAvailable(key)) {
+    preloadAudio(key).then(function() {
+      playBuffer(key, function() { setTimeout(finish, 150); });
+    }).catch(function() { speakTranslation(word, speechLang); setTimeout(finish, 1500); });
+  } else {
+    speakTranslation(word, speechLang);   // recorded clip not (yet) available
+    setTimeout(finish, 1500);
+  }
 }
 
 function repeatPrompt() {
