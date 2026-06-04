@@ -1,6 +1,8 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Adventure Trail storybook UI for all Story Quests **SHIPPED**, cache **v101 / ph-v101**)
+**Last updated:** 2026-06-04 (Adventure Trail storybook UI for all Story Quests **SHIPPED**, cache **v102 / ph-v102**)
+
+> **v102 follow-up:** found + fixed a **pre-existing** console error while verifying the quest finale — `new-celebrations.js` `celebrateCombo` (used on BOTH regular victory `app.js:1276` AND story finale) called `ctx.arc()` with a negative radius (`p.size * p.life` when `life` dips below 0 within a frame) → `IndexSizeError` on every win. Clamped to `Math.max(0, …)`. This means earlier "0 console errors" passes were missing a victory-time error; it's gone now.
 
 ## 2026-06-04 session (cont.) — ADVENTURE TRAIL storybook UI for Story Quests (SHIPPED, cache v101/ph-v101, browser-verified all 8 quests, 0 console errors)
 

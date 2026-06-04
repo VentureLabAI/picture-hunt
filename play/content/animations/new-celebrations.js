@@ -249,7 +249,9 @@ function celebrateFireworks(durationMs) {
         p.life -= p.decay;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        // life is decremented after the top-of-loop guard, so it can dip below 0
+        // within a frame — clamp so arc() never gets a negative radius (IndexSizeError).
+        ctx.arc(p.x, p.y, Math.max(0, p.size * p.life), 0, Math.PI * 2);
         ctx.fillStyle = p.color;
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fill();
