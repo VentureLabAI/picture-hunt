@@ -269,6 +269,13 @@ html, body {
     linear-gradient(180deg, #FFF1DD 0%, #FFE3CC 100%);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Override .screen's `justify-content:center`: when the splash content is taller
+     than the viewport, centering pushes the TOP (heading, Story Quests hero, the
+     Learn-a-Language bar) off-screen and UNREACHABLE (flex-centering overflow trap).
+     Top-anchor so the whole splash scrolls; `safe center` re-centers only when the
+     content actually fits (browsers without `safe` keep the flex-start fallback). */
+  justify-content: flex-start;
+  justify-content: safe center;
 }
 
 .splash-content {

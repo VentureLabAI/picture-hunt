@@ -1,6 +1,6 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Adventure-mode light re-theme + Sticker Book splash-count fix **SHIPPED + live**, cache **v98 / ph-v98**)
+**Last updated:** 2026-06-04 (Adventure-mode light re-theme + Sticker Book splash-count fix + splash overflow-clip fix **SHIPPED + live**, cache **v99 / ph-v99**)
 
 ## 2026-06-04 session — Adventure-mode color cohesion (SHIPPED, live, verified 0 console errors, cache v97/ph-v97)
 
@@ -16,7 +16,7 @@ Closed the deferred "two products stitched together" inconsistency. The **Daily 
   1. **Logic bug:** `addButtonToSplash()` early-returned at the `#sticker-book-btn` guard BEFORE the badge code, so once the book button existed the badge + cat-badges were never (re)added — broke the common path (start at 0 stickers → earn → return to splash → badge stays missing until a hard reload). Fix: de-gated the badge + `updateCategoryCardBadges` from the button guard; both now refresh on every call and keep the count live.
   2. **Layout clip:** the title badge anchors to `.home-title`, which the splash (`.screen { justify-content:center }`, content ~1607px > 844px viewport) pushes to `top:-342` — UNREACHABLE even at min scroll (flex-center overflow trap), so even the fixed badge can't be seen there. Fix: added a live count bubble (`.sticker-btn-count`, berry pill) on the **📕 book button** in `.splash-bottom` (the reachable entry point) + kept the title badge for taller layouts. Per-category tile badges (also reachable) now update live too.
   - Verified (Playwright, seeded): 0→earn→return shows `📕3`→`📕4` live; book-button bubble shows `58` and still opens the album; 0 console errors.
-- **Still open (pre-existing, NOT fixed):** the `.home-title` "Choose a Category" heading is itself clipped/unreachable by the centered splash when content overflows — a broader layout trap (`justify-content:center` on `.screen`). Left alone (touching `.screen` affects every screen; risky pre-demo). Worth a dedicated look post-demo.
+- ~~Still open: `.home-title` clipped~~ — **FIXED 2026-06-04 (cache v99).** Root cause: `.screen { justify-content:center }` vertically-centered the tall splash content and pushed the TOP off-screen + unreachable (flex-center overflow trap) — it was hiding the heading + `📕` title badge AND the **Story Quests hero + the Learn-a-Language bar** (the two most strategic elements). Fix: scoped to `#splash { justify-content: flex-start; justify-content: safe center; }` (top-anchor when content overflows, re-center when it fits; browsers without the `safe` keyword keep the `flex-start` fallback). Other screens untouched. Verified (live DOM): title top −294 (unreachable) → +40 (visible), whole top band now scrollable.
 
 ## 2026-06-03/04 session — investor-demo showcase sweep (SHIPPED, live, verified 0 console errors)
 
