@@ -1,6 +1,18 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (investor-demo showcase sweep **SHIPPED + live**, cache **v96 / ph-v96**)
+**Last updated:** 2026-06-04 (Adventure-mode surfaces re-themed light onto design tokens **SHIPPED + live**, cache **v97 / ph-v97**)
+
+## 2026-06-04 session — Adventure-mode color cohesion (SHIPPED, live, verified 0 console errors, cache v97/ph-v97)
+
+Closed the deferred "two products stitched together" inconsistency. The **Daily Challenge card, Sticker Book, and Parent Dashboard** were the last surfaces still on a hardcoded **dark navy palette** (`#1a1a2e`/`#feca57`, raw px) while the rest of the app is the bright "paper" theme. Owner chose **light re-theme** (over keep-dark-but-systematize / split-by-audience). All three now use the `:root` design tokens + the paywall/storyline "toy-button" recipe, so the app reads as one product.
+
+- **Daily Challenge card** (`content/daily-challenge-streak.css`): clean token re-map — gradient → `var(--coral/--sun/--sky)`, text → `var(--ink)`, radii/spacing → `--r-*`/`--sp-*`, added the coral toy bottom-edge. Look essentially unchanged (it was already bright).
+- **Sticker Book** (`content/sticker-book.css`): dark navy modal → light `--paper-warm` paper modal w/ sun+sky radial tints, `--ink` border, `--berry-deep` count; found slots = white toy-cards, uncommon = `--sky` border, rare = `--sun-deep` glow, unfound = dashed ink; close btn = grape toy-button. `.sticker-cat-header` deliberately keeps white text (it gets `cat.gradient` inline from sticker-book.js:141).
+- **Parent Dashboard** (`parent-dashboard.css`): dark gradient screen → warm paper + subtle grape/sky mesh; white toy stat card, big number → `--grape`, complete cats → mint, achievements → sun, danger (reset / confirm-yes) → coral; back/open buttons → white toy-circles. Category fill bars keep their inline `cat.gradient` (parent-dashboard.js:245).
+- **Atomic cache bump:** `index.html` ×21 `?v=96→97` + `sw.js` `ph-v96→ph-v97` (all 3 CSS already in `PRECACHE_URLS`; no new files).
+- **Verified live-local** (Playwright, 390px, seeded 58/109 progress): splash daily card, dashboard (58/109, 2 complete cats, 9 achievements), sticker book (found/uncommon/unfound slot variants) — all light + cohesive, **0 console errors**.
+- No JS touched (the confetti `#feca57` in app.js is decorative, left as-is). Cut-mode CSS (`sorting-safari`/`review-mode`/`memory-hunt`) still carries the old dark palette — intentionally untouched (dead code, not loaded by index.html).
+- **Pre-existing (NOT my change):** `StickerBook.getCount()` (total) returns 0 even with a populated `PH_STICKERS` store, so the splash sticker-count badge doesn't appear; per-category badges work. Untouched JS — flag for a future look if the splash badge is wanted.
 
 ## 2026-06-03/04 session — investor-demo showcase sweep (SHIPPED, live, verified 0 console errors)
 
@@ -25,7 +37,7 @@ Large sweep ahead of an investor demo. Shipped to `main` (commit `2ed3008`) + wo
 **Decisions (don't re-litigate):** custom domain **deferred** — owner may go App Store (Capacitor) instead of a webapp if the demo lands; demo on the github.io URL. Stripe still a placeholder (`STRIPE_LINK` = PLACEHOLDER → paywall shows "checkout opens soon"; the unlock-code path works). Demo premium = code **`LAUNCH2026`**. See **`docs/DEMO-RUNBOOK.md`**.
 
 **Consciously deferred / known (found in this session's audit, intentionally NOT done — don't think they were missed):**
-- **Adventure-mode color inconsistency** — the Daily Challenge card, Sticker Book, and Parent Dashboard use a separate hardcoded dark palette (`#1a1a2e`/`#feca57`, raw px) instead of the `:root` design tokens; Story Quests already uses the tokens. Reads as "two products stitched together" to a design-sharp eye. Post-demo polish = migrate those 3 CSS files onto the token set.
+- ~~**Adventure-mode color inconsistency**~~ — **DONE 2026-06-04 (cache v97).** The Daily Challenge card, Sticker Book, and Parent Dashboard were migrated off the hardcoded dark palette onto the `:root` design tokens via a light re-theme. See the 2026-06-04 session entry at the top.
 - `og-image.png` is ~805 KB (social-scrape only; zero render/demo impact) — optional compress to <300 KB later.
 - **Paywall is client-side bypassable** (localStorage `PH_PREMIUM`) — **accepted by design**: gated content is non-sensitive static data already in the public repo; the only metered cost (Gemini AI calls) is now server-gated by the worker (Origin + rate limit + size cap). Do NOT invest in client-side DRM.
 - Cut-mode audio (`sort-*`, `sorting-*`, `phonics-*`, `practice-*`, `round-complete`, `memory-*` — ~8 files) was NOT re-voiced (dead code, not loaded by index.html) — stays old voice; SW still precaches them but install is now tolerant so a stray 404 can't break it.

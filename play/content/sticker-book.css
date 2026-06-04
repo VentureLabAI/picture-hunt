@@ -1,14 +1,19 @@
 /* ============================================================
    Picture Hunt — Sticker Book Styles 📕✨
    Drop-in CSS for the Sticker Book feature.
-   Add to index.html <head>: <link rel="stylesheet" href="content/sticker-book.css?v=55">
+   Add to index.html <head>: <link rel="stylesheet" href="content/sticker-book.css?v=97">
+   Light "paper" theme — re-themed from the old dark navy modal onto the app's
+   var(--*) design tokens (style.css) + the toy-button shadow recipe, so the
+   Sticker Book reads as the same product as the rest of the app.
    ============================================================ */
 
 /* ═══ STICKER BOOK OVERLAY ═══ */
 .sticker-book-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(27,17,64,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -22,15 +27,18 @@
 }
 
 .sticker-book-modal {
-  background: #1a1a2e;
-  border-radius: 24px;
+  background:
+    radial-gradient(ellipse 60% 40% at 0% 0%,    rgba(255,201,60,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(76,201,255,0.22) 0%, transparent 60%),
+    var(--paper-warm);
+  border-radius: var(--r-lg);
   width: 92%;
   max-width: 600px;
   max-height: 85vh;
   overflow-y: auto;
   padding: 20px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-  border: 3px solid #feca57;
+  box-shadow: 0 6px 0 var(--ink), 0 28px 60px rgba(27,17,64,0.30);
+  border: 3px solid var(--ink);
 }
 
 /* ═══ HEADER ═══ */
@@ -38,19 +46,19 @@
   text-align: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid rgba(255,255,255,0.1);
+  border-bottom: 2px dashed rgba(27,17,64,0.18);
 }
 
 .sticker-book-title {
   font-size: 2rem;
   font-weight: 800;
-  color: white;
+  color: var(--ink);
   margin-bottom: 4px;
 }
 
 .sticker-book-count {
   font-size: 1.4rem;
-  color: #feca57;
+  color: var(--berry-deep);
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -59,14 +67,14 @@
   width: 80%;
   margin: 0 auto;
   height: 12px;
-  background: rgba(255,255,255,0.15);
+  background: var(--shade);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .sticker-book-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f093fb, #feca57, #43e97b);
+  background: linear-gradient(90deg, var(--berry), var(--sun), var(--mint));
   border-radius: 6px;
   transition: width 0.5s ease;
 }
@@ -76,6 +84,9 @@
   margin-bottom: 12px;
 }
 
+/* .sticker-cat-header gets cat.gradient set inline (sticker-book.js) — a
+   saturated category gradient — so white text + a dark count pill is correct,
+   matching the splash category tiles. */
 .sticker-cat-header {
   width: 100%;
   display: flex;
@@ -84,10 +95,11 @@
   border: none;
   border-radius: 16px;
   cursor: pointer;
-  color: white;
+  color: #fff;
   font-size: 1.1rem;
   font-weight: 700;
   gap: 10px;
+  box-shadow: var(--lift-1);
   transition: transform 0.1s;
 }
 
@@ -103,13 +115,13 @@
 .sticker-cat-name {
   flex: 1;
   text-align: left;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  text-shadow: 0 1px 3px rgba(27,17,64,0.35);
 }
 
 .sticker-cat-count {
   font-size: 0.95rem;
-  opacity: 0.9;
-  background: rgba(0,0,0,0.3);
+  opacity: 0.95;
+  background: rgba(27,17,64,0.28);
   padding: 4px 10px;
   border-radius: 12px;
 }
@@ -145,30 +157,31 @@
 }
 
 .sticker-slot.found {
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.2);
+  background: #fff;
+  border: 2px solid rgba(27,17,64,0.12);
+  box-shadow: var(--lift-1);
 }
 
 .sticker-slot.found.uncommon {
-  border-color: #48dbfb;
-  background: rgba(72,219,251,0.1);
+  border-color: var(--sky);
+  background: rgba(76,201,255,0.14);
 }
 
 .sticker-slot.found.rare {
-  border-color: #feca57;
-  background: rgba(254,202,87,0.12);
+  border-color: var(--sun-deep);
+  background: rgba(255,201,60,0.20);
   animation: sticker-rare-glow 2s ease-in-out infinite;
 }
 
 @keyframes sticker-rare-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(254,202,87,0.3); }
-  50% { box-shadow: 0 0 15px rgba(254,202,87,0.6); }
+  0%, 100% { box-shadow: 0 0 5px rgba(255,201,60,0.40); }
+  50% { box-shadow: 0 0 16px rgba(255,201,60,0.75); }
 }
 
 .sticker-slot.unfound {
-  background: rgba(255,255,255,0.04);
-  border: 2px dashed rgba(255,255,255,0.15);
-  opacity: 0.6;
+  background: rgba(27,17,64,0.04);
+  border: 2px dashed rgba(27,17,64,0.18);
+  opacity: 0.7;
 }
 
 .sticker-slot:active {
@@ -196,14 +209,14 @@
 
 .sticker-name {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.85);
+  color: var(--ink-soft);
   text-align: center;
   font-weight: 600;
   word-break: break-word;
 }
 
 .sticker-slot.unfound .sticker-name {
-  color: rgba(255,255,255,0.35);
+  color: rgba(27,17,64,0.40);
 }
 
 .sticker-rarity {
@@ -219,17 +232,18 @@
   margin-top: 16px;
   font-size: 1.2rem;
   font-weight: 700;
-  color: white;
-  background: #2a2a4a;
-  border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--grape) 0%, var(--grape-deep) 100%);
+  border: none;
+  border-radius: var(--r-md);
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 0 #3A2A8C, 0 10px 20px rgba(111,75,255,0.30);
+  transition: transform 0.1s, box-shadow 0.15s;
 }
 
 .sticker-close-btn:active {
-  transform: scale(0.95);
-  background: #3a3a5a;
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #3A2A8C;
 }
 
 /* ═══ EARN ANIMATION — popup during gameplay ═══ */
@@ -286,11 +300,13 @@
   100% { transform: scale(1); }
 }
 
+/* Earn label pops over bright gameplay screens — dark ink + white halo
+   stays legible on any background. */
 .sticker-earn-label {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #feca57;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  color: var(--ink);
+  text-shadow: 0 2px 8px rgba(255,255,255,0.7);
   margin-top: 4px;
 }
 
@@ -298,14 +314,15 @@
 .sticker-count-badge {
   display: inline-block;
   font-size: 0.8rem;
-  background: #feca57;
-  color: #1a1a2e;
+  background: linear-gradient(180deg, var(--sun) 0%, var(--sun-deep) 100%);
+  color: var(--ink);
   padding: 3px 10px;
   border-radius: 12px;
   margin-left: 8px;
   vertical-align: middle;
   font-weight: 700;
   cursor: pointer;
+  border: 2px solid var(--sun-deep);
   animation: sticker-badge-pulse 2s ease-in-out infinite;
 }
 
@@ -315,14 +332,15 @@
 }
 
 /* ═══ CATEGORY CARD — mini sticker badge ═══ */
+/* Sits on a vibrant category tile — dark pill + gold text reads cleanly. */
 .sticker-cat-badge {
   position: absolute;
   top: 6px;
   right: 8px;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #feca57;
-  background: rgba(0,0,0,0.4);
+  color: var(--sun);
+  background: rgba(27,17,64,0.45);
   padding: 2px 6px;
   border-radius: 8px;
   pointer-events: none;
@@ -336,8 +354,8 @@
 .victory-sticker-row {
   margin-top: 10px;
   font-size: 1rem;
-  color: #feca57;
-  font-weight: 600;
+  color: var(--tangerine-deep);
+  font-weight: 700;
 }
 
 .victory-sticker-row.complete {
@@ -345,8 +363,8 @@
 }
 
 @keyframes sticker-complete-glow {
-  0%, 100% { text-shadow: 0 0 5px rgba(254,202,87,0.3); }
-  50% { text-shadow: 0 0 20px rgba(254,202,87,0.8); }
+  0%, 100% { text-shadow: 0 0 5px rgba(255,201,60,0.35); }
+  50% { text-shadow: 0 0 18px rgba(255,201,60,0.85); }
 }
 
 .victory-sticker-icon {

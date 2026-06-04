@@ -1,5 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
    Picture Hunt — Parent Progress Dashboard Styles
+   Light "paper" theme — re-themed from the old dark navy gradient onto the
+   app's var(--*) design tokens (style.css) + the toy-button shadow recipe,
+   so the dashboard reads as the same product as the rest of the app.
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Stats button on splash screen ── */
@@ -10,28 +13,31 @@
   width: 52px;
   height: 52px;
   font-size: 28px;
-  border: none;
+  border: 2px solid var(--ink);
   border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #fff;
+  color: var(--ink);
   cursor: pointer;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .dashboard-open-btn:active {
-  transform: scale(0.9);
-  background: rgba(255,255,255,0.4);
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
 }
 
 /* ── Dashboard Screen ── */
 .dashboard-screen {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(111,75,255,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 25%, rgba(76,201,255,0.12) 0%, transparent 55%),
+    var(--paper-warm);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -60,19 +66,21 @@
   width: 48px;
   height: 48px;
   font-size: 24px;
-  border: none;
+  border: 2px solid var(--ink);
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  background: #fff;
+  color: var(--ink);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-.dashboard-back-btn:active { transform: scale(0.9); }
+.dashboard-back-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
 
 .dashboard-title {
-  color: #fff;
+  color: var(--ink);
   font-size: 24px;
   margin: 0;
   font-weight: 700;
@@ -91,41 +99,43 @@
 }
 
 .dashboard-section-title {
-  color: #fff;
+  color: var(--ink);
   font-size: 18px;
   margin: 0 0 12px 0;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Overall Progress ── */
 .dashboard-overall {
   text-align: center;
   padding: 24px 16px;
-  background: rgba(255,255,255,0.08);
+  background: #fff;
+  border: 2px solid var(--shade);
   border-radius: 20px;
+  box-shadow: var(--lift-1);
 }
 
 .dashboard-big-number {
   font-size: 56px;
   font-weight: 800;
-  color: #feca57;
+  color: var(--grape);
   line-height: 1;
 }
 .dashboard-big-number .dashboard-total {
   font-size: 28px;
-  color: rgba(255,255,255,0.66);
+  color: var(--ink-soft);
   font-weight: 400;
 }
 
 .dashboard-big-label {
-  color: rgba(255,255,255,0.7);
+  color: var(--ink-soft);
   font-size: 16px;
   margin: 4px 0 16px;
 }
 
 .dashboard-progress-bar {
   height: 12px;
-  background: rgba(255,255,255,0.15);
+  background: var(--shade);
   border-radius: 6px;
   overflow: hidden;
   max-width: 280px;
@@ -133,13 +143,13 @@
 }
 .dashboard-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #43e97b, #38f9d7);
+  background: linear-gradient(90deg, var(--mint), var(--sky));
   border-radius: 6px;
   transition: width 0.6s ease;
 }
 
 .dashboard-pct {
-  color: rgba(255,255,255,0.6);
+  color: var(--ink-soft);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -156,17 +166,20 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(255,255,255,0.08);
+  background: #fff;
+  border: 2px solid var(--shade);
   border-radius: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: var(--lift-1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .dashboard-cat-card:active {
-  background: rgba(255,255,255,0.15);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--shade);
 }
 .dashboard-cat-card.complete {
-  background: rgba(67, 233, 123, 0.12);
-  border: 1px solid rgba(67, 233, 123, 0.3);
+  background: rgba(45,212,164,0.14);
+  border: 2px solid var(--mint);
 }
 
 .dashboard-cat-emoji {
@@ -182,7 +195,7 @@
 }
 
 .dashboard-cat-name {
-  color: #fff;
+  color: var(--ink);
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 6px;
@@ -190,7 +203,7 @@
 
 .dashboard-cat-bar {
   height: 8px;
-  background: rgba(255,255,255,0.12);
+  background: var(--shade);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -201,7 +214,7 @@
 }
 
 .dashboard-cat-count {
-  color: rgba(255,255,255,0.6);
+  color: var(--ink-soft);
   font-size: 13px;
   margin-top: 4px;
 }
@@ -221,12 +234,13 @@
   white-space: nowrap;
 }
 .dashboard-item.found {
-  background: rgba(67, 233, 123, 0.2);
-  color: #43e97b;
+  background: rgba(45,212,164,0.20);
+  color: var(--mint-deep);
+  font-weight: 600;
 }
 .dashboard-item.missing {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.66);
+  background: var(--shade);
+  color: var(--ink-soft);
 }
 
 /* ── Achievements ── */
@@ -245,12 +259,12 @@
   transition: background 0.2s;
 }
 .dashboard-achievement.unlocked {
-  background: rgba(254, 202, 87, 0.12);
-  border: 1px solid rgba(254, 202, 87, 0.3);
+  background: rgba(255,201,60,0.18);
+  border: 2px solid var(--sun-deep);
 }
 .dashboard-achievement.locked {
-  background: rgba(255, 255, 255, 0.05);
-  opacity: 0.6;
+  background: var(--shade);
+  opacity: 0.7;
 }
 
 .dashboard-ach-emoji {
@@ -264,18 +278,18 @@
   flex: 1;
 }
 .dashboard-ach-name {
-  color: #fff;
+  color: var(--ink);
   font-size: 15px;
   font-weight: 600;
 }
 .dashboard-ach-desc {
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--ink-soft);
   font-size: 13px;
 }
 
 .dashboard-ach-summary {
   text-align: center;
-  color: rgba(255,255,255,0.66);
+  color: var(--ink-soft);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -298,7 +312,7 @@
 }
 
 .dashboard-day-label {
-  color: rgba(255,255,255,0.66);
+  color: var(--ink-soft);
   font-size: 11px;
 }
 
@@ -306,16 +320,16 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(255,255,255,0.08);
+  background: var(--shade);
 }
-.dashboard-day.level-1 .dashboard-day-dot { background: rgba(67, 233, 123, 0.25); }
-.dashboard-day.level-2 .dashboard-day-dot { background: rgba(67, 233, 123, 0.45); }
-.dashboard-day.level-3 .dashboard-day-dot { background: rgba(67, 233, 123, 0.65); }
-.dashboard-day.level-4 .dashboard-day-dot { background: rgba(67, 233, 123, 0.80); }
-.dashboard-day.level-5 .dashboard-day-dot { background: rgba(67, 233, 123, 1.0); }
+.dashboard-day.level-1 .dashboard-day-dot { background: rgba(45,212,164,0.30); }
+.dashboard-day.level-2 .dashboard-day-dot { background: rgba(45,212,164,0.50); }
+.dashboard-day.level-3 .dashboard-day-dot { background: rgba(45,212,164,0.70); }
+.dashboard-day.level-4 .dashboard-day-dot { background: rgba(45,212,164,0.85); }
+.dashboard-day.level-5 .dashboard-day-dot { background: var(--mint); }
 
 .dashboard-day-count {
-  color: rgba(255,255,255,0.6);
+  color: var(--ink-soft);
   font-size: 11px;
 }
 
@@ -331,7 +345,8 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: rgba(255,255,255,0.06);
+  background: #fff;
+  border: 1px solid var(--shade);
   border-radius: 12px;
 }
 
@@ -342,30 +357,30 @@
 
 .dashboard-session-info {
   flex: 1;
-  color: rgba(255,255,255,0.8);
+  color: var(--ink);
   font-size: 14px;
 }
 
 .dashboard-session-date {
-  color: rgba(255,255,255,0.62);
+  color: var(--ink-soft);
   font-size: 12px;
   flex-shrink: 0;
 }
 
 .dashboard-playtime {
   text-align: center;
-  color: rgba(255,255,255,0.66);
+  color: var(--ink-soft);
   font-size: 14px;
   margin-top: 12px;
   padding: 10px;
-  background: rgba(255,255,255,0.05);
+  background: var(--shade);
   border-radius: 10px;
 }
 
 /* ── Empty state + reset toast ── */
 .dashboard-empty {
   text-align: center;
-  color: rgba(255,255,255,0.78);
+  color: var(--ink-soft);
   font-size: 15px;
   line-height: 1.5;
   padding: 24px 12px;
@@ -375,14 +390,14 @@
   left: 50%; bottom: 28px;
   transform: translateX(-50%);
   z-index: 2100;
-  background: #1a1a2e;
+  background: var(--ink);
   color: #fff;
-  border: 2px solid rgba(255,255,255,0.25);
+  border: none;
   padding: 12px 22px;
   border-radius: 999px;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(27,17,64,0.35);
   animation: dashToastIn 0.25s ease;
 }
 @keyframes dashToastIn {
@@ -400,22 +415,25 @@
 .dashboard-reset-btn {
   font-size: 14px;
   padding: 10px 24px;
-  border: 1px solid rgba(255, 87, 87, 0.3);
+  border: 2px solid var(--coral);
   border-radius: 12px;
-  background: rgba(255, 87, 87, 0.1);
-  color: rgba(255, 87, 87, 0.7);
+  background: rgba(255,107,107,0.12);
+  color: var(--coral-deep);
   cursor: pointer;
+  font-weight: 700;
   transition: background 0.2s;
 }
 .dashboard-reset-btn:active {
-  background: rgba(255, 87, 87, 0.25);
+  background: rgba(255,107,107,0.25);
 }
 
 /* ── Confirm Reset Overlay ── */
 .dashboard-confirm-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(27,17,64,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -423,16 +441,18 @@
 }
 
 .dashboard-confirm-box {
-  background: #1a1a2e;
+  background: var(--paper-warm);
+  border: 3px solid var(--ink);
   border-radius: 20px;
   padding: 28px 24px;
   text-align: center;
   max-width: 300px;
   width: 90%;
+  box-shadow: 0 6px 0 var(--ink), 0 28px 60px rgba(27,17,64,0.30);
 }
 
 .dashboard-confirm-text {
-  color: #fff;
+  color: var(--ink);
   font-size: 18px;
   margin-bottom: 20px;
   line-height: 1.4;
@@ -443,13 +463,19 @@
   width: 100%;
   padding: 14px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   border-radius: 12px;
-  background: #f5576c;
+  background: linear-gradient(180deg, var(--coral) 0%, var(--coral-deep) 100%);
   color: #fff;
   cursor: pointer;
+  box-shadow: 0 4px 0 #B83636;
   margin-bottom: 10px;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.dashboard-confirm-yes:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #B83636;
 }
 
 .dashboard-confirm-no {
@@ -457,10 +483,16 @@
   width: 100%;
   padding: 14px;
   font-size: 16px;
-  font-weight: 600;
-  border: none;
+  font-weight: 700;
+  border: 2px solid var(--ink);
   border-radius: 12px;
-  background: rgba(255,255,255,0.1);
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
   cursor: pointer;
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.dashboard-confirm-no:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--ink);
 }
