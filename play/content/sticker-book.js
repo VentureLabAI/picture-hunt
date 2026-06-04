@@ -214,36 +214,51 @@ var StickerBook = (function() {
   // SPLASH SCREEN INTEGRATION — sticker count badge + book button
   // ═══════════════════════════════════════════════════════════════
   function addButtonToSplash() {
-    // Add sticker book button to splash bottom bar
+    var totalCount = getTotalCount();
+
+    // Sticker book button in the splash bottom bar (create once). This is the
+    // reachable entry point — the title badge below sits on .home-title, which the
+    // vertically-centered splash can clip off-screen, so the live count rides on
+    // the button too.
     var bottom = document.querySelector('.splash-bottom');
-    if (!bottom) return;
+    if (bottom && !document.getElementById('sticker-book-btn')) {
+      var btn = document.createElement('button');
+      btn.id = 'sticker-book-btn';
+      btn.className = 'setup-icon-btn';
+      btn.setAttribute('aria-label', 'Sticker book');
+      btn.innerHTML = '📕<span class="sticker-btn-count" hidden></span>';
+      btn.onclick = openBook;
+      bottom.insertBefore(btn, bottom.firstChild);
+    }
+    // Live count bubble on the book button.
+    var btnCount = document.querySelector('#sticker-book-btn .sticker-btn-count');
+    if (btnCount) {
+      if (totalCount > 0) { btnCount.textContent = totalCount; btnCount.hidden = false; }
+      else { btnCount.hidden = true; }
+    }
 
-    // Don't add twice
-    if (document.getElementById('sticker-book-btn')) return;
-
-    var btn = document.createElement('button');
-    btn.id = 'sticker-book-btn';
-    btn.className = 'setup-icon-btn';
-    btn.textContent = '📕';
-    btn.onclick = openBook;
-    bottom.insertBefore(btn, bottom.firstChild);
-
-    // Add sticker count badge to home title
+    // Sticker count badge on the home title. This MUST refresh on every call —
+    // it can NOT be gated behind the book-button guard above, or it never appears
+    // once the button exists (the common path: kid starts at 0 stickers, earns
+    // some, returns to splash — the early-return used to skip this entirely).
     var title = document.querySelector('.home-title');
-    if (title && !document.getElementById('sticker-count-badge')) {
-      var totalCount = getTotalCount();
-      var totalPossible = getTotalPossible();
+    if (title) {
+      var badge = document.getElementById('sticker-count-badge');
       if (totalCount > 0) {
-        var badge = document.createElement('span');
-        badge.id = 'sticker-count-badge';
-        badge.className = 'sticker-count-badge';
-        badge.textContent = '📕' + totalCount;
-        badge.onclick = openBook;
-        title.appendChild(badge);
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.id = 'sticker-count-badge';
+          badge.className = 'sticker-count-badge';
+          badge.onclick = openBook;
+          title.appendChild(badge);
+        }
+        badge.textContent = '📕' + totalCount; // keep the count live as it grows
+      } else if (badge) {
+        badge.remove();
       }
     }
 
-    // Add per-category sticker counts to category cards
+    // Per-category sticker counts on the category cards (also refreshed every call).
     updateCategoryCardBadges();
   }
 
@@ -254,15 +269,16 @@ var StickerBook = (function() {
       if (idx >= CATEGORY_ORDER.length) return;
       var catId = CATEGORY_ORDER[idx];
       var catCount = getCategoryCount(catId);
+      var existing = card.querySelector('.sticker-cat-badge');
       if (catCount > 0) {
-        // Add small sticker badge to the card
-        var existing = card.querySelector('.sticker-cat-badge');
         if (!existing) {
-          var badge = document.createElement('div');
-          badge.className = 'sticker-cat-badge';
-          badge.textContent = '📕' + catCount;
-          card.appendChild(badge);
+          existing = document.createElement('div');
+          existing.className = 'sticker-cat-badge';
+          card.appendChild(existing);
         }
+        existing.textContent = '📕' + catCount; // keep per-category count live
+      } else if (existing) {
+        existing.remove();
       }
     });
   }

@@ -331,6 +331,33 @@
   50% { transform: scale(1.08); }
 }
 
+/* ═══ SPLASH 📕 BOOK BUTTON — live count bubble ═══ */
+/* The reachable entry point to the album. The title badge above can be clipped
+   off-screen by the vertically-centered splash, so the total count also rides
+   here as an app-icon-style notification bubble. */
+#sticker-book-btn { position: relative; overflow: visible; }
+.sticker-btn-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--berry) 0%, var(--berry-deep) 100%);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1;
+  border-radius: var(--r-full);
+  border: 2px solid var(--paper-warm);
+  box-shadow: 0 2px 6px rgba(214,42,135,0.40);
+  pointer-events: none;
+}
+.sticker-btn-count[hidden] { display: none; }
+
 /* ═══ CATEGORY CARD — mini sticker badge ═══ */
 /* Sits on a vibrant category tile — dark pill + gold text reads cleanly. */
 .sticker-cat-badge {
