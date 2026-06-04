@@ -24,6 +24,19 @@ Large sweep ahead of an investor demo. Shipped to `main` (commit `2ed3008`) + wo
 
 **Decisions (don't re-litigate):** custom domain **deferred** — owner may go App Store (Capacitor) instead of a webapp if the demo lands; demo on the github.io URL. Stripe still a placeholder (`STRIPE_LINK` = PLACEHOLDER → paywall shows "checkout opens soon"; the unlock-code path works). Demo premium = code **`LAUNCH2026`**. See **`docs/DEMO-RUNBOOK.md`**.
 
+**Consciously deferred / known (found in this session's audit, intentionally NOT done — don't think they were missed):**
+- **Adventure-mode color inconsistency** — the Daily Challenge card, Sticker Book, and Parent Dashboard use a separate hardcoded dark palette (`#1a1a2e`/`#feca57`, raw px) instead of the `:root` design tokens; Story Quests already uses the tokens. Reads as "two products stitched together" to a design-sharp eye. Post-demo polish = migrate those 3 CSS files onto the token set.
+- `og-image.png` is ~805 KB (social-scrape only; zero render/demo impact) — optional compress to <300 KB later.
+- **Paywall is client-side bypassable** (localStorage `PH_PREMIUM`) — **accepted by design**: gated content is non-sensitive static data already in the public repo; the only metered cost (Gemini AI calls) is now server-gated by the worker (Origin + rate limit + size cap). Do NOT invest in client-side DRM.
+- Cut-mode audio (`sort-*`, `sorting-*`, `phonics-*`, `practice-*`, `round-complete`, `memory-*` — ~8 files) was NOT re-voiced (dead code, not loaded by index.html) — stays old voice; SW still precaches them but install is now tolerant so a stray 404 can't break it.
+
+**Voice-pipeline gotchas (save a future session hours):**
+- **ElevenLabs Voice Design BLOCKS child-sounding prompts** (HTTP 403 `blocked_generation`). Frame any kid voice as "an adult voice actor performing an animated *animal* character" — never "young boy / child / toddler / little." (This is why we couldn't make ElevenLabs do a young male fox directly.)
+- **OpenAI TTS needs an account with billing/credits** — the first key returned 429 ("exceeded your current quota"); a second key on a billed project worked.
+- Clips are generated **soft on purpose** (the "never loud" instruction) and made loud *afterward* via `loudnorm_all.py` (−16 LUFS). Don't chase loudness through the OpenAI instruction — use loudnorm, and always re-level from `audio_coral_raw/` (never double-normalize an already-normalized clip).
+
+**Hosting decision (don't re-open):** staying on **GitHub Pages** is deliberate — Vercel was evaluated and rejected (zero migration risk, the PWA/service-worker is verified healthy, and the backend worker is on Cloudflare regardless, so Vercel adds nothing for the demo). Custom domain deferred; **Capacitor → App Store** is the real next step if the demo lands.
+
 ---
 
 
