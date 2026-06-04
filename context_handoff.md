@@ -1,6 +1,31 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-02 (UI/UX audit + full fix sweep **SHIPPED**, cache **v95 / ph-v95**)
+**Last updated:** 2026-06-04 (investor-demo showcase sweep **SHIPPED + live**, cache **v96 / ph-v96**)
+
+## 2026-06-03/04 session — investor-demo showcase sweep (SHIPPED, live, verified 0 console errors)
+
+Large sweep ahead of an investor demo. Shipped to `main` (commit `2ed3008`) + worker redeployed (version `efc42c7b`). Verified live on the real URL.
+
+**New mascot voice (headline):** ALL 573 clips re-voiced in **OpenAI `gpt-4o-mini-tts` voice "coral"** (directed: young male playful cartoon fox, soft/close), then loudness-normalized to **−16 LUFS**. Replaces the old mixed Jessica/early-computer voices. Tooling lives OUTSIDE the repo in `C:\dev\ph-tools\`:
+- `gen_audio.js` — builds the canonical clip manifest by vm-loading app.js/storyline-mode.js/hint-system.js headless and using the real key functions; `node gen_audio.js dry` writes `audio-manifest.json` (565 live keys, validated 1:1 vs disk).
+- `gen_audio_openai.py <voice> [pitch]` — OpenAI full re-voice from the manifest (backs up to `play/audio_backup/` first).
+- `loudnorm_all.py <LUFS>` — re-levels ALL clips from the clean snapshot `ph-tools/audio_coral_raw/` (so re-leveling never double-normalizes). **To make the voice louder/quieter post-launch:** `python loudnorm_all.py -14` (louder) / `-18` (quieter), then bump cache + push. **To change voice entirely:** edit voice/instructions in `gen_audio_openai.py`, re-run, delete `audio_coral_raw/`, run `loudnorm_all.py`, cache-bump, push.
+- Keys: `ph-tools/.openai-key`, `ph-tools/.el-key` (NOT in repo; ElevenLabs was evaluated then dropped — OpenAI is cheaper pay-per-use + directable). `audio_backup/`, `audio_coral_raw/`, `.playwright-mcp/`, `verify-*.png` are gitignored.
+
+**Audio reliability:** fixed the intermittent "autoplay sometimes silent" bug — prompts now await their decoded buffer (cold-start race) + await `AudioContext.resume()`; resume on `visibilitychange`; load failures log instead of swallow. Story Quests now play their recorded narration (106 clips were dead code → bare `speak()` → robot TTS; `speakStoryAudio` is now wired + cold-start-safe). Former TTS-only `speakOverride` items (keys/bread/milk/Santa/…) now use recorded clips (correctly-worded) — `speakItem` simplified to always `speak()`.
+
+**Story Quests:** fixed 3 steps referencing nonexistent items (`key`→`keys`, `coin`→`plate`, `bottle`→`water bottle`) that showed a ❓; story-aware victory "Play Again"; bilingual badge + DailyStreak credit during stories; `console.warn` guard if a step item ever fails to resolve again.
+
+**UI/UX:** card-overflow fixed (Daily Challenge card showed the whole sentence → now item name + `min-width:0`/wrap; story cards + hero + tablet 3-col grid). Bilingual now exposes ALL 10 languages (page had said 3) and is **gated to Premium** per STRATEGY (`bilingualActive()` chokepoint + `openLangPicker` paywall); the splash lang button refreshes on unlock.
+
+**Security (worker `efc42c7b`):** open Gemini proxy locked down — strict Origin allow-list that **denies empty Origin** (anonymous curl → 403, verified), per-IP KV rate limit (60/min, fail-open), 8 MB payload cap, optional `PH_PROXY_TOKEN` shared header that is **fail-open and NOT set** (client sends `X-PH-Token` from app.js only; enabling enforcement requires adding the header to `paywall.js` + `progress-sync.js` too, then `wrangler secret put PH_PROXY_TOKEN`). Removed the `#key=` URL-hash credential footgun. Added CSP to landing + `play/index.html` (verified it doesn't break audio/fonts/worker). SW: tolerant precache (per-file, no all-or-nothing) + same-origin guard on the revalidate branch.
+
+**Content/copy:** seasonal items (Halloween/Christmas/Spring, 29 items) translated in all 10 languages; landing/FAQ/meta say "10 languages"; privacy/terms reworded subscription→one-time; landing loads Fredoka so it's on-brand on Windows/Android.
+
+**Decisions (don't re-litigate):** custom domain **deferred** — owner may go App Store (Capacitor) instead of a webapp if the demo lands; demo on the github.io URL. Stripe still a placeholder (`STRIPE_LINK` = PLACEHOLDER → paywall shows "checkout opens soon"; the unlock-code path works). Demo premium = code **`LAUNCH2026`**. See **`docs/DEMO-RUNBOOK.md`**.
+
+---
+
 
 > **v95 follow-up (`43ad272`):** the screen-transition focus management shipped in v94 made Chromium paint a `:focus-visible` grape outline around screen **headings** (a purple box around "Pick the items!" etc.) because `showScreen` focuses each screen's `h1`/container (`tabindex=-1`). Fixed with `[tabindex="-1"]:focus { outline: none }` — focus still moves for SR/keyboard, but route-change destinations no longer paint a ring (real controls keep theirs). Verified gone across splash/setup; setup's sticky "Done" button (now 100px) still clears the last card (80px grid pad). **Lesson:** programmatic route-change focus + a global `:focus-visible` ring needs the `[tabindex="-1"]` outline suppression, or non-interactive focus destinations flash a ring.
 
