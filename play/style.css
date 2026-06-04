@@ -1699,6 +1699,66 @@ body.ph-install-open .splash-content {
 .story-book.story-completed .book-cover {
   box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45), 0 0 0 3px rgba(45,212,164,0.45);
 }
+
+/* ════════════════════════════════════════════════════════════
+   HOME GREETING — fox welcomes the child into the hub (first entry)
+   ════════════════════════════════════════════════════════════ */
+.home-greeting {
+  position: fixed; inset: 0; z-index: 8000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 32%, rgba(255,201,60,0.40) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 45% at 85% 90%, rgba(76,201,255,0.22) 0%, transparent 60%),
+    linear-gradient(180deg, #FFF6EE 0%, #FFE9D6 100%);
+  cursor: pointer;
+  animation: homeGreetIn 0.4s var(--ease-pop);
+}
+.home-greeting-out { animation: homeGreetOut 0.32s var(--ease-smooth) forwards; }
+.home-greeting-fox {
+  width: clamp(150px, 46vw, 230px); height: auto;
+  aspect-ratio: 577 / 640;
+  filter: drop-shadow(0 10px 22px rgba(27,17,64,0.28));
+  animation: homeGreetFox 0.6s var(--ease-bounce);
+}
+.home-greeting-bubble {
+  position: relative;
+  max-width: 460px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5);
+  font-family: var(--font-main);
+  font-weight: var(--fw-bold);
+  font-size: clamp(1.1rem, 4.5vw, 1.4rem);
+  line-height: 1.3;
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 5px 0 var(--shade-deep), 0 14px 30px rgba(27,17,64,0.18);
+}
+.home-greeting-bubble::before {
+  content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  border: 8px solid transparent; border-bottom-color: var(--ink);
+}
+.home-greeting-bubble::after {
+  content: ''; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-bottom-color: var(--paper);
+}
+.home-greeting-skip {
+  font-family: var(--font-main); font-weight: var(--fw-semi);
+  font-size: 0.85rem; color: var(--ink-soft); opacity: 0.85;
+}
+@keyframes homeGreetIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes homeGreetOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes homeGreetFox {
+  0% { transform: scale(0.5) translateY(28px); }
+  60% { transform: scale(1.08) translateY(0); }
+  100% { transform: scale(1) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-greeting, .home-greeting-fox { animation: none; }
+}
 .story-badge {
   display: inline-block;
   background: rgba(255,255,255,0.28);

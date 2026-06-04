@@ -596,7 +596,7 @@ function unlockAudio() {
   } catch(e) {}
   // Warm the very first prompt the child will hear FIRST, then everything else,
   // so the home greeting is decoded before onSplashEnter tries to play it.
-  preloadAudio('pick-a-game');
+  preloadAudio('home-greeting');
   preloadAllAudio();
 }
 
@@ -620,12 +620,49 @@ function onSplashEnter() {
     splash.style.pointerEvents = 'none';
     setTimeout(function() { splash.style.pointerEvents = ''; }, 400);
   }
-  // Full audio + pulse every time we enter the home screen
+  // First time into the home hub this session: the fox pops up as a centerpoint
+  // and greets the child (showHomeGreeting plays the greeting, then pulses). On
+  // later returns from a game, just pulse the categories — no repeat greeting.
   setTimeout(function() {
-    speak('Pick a game!', function() {
+    if (!window._homeGreeted) {
+      window._homeGreeted = true;
+      showHomeGreeting();
+    } else {
       pulseCategories();
-    });
+    }
   }, 400);
+}
+
+// Friendly fox welcome the first time the child reaches the home hub. The fox is
+// the centerpoint and speaks the greeting (recorded coral clip → TTS fallback),
+// then reveals the picker + pulses the categories. Tap to skip.
+function showHomeGreeting() {
+  if (document.getElementById('home-greeting')) { pulseCategories(); return; }
+  var GREETING = "Hi! I'm your adventure guide! Are you ready for an adventure? Let's pick one!";
+  var ov = document.createElement('div');
+  ov.id = 'home-greeting';
+  ov.className = 'home-greeting';
+  ov.innerHTML =
+    '<img class="home-greeting-fox" src="img/mascot/fox-hero.png" alt="" aria-hidden="true">'
+    + '<div class="home-greeting-bubble">' + GREETING + '</div>'
+    + '<div class="home-greeting-skip">tap to continue</div>';
+  document.body.appendChild(ov);
+
+  var done = false;
+  function dismiss() {
+    if (done) return;
+    done = true;
+    ov.classList.add('home-greeting-out');
+    setTimeout(function() { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 320);
+    pulseCategories();
+  }
+  ov.addEventListener('click', dismiss);
+  if (typeof soundEnabled !== 'undefined' && soundEnabled) {
+    speak(GREETING, dismiss);
+    setTimeout(dismiss, 8000); // safety: never get stuck if audio onEnd doesn't fire
+  } else {
+    setTimeout(dismiss, 4200); // muted: still show the visual welcome
+  }
 }
 
 function renderSplash() {
@@ -897,7 +934,7 @@ function preloadAudio(key) {
 
 function preloadAllAudio() {
   var keys = [
-    'pick-a-game','you-found-it','try-again','lets-try-another','great-job',
+    'home-greeting','you-found-it','try-again','lets-try-another','great-job',
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
     'cat-halloween','cat-christmas','cat-spring',
@@ -945,7 +982,7 @@ function playBuffer(key, onEnd) {
 // Map text → audio file key
 function textToAudioKey(text) {
   var map = {
-    'Pick a game!': 'pick-a-game',
+    "Hi! I'm your adventure guide! Are you ready for an adventure? Let's pick one!": 'home-greeting',
     'You found it! Great job!': 'you-found-it',
     'Try again, or skip to the next one!': 'try-again',
     "Let's try another one!": 'lets-try-another',

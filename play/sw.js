@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v105';
+var CACHE_VERSION = 'ph-v106';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -98,7 +98,7 @@ var PRECACHE_URLS = [
   './audio/champion.mp3',
   './audio/great-job.mp3',
   './audio/lets-try-another.mp3',
-  './audio/pick-a-game.mp3',
+  './audio/home-greeting.mp3',
   './audio/tap-to-hear.mp3',
   './audio/try-again.mp3',
   './audio/you-did-it.mp3',
