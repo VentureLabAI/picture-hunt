@@ -62,11 +62,11 @@ var STORIES = [
     ageRange: '2-3',
     intro: "Oh no! Bear just woke up and his tummy is rumbling! Let's help Bear find his breakfast! Ready? Let's go!",
     steps: [
-      { item: 'cup', category: 'household', bridge: "Bear is thirsty! Can you find something for Bear to drink from?", foundText: "Bear can drink his milk! Yum!" },
-      { item: 'banana', category: 'food', bridge: "Now Bear wants something sweet and yellow! Can you find a banana for Bear?", foundText: "A banana for Bear! Peeling it now!" },
-      { item: 'cereal', category: 'food', bridge: "Bear loves crunchy cereal! Can you find a cereal box?", foundText: "Crunch crunch! Bear is happy!" },
-      { item: 'spoon', category: 'household', bridge: "Bear needs something to eat his cereal with! Can you find a spoon?", foundText: "A spoon! Now Bear can eat!" },
-      { item: 'cookie', category: 'food', bridge: "One last thing for Bear... a special treat! Can you find a cookie?", foundText: "A cookie! Bear's breakfast is the best!" }
+      { item: 'cup', category: 'household', bridge: "Bear is thirsty!", foundText: "Bear can drink his milk! Yum!" },
+      { item: 'banana', category: 'food', bridge: "Now Bear wants something sweet and yellow!", foundText: "A banana for Bear! Peeling it now!" },
+      { item: 'cereal', category: 'food', bridge: "Bear loves crunchy cereal!", foundText: "Crunch crunch! Bear is happy!" },
+      { item: 'spoon', category: 'household', bridge: "Bear needs something to eat his cereal with!", foundText: "A spoon! Now Bear can eat!" },
+      { item: 'cookie', category: 'food', bridge: "One last thing for Bear... a special treat!", foundText: "A cookie! Bear's breakfast is the best!" }
     ],
     outro: "You found everything for Bear's breakfast! Bear is so full and happy! You're the best helper ever!",
     celebrationEmoji: '🍯'
@@ -79,12 +79,12 @@ var STORIES = [
     ageRange: '3-5',
     intro: "3, 2, 1, blast off! You're an astronaut on a space mission! You need to find things for your spaceship! Let's go!",
     steps: [
-      { item: 'star', category: 'shapes', bridge: "Look up in the sky! Can you find a star shape for your space map?", foundText: "A star! You're mapping the galaxy!" },
-      { item: 'circle', category: 'shapes', bridge: "Your spaceship has round windows! Can you find a circle?", foundText: "A circle! The window is perfect!" },
-      { item: 'water bottle', category: 'household', bridge: "Astronauts need water in space! Can you find a water bottle?", foundText: "Water bottle secured! No floating away!" },
-      { item: 'red', category: 'colors', bridge: "Can you find something red? Like the red button on the control panel!", foundText: "Red found! Don't press that button!" },
-      { item: 'book', category: 'household', bridge: "The space manual! Can you find a book?", foundText: "The manual! Now you know which buttons to press!" },
-      { item: 'dog', category: 'animals', bridge: "Even astronauts have a co-pilot! Can you find a dog? Woof woof!", foundText: "Space dog! Best co-pilot ever!" }
+      { item: 'star', category: 'shapes', bridge: "Look up in the sky!", foundText: "A star! You're mapping the galaxy!" },
+      { item: 'circle', category: 'shapes', bridge: "Your spaceship has round windows!", foundText: "A circle! The window is perfect!" },
+      { item: 'water bottle', category: 'household', bridge: "Astronauts need water in space!", foundText: "Water bottle secured! No floating away!" },
+      { item: 'red', category: 'colors', bridge: "Look at the red button on the control panel!", foundText: "Red found! Don't press that button!" },
+      { item: 'book', category: 'household', bridge: "The space manual!", foundText: "The manual! Now you know which buttons to press!" },
+      { item: 'dog', category: 'animals', bridge: "Even astronauts have a co-pilot! Woof woof!", foundText: "Space dog! Best co-pilot ever!" }
     ],
     outro: "Mission complete! You found everything for your spaceship! You're a real space explorer now!",
     celebrationEmoji: '🌟'
@@ -97,11 +97,11 @@ var STORIES = [
     ageRange: '2-3',
     intro: "Welcome to the magic color garden! Every color you find makes a new flower grow! Let's fill the garden with colors!",
     steps: [
-      { item: 'red', category: 'colors', bridge: "The garden needs a red flower! Can you find something red?", foundText: "A beautiful red rose grew!" },
-      { item: 'yellow', category: 'colors', bridge: "Now the garden needs sunshine! Can you find something yellow?", foundText: "A yellow sunflower popped up!" },
-      { item: 'blue', category: 'colors', bridge: "The garden needs a blue flower! Can you find something blue?", foundText: "A blue flower! Like the sky!" },
-      { item: 'green', category: 'colors', bridge: "Gardens need leaves! Can you find something green?", foundText: "Green leaves everywhere!" },
-      { item: 'purple', category: 'colors', bridge: "One more magic flower! Can you find something purple?", foundText: "A magical purple flower! The garden is complete!" }
+      { item: 'red', category: 'colors', bridge: "The garden needs a red flower!", foundText: "A beautiful red rose grew!" },
+      { item: 'yellow', category: 'colors', bridge: "Now the garden needs sunshine!", foundText: "A yellow sunflower popped up!" },
+      { item: 'blue', category: 'colors', bridge: "The garden needs a blue flower!", foundText: "A blue flower! Like the sky!" },
+      { item: 'green', category: 'colors', bridge: "Gardens need leaves!", foundText: "Green leaves everywhere!" },
+      { item: 'purple', category: 'colors', bridge: "One more magic flower!", foundText: "A magical purple flower! The garden is complete!" }
     ],
     outro: "Wow! You grew every color flower in the garden! It's the most beautiful garden ever!",
     celebrationEmoji: '🌈'
@@ -114,12 +114,12 @@ var STORIES = [
     ageRange: '3-5',
     intro: "Dino is going on a big adventure today! But first, Dino needs to find some things! Can you help Dino?",
     steps: [
-      { item: 'dinosaur', category: 'animals', bridge: "First, we need to find Dino's friend! Can you find a dinosaur?", foundText: "Dino found a friend! Roar!" },
-      { item: 'hat', category: 'clothing', bridge: "It's sunny outside! Dino needs a hat! Can you find one?", foundText: "A hat for Dino! Stylish!" },
-      { item: 'orange', category: 'food', bridge: "Dino is hungry for a snack! Can you find an orange?", foundText: "An orange! Dino loves fruit!" },
-      { item: 'triangle', category: 'shapes', bridge: "Dino's footprints are triangle-shaped! Can you find a triangle?", foundText: "A triangle! Just like Dino's footprints!" },
-      { item: 'bird', category: 'animals', bridge: "Dino sees a flying friend! Can you find a bird?", foundText: "A bird! Dino says hello!" },
-      { item: 'pillow', category: 'household', bridge: "Adventures make Dino sleepy! Can you find a pillow?", foundText: "A soft pillow! Time for a dino nap!" }
+      { item: 'dinosaur', category: 'animals', bridge: "First, we need to find Dino's friend!", foundText: "Dino found a friend! Roar!" },
+      { item: 'hat', category: 'clothing', bridge: "It's sunny outside! Dino needs a hat!", foundText: "A hat for Dino! Stylish!" },
+      { item: 'orange', category: 'food', bridge: "Dino is hungry for a snack!", foundText: "An orange! Dino loves fruit!" },
+      { item: 'triangle', category: 'shapes', bridge: "Dino's footprints are triangle-shaped!", foundText: "A triangle! Just like Dino's footprints!" },
+      { item: 'bird', category: 'animals', bridge: "Dino sees a flying friend!", foundText: "A bird! Dino says hello!" },
+      { item: 'pillow', category: 'household', bridge: "Adventures make Dino sleepy!", foundText: "A soft pillow! Time for a dino nap!" }
     ],
     outro: "Dino had the best day ever! And it's all because of you! You're an amazing helper!",
     celebrationEmoji: '🦖'
@@ -132,11 +132,11 @@ var STORIES = [
     ageRange: '2-3',
     intro: "It's almost bedtime! Let's find everything we need to get ready for sleep! Are you ready?",
     steps: [
-      { item: 'toothbrush', category: 'household', bridge: "First, we brush our teeth! Can you find a toothbrush?", foundText: "Toothbrush found! Brush brush brush!" },
-      { item: 'towel', category: 'household', bridge: "Time to wash up! Can you find a towel?", foundText: "A towel! Nice and clean!" },
-      { item: 'teddy bear', category: 'household', bridge: "You need a bedtime buddy! Can you find a teddy bear?", foundText: "Teddy bear! The best snuggle friend!" },
-      { item: 'pillow', category: 'household', bridge: "A soft place for your head! Can you find a pillow?", foundText: "Pillow found! So fluffy!" },
-      { item: 'blanket', category: 'household', bridge: "One last thing to stay cozy! Can you find a blanket?", foundText: "A blanket! Warm and snuggly!" }
+      { item: 'toothbrush', category: 'household', bridge: "First, we brush our teeth!", foundText: "Toothbrush found! Brush brush brush!" },
+      { item: 'towel', category: 'household', bridge: "Time to wash up!", foundText: "A towel! Nice and clean!" },
+      { item: 'teddy bear', category: 'household', bridge: "You need a bedtime buddy!", foundText: "Teddy bear! The best snuggle friend!" },
+      { item: 'pillow', category: 'household', bridge: "A soft place for your head!", foundText: "Pillow found! So fluffy!" },
+      { item: 'blanket', category: 'household', bridge: "One last thing to stay cozy!", foundText: "A blanket! Warm and snuggly!" }
     ],
     outro: "You found everything for bedtime! Now it's time to close your eyes and dream sweet dreams! Goodnight!",
     celebrationEmoji: '⭐'
@@ -149,12 +149,12 @@ var STORIES = [
     ageRange: '3-5',
     intro: "Welcome to the pet shop! We need to find things for all the animals! Can you help?",
     steps: [
-      { item: 'cat', category: 'animals', bridge: "The kitty needs something to eat! But first, can you find the cat?", foundText: "Meow! Found the cat!" },
-      { item: 'fish', category: 'animals', bridge: "The fish is swimming in its tank! Can you find a fish?", foundText: "A fish! Blub blub!" },
-      { item: 'dog', category: 'animals', bridge: "Woof woof! Someone wants a walk! Can you find a dog?", foundText: "Dog found! Good boy!" },
-      { item: 'rabbit', category: 'animals', bridge: "The bunny is hiding! Can you find a rabbit?", foundText: "A bunny! Hop hop hop!" },
-      { item: 'frog', category: 'animals', bridge: "Ribbit! There's a frog in the shop! Can you find it?", foundText: "Found the frog! Ribbit!" },
-      { item: 'duck', category: 'animals', bridge: "Quack quack! Last one! Can you find a duck?", foundText: "A duck! Quack quack!" }
+      { item: 'cat', category: 'animals', bridge: "The kitty needs something to eat!", foundText: "Meow! Found the cat!" },
+      { item: 'fish', category: 'animals', bridge: "The fish is swimming in its tank!", foundText: "A fish! Blub blub!" },
+      { item: 'dog', category: 'animals', bridge: "Woof woof! Someone wants a walk!", foundText: "Dog found! Good boy!" },
+      { item: 'rabbit', category: 'animals', bridge: "The bunny is hiding!", foundText: "A bunny! Hop hop hop!" },
+      { item: 'frog', category: 'animals', bridge: "Ribbit! There's a frog in the shop!", foundText: "Found the frog! Ribbit!" },
+      { item: 'duck', category: 'animals', bridge: "Quack quack! Last one!", foundText: "A duck! Quack quack!" }
     ],
     outro: "You found all the animals in the pet shop! You're the best pet shop helper! All the animals are happy!",
     celebrationEmoji: '🐾'
@@ -167,13 +167,13 @@ var STORIES = [
     ageRange: '4-5',
     intro: "Ahoy, pirate! You're on a treasure hunt! Find each clue and you'll find the treasure! Are you ready to search?",
     steps: [
-      { item: 'keys', category: 'household', bridge: "The first clue! Find a key to unlock the treasure chest!", foundText: "A key! One step closer to treasure!" },
-      { item: 'diamond', category: 'shapes', bridge: "The map shows a diamond shape! Can you find a diamond?", foundText: "A diamond! The map is working!" },
+      { item: 'keys', category: 'household', bridge: "The first clue to unlock the treasure chest!", foundText: "A key! One step closer to treasure!" },
+      { item: 'diamond', category: 'shapes', bridge: "The map shows a diamond shape!", foundText: "A diamond! The map is working!" },
       { item: 'red', category: 'colors', bridge: "The next clue is something red, like a pirate's flag!", foundText: "Red like a pirate flag! Arr!" },
-      { item: 'lamp', category: 'household', bridge: "It's dark in the cave! Can you find a lamp?", foundText: "A lamp to light the way!" },
-      { item: 'hat', category: 'clothing', bridge: "Every pirate needs a hat! Can you find one?", foundText: "A pirate hat! Now you look the part!" },
-      { item: 'book', category: 'household', bridge: "The treasure map is in a book! Can you find one?", foundText: "The map! X marks the spot!" },
-      { item: 'plate', category: 'household', bridge: "Last clue — find something shiny like a gold coin! A plate or a fork will do!", foundText: "Something shiny! The treasure is near!" }
+      { item: 'lamp', category: 'household', bridge: "It's dark in the cave!", foundText: "A lamp to light the way!" },
+      { item: 'hat', category: 'clothing', bridge: "Every pirate needs a hat!", foundText: "A pirate hat! Now you look the part!" },
+      { item: 'book', category: 'household', bridge: "The treasure map is in a book!", foundText: "The map! X marks the spot!" },
+      { item: 'plate', category: 'household', bridge: "Last clue — something shiny like a gold coin! A plate or a fork will do!", foundText: "Something shiny! The treasure is near!" }
     ],
     outro: "You found all the clues and the treasure! You're the greatest pirate explorer ever! Arr!",
     celebrationEmoji: '💎'
@@ -186,11 +186,11 @@ var STORIES = [
     ageRange: '2-3',
     intro: "It's dress-up party time! Let's find all the clothes and get ready to party!",
     steps: [
-      { item: 'shirt', category: 'clothing', bridge: "First, a nice shirt! Can you find a shirt?", foundText: "A shirt! Looking good!" },
-      { item: 'pants', category: 'clothing', bridge: "Now we need pants! Can you find some pants?", foundText: "Pants found! Almost ready!" },
-      { item: 'hat', category: 'clothing', bridge: "A party hat! Can you find a hat?", foundText: "A hat! So fancy!" },
-      { item: 'sock', category: 'clothing', bridge: "Don't forget your socks! Can you find a sock?", foundText: "A sock! Two would be better!" },
-      { item: 'shoe', category: 'household', bridge: "Shoes for dancing! Can you find a shoe?", foundText: "A shoe! Time to dance!" }
+      { item: 'shirt', category: 'clothing', bridge: "First, a nice shirt!", foundText: "A shirt! Looking good!" },
+      { item: 'pants', category: 'clothing', bridge: "Now we need pants!", foundText: "Pants found! Almost ready!" },
+      { item: 'hat', category: 'clothing', bridge: "A party hat!", foundText: "A hat! So fancy!" },
+      { item: 'sock', category: 'clothing', bridge: "Don't forget your socks!", foundText: "A sock! Two would be better!" },
+      { item: 'shoe', category: 'household', bridge: "Shoes for dancing!", foundText: "A shoe! Time to dance!" }
     ],
     outro: "You found everything for the dress-up party! You look amazing! Let's dance!",
     celebrationEmoji: '🎉'

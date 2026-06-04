@@ -1,6 +1,8 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Recorded foreign-word audio PoC — Spanish in the coral fox voice **SHIPPED**, cache **v104 / ph-v104**)
+**Last updated:** 2026-06-04 (Story bridge "double Can-you-find" fix — trimmed + re-recorded 44 bridge clips **SHIPPED**, cache **v105 / ph-v105**)
+
+> **v105 — story bridge double-read fix:** each story step's `bridge` (the fox's setup line) used to END with "Can you find a X?", which `speakItem` then repeated → the prompt was read twice. Trimmed the trailing question from all bridges in `storyline-mode.js` (44 of 45; treasure-hunt step3 had none) so the bridge is setup-only, and **re-recorded those 44 bridge clips** in the coral voice via `ph-tools/regen_clips.py` + `ph-tools/regen-manifest.json` → `play/audio/story-*-bridge.mp3` (−16 LUFS). Flow is now: bridge (setup) → `speakItem` ("Can you find a X?") once → foreign word. ⚠️ `ph-tools/audio-manifest.json` (the full-revoice manifest) is now STALE for these bridges — rebuild it with `gen_audio.js dry` before any future full coral re-voice, or it'll re-introduce the old questions.
 
 ## 2026-06-04 session (cont.) — Recorded foreign-word audio PoC (Spanish, coral voice) (SHIPPED, cache v104/ph-v104, browser-verified, 0 console errors)
 
