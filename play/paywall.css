@@ -7,10 +7,18 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
-  align-items: center;
+  /* flex-start is the fallback (always top-anchored → close button reachable);
+     `safe center` centers when the modal fits but top-anchors + lets the overlay
+     scroll when it doesn't — fixes iOS Safari, where the centered modal's top (the
+     X) hid behind the URL bar and scrolling the modal just bounced back. */
+  align-items: flex-start;
+  align-items: safe center;
   justify-content: center;
   z-index: 10000;
-  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   animation: paywallFadeIn 0.2s ease;
 }
 
@@ -28,8 +36,8 @@
   border-radius: 32px;
   max-width: 460px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  /* The overlay scrolls now (so the close button at the modal's top stays
+     reachable on iOS); the modal itself is its natural height. */
   padding: 32px 24px 24px;
   box-shadow: 0 6px 0 #1B1140, 0 28px 60px rgba(27,17,64,0.30);
   position: relative;
