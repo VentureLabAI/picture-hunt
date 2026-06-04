@@ -1,6 +1,17 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (FREEMIUM PIVOT — Spanish bilingual free + $24.99 one-time **SHIPPED + live**, cache **v100 / ph-v100**)
+**Last updated:** 2026-06-04 (Adventure Trail storybook UI for all Story Quests **SHIPPED**, cache **v101 / ph-v101**)
+
+## 2026-06-04 session (cont.) — ADVENTURE TRAIL storybook UI for Story Quests (SHIPPED, cache v101/ph-v101, browser-verified all 8 quests, 0 console errors)
+
+Redesigned Story Quests to feel like a **storybook** instead of looking like a category hunt. Owner-approved direction: **Adventure Trail** (fox narrator + a trail of stepping-stones), applied to BOTH the picker and the in-quest play. Full decisions + the translation finding in **`docs/ADVENTURE-TRAIL-NOTES.md`** (read it — it has owner-review items).
+
+- **In-quest** (`storyline-mode.js` + `style.css`): the find-flow is wrapped in `#quest-chrome` (fox + speech-bubble narration + trail) injected into `#game` with a `story-mode` class — **reuses the camera/find/iOS-audio path** (not a rewrite). Cover page during the intro, page-turn between steps, fox-celebrate + stone-checks-off + fox-hops-forward on each find, finale reuses the Victory screen. Story-mode `#game` made overflow-safe (flex-start/safe-center + scroll) so the chrome can't push the camera off-screen.
+- **Picker** (`renderStorySelector`): "Pick an Adventure!" shelf of **book** cards (colored spine + emoji cover + title + trail-dots + page edges), replacing the category-style `.story-card` grid. Old `.story-card`/`.story-grid` CSS left in place (now unused, harmless).
+- No new art (reused fox-hero/point/celebrate). Removed the inline "📖 1/5" prompt badge (chrome header + trail show progress now).
+- **TRANSLATIONS — nothing to create (already 100% complete):** audited all **109 items × 10 languages = 0 gaps**; all 38 quest items covered. Verified the foreign word is spoken right after English (~400ms gap; e.g. `speakTranslation('taza','es-ES')` for cup). **Caveat:** foreign pronunciation is browser `speechSynthesis` TTS, not recorded audio → can be silent on iOS / rare languages where no device voice is installed. Recorded foreign audio is the reliable upgrade (separate project, NOT done). See notes doc.
+- **Verified** (Playwright, localhost v101): cover/step/found, 5- & 7-step trails, all 8 quests render clean, finale→victory, free (1 unlocked) / premium (all) locking, bilingual badge "ES taza". 0 JS errors (the one console 503 is the worker `/sync-progress` reacting to a fake test-premium code — environmental).
+- **Follow-ups (owner's call, in notes doc):** recorded foreign audio for iOS-reliable pronunciation; optional dedicated "The End" finale page; optional 2-col shelf / sticky Back button.
 
 ## 2026-06-04 session (cont.) — FREEMIUM PIVOT (SHIPPED, cache v100/ph-v100, browser-verified free + premium, 0 console errors)
 
