@@ -237,6 +237,126 @@ function initStorylineMode() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ADVENTURE TRAIL — storybook chrome wrapped around the find flow
+// (fox narrator + speech bubble + a trail of step "stones"). Injected into the
+// #game screen only while a story is active; the regular hunt is untouched.
+// See docs/ADVENTURE-TRAIL-NOTES.md.
+// ═══════════════════════════════════════════════════════════════
+function questFoxSrc(pose) {
+  if (pose === 'celebrate') return 'img/mascot/fox-celebrate.png';
+  if (pose === 'cover') return 'img/mascot/fox-hero.png';
+  return 'img/mascot/fox-point.png'; // 'guide'
+}
+
+function ensureQuestChrome() {
+  var game = document.getElementById('game');
+  if (!game) return null;
+  var chrome = document.getElementById('quest-chrome');
+  if (!chrome) {
+    chrome = document.createElement('div');
+    chrome.id = 'quest-chrome';
+    chrome.className = 'quest-chrome';
+    var targetArea = document.getElementById('target-area');
+    if (targetArea) game.insertBefore(chrome, targetArea);
+    else game.appendChild(chrome);
+  }
+  return chrome;
+}
+
+// doneCount = how many stones are checked off. The fox marker sits on the stone
+// at index === doneCount (the current find, or the next one mid-celebration so
+// the fox visibly "hops" forward on a success).
+function renderQuestTrail(foundCurrent) {
+  if (!currentStory) return '';
+  var n = currentStory.steps.length;
+  var doneCount = storyStepIndex + (foundCurrent ? 1 : 0);
+  var html = '<div class="quest-trail" role="img" aria-label="Adventure progress: '
+    + doneCount + ' of ' + n + ' found">';
+  for (var i = 0; i < n; i++) {
+    if (i > 0) html += '<span class="trail-link' + (i <= doneCount ? ' lit' : '') + '"></span>';
+    if (i < doneCount) {
+      var it = shuffledItems[i];
+      var face = (it && it.img) ? '<img src="' + it.img + '" alt="">'
+        : '<span class="trail-emoji">' + ((it && it.emoji) ? it.emoji : '⭐') + '</span>';
+      html += '<span class="trail-node done">' + face + '</span>';
+    } else if (i === doneCount) {
+      html += '<span class="trail-node current"><span class="trail-fox">🦊</span></span>';
+    } else {
+      html += '<span class="trail-node todo"></span>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+// Storybook "cover page" shown while the intro narration plays (before step 1).
+function renderQuestCover() {
+  if (!currentStory) return;
+  var chrome = ensureQuestChrome();
+  if (!chrome) return;
+  var game = document.getElementById('game');
+  if (game) { game.classList.add('story-mode'); game.classList.add('quest-cover'); }
+  chrome.innerHTML =
+    '<div class="quest-cover-art">' + currentStory.emoji + '</div>'
+    + '<div class="quest-cover-title">' + currentStory.title + '</div>'
+    + '<div class="quest-narrator">'
+    +   '<img class="quest-fox" src="' + questFoxSrc('cover') + '" alt="" aria-hidden="true">'
+    +   '<div class="quest-bubble">' + currentStory.intro + '</div>'
+    + '</div>'
+    + renderQuestTrail(false);
+}
+
+// Per-step chrome: fox guide + bridge line + the trail (current stone glowing).
+function renderQuestStep() {
+  if (!currentStory) return;
+  var chrome = ensureQuestChrome();
+  if (!chrome) return;
+  var game = document.getElementById('game');
+  if (game) { game.classList.add('story-mode'); game.classList.remove('quest-cover'); }
+  var step = currentStory.steps[storyStepIndex];
+  chrome.innerHTML =
+    '<div class="quest-header">'
+    +   '<span class="quest-title">' + currentStory.emoji + ' ' + currentStory.title + '</span>'
+    +   '<span class="quest-step">' + (storyStepIndex + 1) + ' / ' + currentStory.steps.length + '</span>'
+    + '</div>'
+    + '<div class="quest-narrator">'
+    +   '<img class="quest-fox" src="' + questFoxSrc('guide') + '" alt="" aria-hidden="true">'
+    +   '<div class="quest-bubble">' + step.bridge + '</div>'
+    + '</div>'
+    + renderQuestTrail(false);
+  // page-turn-in animation (restart it each step)
+  chrome.classList.remove('quest-turn');
+  void chrome.offsetWidth;
+  chrome.classList.add('quest-turn');
+}
+
+// On a correct find: fox celebrates, bubble shows the foundText, the current
+// stone checks off and the fox hops to the next.
+function renderQuestFound() {
+  if (!currentStory) return;
+  var chrome = document.getElementById('quest-chrome');
+  if (!chrome) return;
+  var step = currentStory.steps[storyStepIndex];
+  var fox = chrome.querySelector('.quest-fox');
+  var bubble = chrome.querySelector('.quest-bubble');
+  if (fox) { fox.src = questFoxSrc('celebrate'); fox.classList.add('quest-fox-pop'); }
+  if (bubble) bubble.textContent = step.foundText;
+  var trail = chrome.querySelector('.quest-trail');
+  if (trail) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = renderQuestTrail(true);
+    if (wrap.firstChild) trail.replaceWith(wrap.firstChild);
+  }
+}
+
+function clearQuestChrome() {
+  var game = document.getElementById('game');
+  if (game) { game.classList.remove('story-mode'); game.classList.remove('quest-cover'); }
+  var chrome = document.getElementById('quest-chrome');
+  if (chrome) chrome.remove();
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RENDER STORY SELECTOR
 // ═══════════════════════════════════════════════════════════════
 function renderStorySelector() {
@@ -249,27 +369,37 @@ function renderStorySelector() {
     splashContent._originalHTML = splashContent.innerHTML;
   }
 
-  var html = '<h1 class="home-title">📖 Pick a Story!</h1>';
-  html += '<div class="story-grid">';
-
   var premium = (typeof Paywall === 'undefined') || Paywall.isPremium();
+
+  // Storybook "shelf" — each quest is a little book (spine + cover + page edges),
+  // distinct from the category tiles. Fox hosts the shelf.
+  var html = ''
+    + '<div class="shelf-header">'
+    +   '<img class="shelf-fox" src="img/mascot/fox-point.png" alt="" aria-hidden="true">'
+    +   '<h1 class="home-title shelf-title">Pick an Adventure!</h1>'
+    + '</div>';
+  html += '<div class="story-shelf">';
 
   STORIES.forEach(function(story) {
     var completed = isStoryCompleted(story.id);
     var count = getStoryCompletedCount(story.id);
     var ageLabel = story.ageRange === '2-3' ? '⭐' : (story.ageRange === '3-5' ? '⭐⭐' : '⭐⭐⭐');
     var locked = !premium && !(typeof Paywall !== 'undefined' && Paywall.isFreeStory(story.id));
+    var dots = '';
+    for (var d = 0; d < story.steps.length; d++) dots += '<span class="book-dot"></span>';
 
-    html += '<button class="story-card' + (completed ? ' story-completed' : '') + (locked ? ' locked' : '') + '" '
-      + 'style="background:' + story.gradient + '" '
-      + 'onclick="playStory(\'' + story.id + '\')">'
-      + '<div class="story-emoji">' + story.emoji + '</div>'
-      + '<div class="story-info">'
-      + '<div class="story-name">' + story.title + (locked ? ' 🔒' : '') + '</div>'
-      + '<div class="story-meta">' + ageLabel + ' · ' + story.steps.length + ' finds'
-      + (completed ? ' · ✅ ' + count + 'x' : '')
-      + '</div>'
-      + '</div></button>';
+    html += '<button class="story-book' + (completed ? ' story-completed' : '') + (locked ? ' locked' : '') + '" '
+      + 'onclick="playStory(\'' + story.id + '\')" aria-label="' + story.title + (locked ? ' (locked)' : '') + '">'
+      + '<span class="book-spine" style="background:' + story.gradient + '"></span>'
+      + '<span class="book-cover" style="background:' + story.gradient + '"><span class="book-emoji">' + story.emoji + '</span></span>'
+      + '<span class="book-info">'
+      +   '<span class="book-title">' + story.title + (locked ? ' 🔒' : '') + '</span>'
+      +   '<span class="book-meta">' + ageLabel + ' · ' + story.steps.length + ' finds'
+      +     (completed ? ' · ✅ ' + count + 'x' : '') + '</span>'
+      +   '<span class="book-dots">' + dots + '</span>'
+      + '</span>'
+      + (completed ? '<span class="book-ribbon">✓</span>' : '')
+      + '</button>';
   });
 
   html += '</div>';
@@ -351,6 +481,8 @@ function playStory(storyId) {
   // Show game screen
   if (typeof showScreen === 'function') showScreen('game');
 
+  // Storybook cover page while the intro narration plays
+  renderQuestCover();
   // Speak the story intro (recorded voice), then show first item
   speakStoryAudio(story.id + '-intro', story.intro, function() {
     showStoryItem();
@@ -373,6 +505,9 @@ function showStoryItem() {
   // Temporarily set currentCategory to this step's category for AI prompt
   currentCategory = step.category;
 
+  // Storybook chrome for this step (fox + bridge line + trail)
+  renderQuestStep();
+
   // Update UI
   var targetEmoji = document.getElementById('target-emoji');
   var targetText = document.getElementById('target-text');
@@ -385,13 +520,13 @@ function showStoryItem() {
     targetEmoji.textContent = item.emoji;
   }
 
-  // Show story step indicator + (bilingual) foreign-word badge
-  var stepIndicator = '📖 ' + (storyStepIndex + 1) + '/' + currentStory.steps.length;
+  // Find prompt + (bilingual) foreign-word badge. The step count + progress now
+  // live in the quest chrome (header + trail), so there's no inline 📖 badge here.
   var promptText = (typeof promptFor === 'function') ? promptFor(item, cat) : cat.speakPrompt(item.name);
   var storyTrans = (typeof bilingualActive === 'function' && bilingualActive() && typeof getTranslationByName === 'function')
     ? getTranslationByName((typeof phTranslationLookupName === 'function') ? phTranslationLookupName(item.name, step.category) : item.name)
     : null;
-  targetText.innerHTML = '<span class="story-badge">' + stepIndicator + '</span> ' + promptText
+  targetText.innerHTML = promptText
     + (storyTrans ? '<span class="target-translation">' + storyTrans.emoji + ' ' + storyTrans.word + '</span>' : '');
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((storyStepIndex / currentStory.steps.length) * 100) + '%';
@@ -467,6 +602,7 @@ function skipStoryItem() {
 
 function finishStory() {
   storylineActive = false;
+  clearQuestChrome();
   recordStoryComplete(currentStory.id);
 
   // Record progress for each found item in their categories
@@ -523,6 +659,9 @@ function storylineHandlePhotoSuccess() {
   storyItemsFound++;
   var step = currentStory.steps[storyStepIndex];
 
+  // Storybook: fox celebrates, bubble shows the found line, trail stone checks off
+  renderQuestFound();
+
   // Record progress in the item's category
   if (typeof recordProgress === 'function') {
     recordProgress(step.category, step.item);
@@ -556,6 +695,7 @@ function storylineHandleSkip() {
 function storylineHandleGoHome() {
   if (!storylineActive) return false;
   storylineActive = false;
+  clearQuestChrome();
   currentStory = null;
   return false; // Let normal goHome handle the rest
 }
