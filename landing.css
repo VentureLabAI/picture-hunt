@@ -22,7 +22,7 @@
   --shadow-sm: 0 2px 8px rgba(74,55,40,0.10);
   --shadow-md: 0 6px 20px rgba(74,55,40,0.15);
   --shadow-lg: 0 14px 40px rgba(74,55,40,0.20);
-  --font-main: 'Arial Rounded MT Bold', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-main: 'Fredoka', 'Arial Rounded MT Bold', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

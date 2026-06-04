@@ -49,10 +49,11 @@ var _richAudioCtx = null;
 var _richSoundEnabled = true;
 
 function _getAudioCtx() {
-  // Use app.js context if available
-  if (typeof audioCtx !== 'undefined' && audioCtx) return audioCtx;
+  // Always defer to app.js's single shared (and unlocked) context first, so we
+  // never create a second AudioContext that the iOS unlock gesture didn't prime.
   if (typeof ensureAudioCtx === 'function') return ensureAudioCtx();
-  // Fallback: create our own
+  if (typeof audioCtx !== 'undefined' && audioCtx) return audioCtx;
+  // Fallback only if app.js isn't present at all.
   if (!_richAudioCtx) {
     _richAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }

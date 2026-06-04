@@ -81,7 +81,7 @@ var STORIES = [
     steps: [
       { item: 'star', category: 'shapes', bridge: "Look up in the sky! Can you find a star shape for your space map?", foundText: "A star! You're mapping the galaxy!" },
       { item: 'circle', category: 'shapes', bridge: "Your spaceship has round windows! Can you find a circle?", foundText: "A circle! The window is perfect!" },
-      { item: 'bottle', category: 'household', bridge: "Astronauts need water in space! Can you find a water bottle?", foundText: "Water bottle secured! No floating away!" },
+      { item: 'water bottle', category: 'household', bridge: "Astronauts need water in space! Can you find a water bottle?", foundText: "Water bottle secured! No floating away!" },
       { item: 'red', category: 'colors', bridge: "Can you find something red? Like the red button on the control panel!", foundText: "Red found! Don't press that button!" },
       { item: 'book', category: 'household', bridge: "The space manual! Can you find a book?", foundText: "The manual! Now you know which buttons to press!" },
       { item: 'dog', category: 'animals', bridge: "Even astronauts have a co-pilot! Can you find a dog? Woof woof!", foundText: "Space dog! Best co-pilot ever!" }
@@ -167,13 +167,13 @@ var STORIES = [
     ageRange: '4-5',
     intro: "Ahoy, pirate! You're on a treasure hunt! Find each clue and you'll find the treasure! Are you ready to search?",
     steps: [
-      { item: 'key', category: 'household', bridge: "The first clue! Find a key to unlock the treasure chest!", foundText: "A key! One step closer to treasure!" },
+      { item: 'keys', category: 'household', bridge: "The first clue! Find a key to unlock the treasure chest!", foundText: "A key! One step closer to treasure!" },
       { item: 'diamond', category: 'shapes', bridge: "The map shows a diamond shape! Can you find a diamond?", foundText: "A diamond! The map is working!" },
       { item: 'red', category: 'colors', bridge: "The next clue is something red, like a pirate's flag!", foundText: "Red like a pirate flag! Arr!" },
       { item: 'lamp', category: 'household', bridge: "It's dark in the cave! Can you find a lamp?", foundText: "A lamp to light the way!" },
       { item: 'hat', category: 'clothing', bridge: "Every pirate needs a hat! Can you find one?", foundText: "A pirate hat! Now you look the part!" },
       { item: 'book', category: 'household', bridge: "The treasure map is in a book! Can you find one?", foundText: "The map! X marks the spot!" },
-      { item: 'coin', category: 'household', bridge: "Last clue — find something shiny like a gold coin! A plate or a fork will do!", foundText: "Something shiny! The treasure is near!" }
+      { item: 'plate', category: 'household', bridge: "Last clue — find something shiny like a gold coin! A plate or a fork will do!", foundText: "Something shiny! The treasure is near!" }
     ],
     outro: "You found all the clues and the treasure! You're the greatest pirate explorer ever! Arr!",
     celebrationEmoji: '💎'
@@ -308,6 +308,17 @@ function playStory(storyId) {
   storyItemsFound = 0;
   storylineActive = true;
 
+  // Warm this story's narration clips so the first line isn't a TTS-then-buffer
+  // stutter (story-* keys aren't in the global preload list).
+  if (typeof preloadAudio === 'function') {
+    preloadAudio('story-' + story.id + '-intro');
+    preloadAudio('story-' + story.id + '-outro');
+    story.steps.forEach(function(step, idx) {
+      preloadAudio('story-' + story.id + '-step' + (idx + 1) + '-bridge');
+      preloadAudio('story-' + story.id + '-step' + (idx + 1) + '-found');
+    });
+  }
+
   // Set up the game state to use the story's items
   // We temporarily override the category/item system
   currentCategory = story.steps[0].category;
@@ -316,7 +327,10 @@ function playStory(storyId) {
     var cat = CATEGORIES[step.category];
     var item = cat.items.find(function(i) { return i.name === step.item; });
     if (!item) {
-      // Fallback: create a minimal item object
+      // Fallback: minimal item object. This should NOT happen — it means a story
+      // step references a name that isn't in CATEGORIES and the child sees a ❓.
+      // Surface it loudly so a future story edit can't silently regress.
+      console.warn('[PH] Story "' + story.id + '" step item not in CATEGORIES: "' + step.item + '" — showing ❓.');
       item = { name: step.item, emoji: '❓' };
     }
     // Attach story metadata
@@ -329,8 +343,8 @@ function playStory(storyId) {
   // Show game screen
   if (typeof showScreen === 'function') showScreen('game');
 
-  // Speak the story intro, then show first item
-  speak(story.intro, function() {
+  // Speak the story intro (recorded voice), then show first item
+  speakStoryAudio(story.id + '-intro', story.intro, function() {
     showStoryItem();
   });
 }
@@ -363,9 +377,14 @@ function showStoryItem() {
     targetEmoji.textContent = item.emoji;
   }
 
-  // Show story step indicator
+  // Show story step indicator + (bilingual) foreign-word badge
   var stepIndicator = '📖 ' + (storyStepIndex + 1) + '/' + currentStory.steps.length;
-  targetText.innerHTML = '<span class="story-badge">' + stepIndicator + '</span> ' + cat.speakPrompt(item.name);
+  var promptText = (typeof promptFor === 'function') ? promptFor(item, cat) : cat.speakPrompt(item.name);
+  var storyTrans = (typeof bilingualActive === 'function' && bilingualActive() && typeof getTranslationByName === 'function')
+    ? getTranslationByName((typeof phTranslationLookupName === 'function') ? phTranslationLookupName(item.name, step.category) : item.name)
+    : null;
+  targetText.innerHTML = '<span class="story-badge">' + stepIndicator + '</span> ' + promptText
+    + (storyTrans ? '<span class="target-translation">' + storyTrans.emoji + ' ' + storyTrans.word + '</span>' : '');
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((storyStepIndex / currentStory.steps.length) * 100) + '%';
 
@@ -381,15 +400,19 @@ function showStoryItem() {
   var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = '';
 
-  // Speak the bridge text, then the find prompt
-  speak(step.bridge, function() {
-    speak(cat.speakPrompt(item.name), function() {
-      console.log('[PH] Story prompt spoken for: ' + item.name);
-      if (typeof startPulse === 'function' && cameraLabel) {
-        startPulse(cameraLabel, 'camera');
-      }
+  // Speak the bridge (recorded story voice) → find prompt (handles speakOverride
+  // items like "keys") → foreign word in bilingual mode, then arm the camera.
+  speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-bridge', step.bridge, function() {
+    var arm = function() {
+      if (typeof startPulse === 'function' && cameraLabel) startPulse(cameraLabel, 'camera');
       if (typeof startInactivity === 'function') startInactivity();
-    });
+    };
+    if (typeof speakItem === 'function') {
+      speakItem(item, cat, function() {
+        if (typeof speakForeignWordForItem === 'function') speakForeignWordForItem(item, arm);
+        else arm();
+      });
+    } else { arm(); }
   });
 }
 
@@ -402,14 +425,18 @@ function repeatStoryPrompt() {
   var cat = CATEGORIES[step.category];
   var item = shuffledItems[storyStepIndex];
 
-  speak(step.bridge, function() {
-    speak(cat.speakPrompt(item.name), function() {
-      var cameraLabel = document.getElementById('camera-label');
-      if (typeof startPulse === 'function' && cameraLabel) {
-        startPulse(cameraLabel, 'camera');
-      }
+  speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-bridge', step.bridge, function() {
+    var cameraLabel = document.getElementById('camera-label');
+    var arm = function() {
+      if (typeof startPulse === 'function' && cameraLabel) startPulse(cameraLabel, 'camera');
       if (typeof startInactivity === 'function') startInactivity();
-    });
+    };
+    if (typeof speakItem === 'function') {
+      speakItem(item, cat, function() {
+        if (typeof speakForeignWordForItem === 'function') speakForeignWordForItem(item, arm);
+        else arm();
+      });
+    } else { arm(); }
   });
 }
 
@@ -457,6 +484,14 @@ function finishStory() {
 
   if (typeof showScreen === 'function') showScreen('victory');
 
+  // Make the victory buttons story-aware: "Play Again" replays THIS story (not a
+  // generic game in the last step's category); "Home" returns to the splash.
+  var sid = currentStory.id;
+  var againBtn = document.querySelector('#victory .victory-buttons .play-btn');
+  var homeBtn = document.querySelector('#victory .victory-buttons .setup-btn');
+  if (againBtn) { againBtn.innerHTML = '🔄 Play Again!'; againBtn.onclick = function() { playStory(sid); }; }
+  if (homeBtn) { homeBtn.onclick = function() { if (typeof resetGame === 'function') resetGame(); }; }
+
   // Enhanced celebration
   if (typeof celebrateCombo === 'function') {
     celebrateCombo(5000);
@@ -465,7 +500,7 @@ function finishStory() {
   }
   if (typeof playVictorySound === 'function') playVictorySound();
 
-  speak(currentStory.outro);
+  speakStoryAudio(currentStory.id + '-outro', currentStory.outro);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -485,8 +520,11 @@ function storylineHandlePhotoSuccess() {
     recordProgress(step.category, step.item);
   }
 
-  // Speak the found text, then auto-advance
-  speak(step.foundText);
+  // Story finds count toward the Daily Challenge streak too.
+  if (typeof DailyStreak !== 'undefined' && DailyStreak.onItemFound) DailyStreak.onItemFound(step.category, step.item);
+
+  // Speak the found text (recorded story voice), then auto-advance
+  speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-found', step.foundText);
   if (typeof playSuccess === 'function') setTimeout(function() { playSuccess(); }, 300);
 
   // Auto-advance after delay
@@ -632,13 +670,21 @@ function generateStoryAudioScripts() {
 // Never use new Audio() — fails on iOS outside user gesture (LESSONS-LEARNED).
 function speakStoryAudio(key, text, onEnd) {
   var audioKey = 'story-' + key;
-  if (typeof playBuffer === 'function' && playBuffer(audioKey, onEnd)) return;
-  if (typeof preloadAudio === 'function') preloadAudio(audioKey);
-  if (typeof speakFallback === 'function') {
-    speakFallback(text, onEnd);
-  } else if (onEnd) {
-    onEnd();
+  // Already decoded → play immediately.
+  if (typeof audioBufferCache !== 'undefined' && audioBufferCache[audioKey] && typeof playBuffer === 'function') {
+    playBuffer(audioKey, onEnd);
+    return;
   }
+  // Not ready yet → wait briefly for the buffer, then play; fall back to TTS.
+  // (Same cold-start-safe path the main prompts use, so the first story line
+  // isn't a robotic-voice stutter.)
+  if (typeof playKeyWhenReady === 'function') {
+    playKeyWhenReady(audioKey, text, onEnd);
+    return;
+  }
+  if (typeof preloadAudio === 'function') preloadAudio(audioKey);
+  if (typeof speakFallback === 'function') speakFallback(text, onEnd);
+  else if (onEnd) onEnd();
 }
 
 // ═══════════════════════════════════════════════════════════════

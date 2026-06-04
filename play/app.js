@@ -8,21 +8,17 @@
 // Proxy URL — set this to your Cloudflare Worker URL to skip API key setup
 // Leave empty string to use direct Gemini API with localStorage key
 var PROXY_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/';
+// Shared client token sent with proxy requests. NOTE: this ships in public JS, so
+// it is a speed-bump, not a true secret — the real abuse protections are the
+// Worker's Origin allow-list, per-IP rate limit, and payload size cap.
+var PH_PROXY_TOKEN = 'ph_pub_2k9Qx7mZr4Tn8Wv5';
 
 // ═══════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (only needed when no proxy)
 // ═══════════════════════════════════════════════════════════════
-(function() {
-  var h = location.hash;
-  if (h && h.indexOf('#key=') === 0) {
-    var k = h.substring(5);
-    if (k) {
-      localStorage.setItem('PH_KEY', k);
-      location.replace(location.pathname + location.search);
-      return;
-    }
-  }
-})();
+// (Removed: a #key= URL-hash handler that persisted an arbitrary Gemini key from
+// the address bar into localStorage. The app always uses the Worker proxy, so
+// reading a network credential off an untrusted URL was a needless abuse vector.)
 
 let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
 
@@ -301,12 +297,26 @@ function promptFor(item, cat) {
   return item.speakOverride || cat.speakPrompt(item.name);
 }
 function speakItem(item, cat, onEnd) {
-  var text = promptFor(item, cat);
-  if (item.speakOverride) {
-    speakFallback(text, onEnd);
-  } else {
-    speak(text, onEnd);
-  }
+  // Every item — including the former speakOverride mass/proper nouns (keys,
+  // bread, milk, Santa, …) — now has a correctly-worded recorded clip, so route
+  // them all through speak() → cached MP3 (TTS stays only as the load fallback).
+  speak(promptFor(item, cat), onEnd);
+}
+
+// ── Bilingual helpers ───────────────────────────────────────────
+// Bilingual mode is a Premium feature (see docs/STRATEGY.md). It is "active"
+// only when a language is selected AND the user is premium; otherwise the
+// foreign word/badge is hidden and the picker routes to the paywall.
+function bilingualActive() {
+  if (typeof getSelectedLanguage !== 'function' || getSelectedLanguage().code === 'none') return false;
+  if (typeof Paywall !== 'undefined' && !Paywall.isPremium()) return false;
+  return true;
+}
+// Colors → "orange" must resolve to the colour word, not the fruit (both exist
+// in the translation table under different keys).
+function phTranslationLookupName(itemName, catId) {
+  if (catId === 'colors' && itemName === 'orange') return 'orange (color)';
+  return itemName;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -579,8 +589,11 @@ function unlockAudio() {
     src.buffer = buf;
     src.connect(ctx.destination);
     src.start(0);
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
   } catch(e) {}
-  // Start preloading all audio files into Web Audio buffers
+  // Warm the very first prompt the child will hear FIRST, then everything else,
+  // so the home greeting is decoded before onSplashEnter tries to play it.
+  preloadAudio('pick-a-game');
   preloadAllAudio();
 }
 
@@ -626,28 +639,35 @@ function renderSplash() {
   // Language selector — bilingual mode is a core feature, copy reflects that
   var langHtml = '';
   if (typeof SUPPORTED_LANGUAGES !== 'undefined') {
+    var langPrem = (typeof Paywall === 'undefined') || Paywall.isPremium();
     var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
-    var langLabel = currentLang.code === 'none'
-      ? '🌍 Learn a Language'
-      : currentLang.emoji + ' Learning ' + currentLang.name;
-    var langSubLabel = currentLang.code === 'none'
-      ? 'Tap to add bilingual mode'
-      : 'Tap to change';
+    var langLabel = !langPrem
+      ? '🌍 Learn a Language 🔒'
+      : (currentLang.code === 'none'
+          ? '🌍 Learn a Language'
+          : currentLang.emoji + ' Learning ' + currentLang.name);
+    var langSubLabel = !langPrem
+      ? 'Premium — 10 languages'
+      : (currentLang.code === 'none' ? 'Tap to add bilingual mode' : 'Tap to change');
     langHtml = '<div class="lang-selector">'
       + '<button class="lang-btn" onclick="openLangPicker()">' + langLabel + '</button>'
       + '<div class="lang-sub">' + langSubLabel + '</div>'
       + '</div>';
   }
 
-  // Insert difficulty + lang before the grid
+  // Insert difficulty + lang before the grid (first render). On re-render, update
+  // the difficulty active state AND refresh the lang selector so a premium
+  // unlock/lock change (e.g. right after redeeming a code) shows up immediately.
   var title = document.querySelector('.home-title');
   if (title && !document.querySelector('.difficulty-selector')) {
     title.insertAdjacentHTML('afterend', diffHtml + langHtml);
   } else if (title) {
-    // Update active state
     document.querySelectorAll('.diff-btn').forEach(function(btn, idx) {
       btn.className = 'diff-btn' + (['easy','medium','hard'][idx] === currentDifficulty ? ' active' : '');
     });
+    var existingLang = document.querySelector('.lang-selector');
+    if (existingLang) { existingLang.outerHTML = langHtml; }
+    else if (langHtml) { var ds = document.querySelector('.difficulty-selector'); if (ds) ds.insertAdjacentHTML('afterend', langHtml); }
   }
 
   var savedGame = null;
@@ -806,7 +826,7 @@ function renderSetupGrid() {
     var iconHtml = item.img
       ? '<img src="' + item.img + '" class="setup-card-img" alt="' + item.name + '">'
       : '<span class="setup-card-emoji">' + item.emoji + '</span>';
-    var setupTranslation = (typeof getTranslationByName === 'function') ? getTranslationByName(item.name) : null;
+    var setupTranslation = bilingualActive() ? getTranslationByName(phTranslationLookupName(item.name, setupCategory)) : null;
     var setupNameHtml = '<span class="setup-card-name">' + item.name
       + (setupTranslation ? '<br><span class="setup-card-translation">' + setupTranslation.word + '</span>' : '')
       + '</span>';
@@ -849,16 +869,29 @@ function setupDone() {
 var audioBufferCache = {};
 var currentAudioSource = null;
 
-// Preload audio files into Web Audio API buffers (bypasses iOS autoplay restrictions)
+// Preload audio files into Web Audio API buffers (bypasses iOS autoplay restrictions).
+// Returns a promise that resolves when the clip is decoded, and de-dupes in-flight
+// loads so callers can await a specific clip before playing it.
+var audioLoadPromises = {};
 function preloadAudio(key) {
-  if (audioBufferCache[key]) return;
+  if (audioBufferCache[key]) return Promise.resolve(audioBufferCache[key]);
+  if (audioLoadPromises[key]) return audioLoadPromises[key];
   var src = 'audio/' + key + '.mp3';
-  fetch(src).then(function(r) { return r.arrayBuffer(); }).then(function(buf) {
+  var p = fetch(src).then(function(r) { return r.arrayBuffer(); }).then(function(buf) {
     var ctx = ensureAudioCtx();
     return ctx.decodeAudioData(buf);
   }).then(function(decoded) {
     audioBufferCache[key] = decoded;
-  }).catch(function() {});
+    delete audioLoadPromises[key];
+    return decoded;
+  }).catch(function(err) {
+    delete audioLoadPromises[key];
+    // Don't swallow silently — a missing/renamed file should surface in console.
+    console.warn('[PH] audio load failed:', key, err && err.message);
+    throw err;
+  });
+  audioLoadPromises[key] = p;
+  return p;
 }
 
 function preloadAllAudio() {
@@ -886,17 +919,25 @@ function playBuffer(key, onEnd) {
   var buf = audioBufferCache[key];
   if (!buf) { if (onEnd) onEnd(); return false; }
 
-  // Stop current
-  if (currentAudioSource) {
-    try { currentAudioSource.stop(); } catch(e) {}
+  function startIt() {
+    // Stop current
+    if (currentAudioSource) { try { currentAudioSource.stop(); } catch(e) {} }
+    var source = ctx.createBufferSource();
+    source.buffer = buf;
+    source.connect(ctx.destination);
+    source.onended = function() { if (currentAudioSource === source) currentAudioSource = null; if (onEnd) onEnd(); };
+    try { source.start(0); } catch(e) { currentAudioSource = null; if (onEnd) onEnd(); return; }
+    currentAudioSource = source;
   }
 
-  var source = ctx.createBufferSource();
-  source.buffer = buf;
-  source.connect(ctx.destination);
-  source.onended = function() { currentAudioSource = null; if (onEnd) onEnd(); };
-  source.start(0);
-  currentAudioSource = source;
+  // iOS/Safari can leave the context 'suspended' (cold start, after backgrounding).
+  // resume() is async — start playback only once it's actually running, or the
+  // first sound after unlock gets silently dropped.
+  if (ctx.state !== 'running' && ctx.resume) {
+    ctx.resume().then(startIt).catch(startIt);
+  } else {
+    startIt();
+  }
   return true;
 }
 
@@ -961,15 +1002,35 @@ function speak(text, onEnd) {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
   // Web Audio buffer first (works on iOS without user gesture).
-  // If buffer isn't loaded yet, kick off async load and fall back to speechSynthesis.
   // NEVER use new Audio() — fails on iOS Safari outside user gesture (LESSONS-LEARNED).
   var key = textToAudioKey(text);
   if (key) {
-    if (playBuffer(key, onEnd)) return;
-    preloadAudio(key);
+    if (audioBufferCache[key]) { playBuffer(key, onEnd); return; }
+    // Buffer not decoded yet (cold start). Wait briefly for THIS clip rather than
+    // racing straight to (often-silent) speechSynthesis — this is the root-cause
+    // fix for "the voice plays sometimes, sometimes it doesn't."
+    playKeyWhenReady(key, text, onEnd);
+    return;
   }
 
   speakFallback(text, onEnd);
+}
+
+// Load one clip's buffer, then play it; if it isn't ready within a short window
+// (or fails to load), fall back to speechSynthesis so we never hang silently.
+function playKeyWhenReady(key, text, onEnd) {
+  var settled = false;
+  var to = setTimeout(function() {
+    if (settled) return; settled = true;
+    speakFallback(text, onEnd);
+  }, 1200);
+  preloadAudio(key).then(function() {
+    if (settled) return; settled = true; clearTimeout(to);
+    if (!playBuffer(key, onEnd)) speakFallback(text, onEnd);
+  }).catch(function() {
+    if (settled) return; settled = true; clearTimeout(to);
+    speakFallback(text, onEnd);
+  });
 }
 
 function speakFallback(text, onEnd) {
@@ -986,6 +1047,12 @@ function speakFallback(text, onEnd) {
   speechSynthesis.speak(utter);
 }
 if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); }; }
+
+// Re-arm the audio context when returning from background (iOS auto-suspends it),
+// so the next prompt after a tab-switch isn't dropped.
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+});
 
 // ═══════════════════════════════════════════════════════════════
 // SHUFFLE
@@ -1074,7 +1141,7 @@ function showCurrentItem() {
   }
   // Show English prompt + foreign word if language mode active
   var displayPrompt = promptFor(item, cat);
-  var langResult = (typeof getTranslationByName === 'function') ? getTranslationByName(item.name) : null;
+  var langResult = bilingualActive() ? getTranslationByName(phTranslationLookupName(item.name, currentCategory)) : null;
   if (langResult) {
     targetText.innerHTML = displayPrompt
       + '<span class="target-translation">' + langResult.emoji + ' ' + langResult.word + '</span>';
@@ -1107,11 +1174,11 @@ function showCurrentItem() {
 // Speak the target-language word for `item` if bilingual mode is on. No-op
 // otherwise. Calls onEnd in all cases.
 function speakForeignWordForItem(item, onEnd) {
-  if (typeof getTranslationByName !== 'function' || typeof speakTranslation !== 'function') {
+  if (!bilingualActive() || typeof speakTranslation !== 'function') {
     if (onEnd) onEnd();
     return;
   }
-  var trans = getTranslationByName(item.name);
+  var trans = getTranslationByName(phTranslationLookupName(item.name, currentCategory));
   if (!trans) { if (onEnd) onEnd(); return; }
   // Brief gap after English so the words don't run together
   setTimeout(function() {
@@ -1138,18 +1205,25 @@ function repeatPrompt() {
 
 function goHome() {
   playClick();
-  // Exit storyline mode if active
-  if (typeof storylineActive !== 'undefined' && storylineActive) { storylineActive = false; currentStory = null; }
+  // Exit storyline mode if active. A story's shuffledItems are cross-category
+  // (and can include placeholder items), so saving them as a normal "Continue"
+  // record yields a scrambled resume — skip the save when leaving a story.
+  var wasStory = (typeof storylineActive !== 'undefined' && storylineActive);
+  if (wasStory) { storylineActive = false; currentStory = null; }
   // End dashboard session if mid-game
   if (typeof dashboardEndSession === 'function' && _currentSession) {
     dashboardEndSession(_currentSession, currentIndex);
     _currentSession = null;
   }
-  localStorage.setItem('PH_GAME_STATE', JSON.stringify({
-    category: currentCategory,
-    items: shuffledItems.map(function(i) { return i.name; }),
-    index: currentIndex
-  }));
+  if (wasStory) {
+    localStorage.removeItem('PH_GAME_STATE');
+  } else {
+    localStorage.setItem('PH_GAME_STATE', JSON.stringify({
+      category: currentCategory,
+      items: shuffledItems.map(function(i) { return i.name; }),
+      index: currentIndex
+    }));
+  }
   showScreen('splash');
 }
 
@@ -1190,6 +1264,12 @@ function showVictory() {
   if (typeof StickerBook !== 'undefined') StickerBook.addStickersToVictory(currentCategory);
 
   showScreen('victory');
+  // Reset the victory buttons to default — a story victory rebinds them, so make
+  // sure a normal game's "Play Again" starts a normal game, not the last story.
+  var vAgain = document.querySelector('#victory .victory-buttons .play-btn');
+  var vHome = document.querySelector('#victory .victory-buttons .setup-btn');
+  if (vAgain) { vAgain.innerHTML = '🔄 Play Again!'; vAgain.onclick = function() { startNewGame(); }; }
+  if (vHome) { vHome.onclick = function() { resetGame(); }; }
   // Use enhanced celebrations if available, fallback to confetti
   if (typeof celebrateCombo === 'function') {
     celebrateCombo(4000);
@@ -1247,13 +1327,16 @@ async function submitPhoto() {
   try {
     var response = await identifyObject(pendingBase64, pendingMimeType);
     var firstLine = response.split('\n')[0].toLowerCase().trim();
-    var matched = firstLine.indexOf('yes') >= 0;
+    // Anchor on the leading token so a "No, …" that happens to contain "yes"
+    // can't false-positive a celebration on stage.
+    var matched = /^\s*yes\b/.test(firstLine);
     loadingOverlay.classList.add('hidden');
     pendingBase64 = null; pendingMimeType = null;
 
     if (matched) {
       // Storyline mode: handle success in story context
       if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
+      if (typeof hideHintButton === 'function') hideHintButton(); // don't let the 💡 linger through the celebration
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
       if (typeof Paywall !== 'undefined') Paywall.recordPlay();
       // Streak sound: fire after 3+ consecutive finds
@@ -1279,11 +1362,11 @@ async function submitPhoto() {
       setTimeout(typeof playRichSuccess === 'function' ? playRichSuccess : playSuccess, 300);
 
       // Victory Echo: 'How do you say X in Spanish? ... zapato!'
-      var hasLang = (typeof getSelectedLanguage === 'function') && getSelectedLanguage().code !== 'none';
+      var hasLang = bilingualActive();
       var echoDuration = 0;
       if (hasLang && typeof playVictoryEcho === 'function') {
         // Show translation badge in feedback area
-        var echoResult = (typeof getTranslationByName === 'function') ? getTranslationByName(foundItemName) : null;
+        var echoResult = (typeof getTranslationByName === 'function') ? getTranslationByName(phTranslationLookupName(foundItemName, currentCategory)) : null;
         if (echoResult) {
           echoDuration = 4000; // extra time for echo
           setTimeout(function() {
@@ -1371,6 +1454,7 @@ function skipFromMiss() {
 // Parent override: long-press green button on miss screen
 function forceAccept() {
   playClick();
+  if (typeof hideHintButton === 'function') hideHintButton();
   recordProgress(currentCategory, shuffledItems[currentIndex].name);
   // Use sticker pop for parent override
   if (typeof celebrateStickerPop === 'function') {
@@ -1413,9 +1497,11 @@ async function identifyObject(base64Data, mimeType) {
   // photo…" on screen forever (worst case for a 2-year-old).
   var ctrl = new AbortController();
   var timeoutId = setTimeout(function() { ctrl.abort(); }, 15000);
+  var reqHeaders = { 'Content-Type': 'application/json' };
+  if (PROXY_URL) reqHeaders['X-PH-Token'] = PH_PROXY_TOKEN;
   var resp;
   try {
-    resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+    resp = await fetch(url, { method: 'POST', headers: reqHeaders, body: JSON.stringify(body), signal: ctrl.signal });
   } finally {
     clearTimeout(timeoutId);
   }
@@ -1510,6 +1596,8 @@ function cycleLanguage() {
 function openLangPicker() {
   if (typeof SUPPORTED_LANGUAGES === 'undefined') return;
   playClick();
+  // Bilingual mode is a Premium feature — free users get the paywall instead.
+  if (typeof Paywall !== 'undefined' && !Paywall.isPremium()) { Paywall.show('bilingual'); return; }
   // Remove any existing picker
   var existing = document.getElementById('lang-picker-overlay');
   if (existing) existing.remove();

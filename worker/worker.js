@@ -12,6 +12,8 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 const ALLOWED_ORIGINS = [
   'https://venturelabai.github.io',
+  'https://picturehunt.app',
+  'https://www.picturehunt.app',
   'http://localhost',
   'http://127.0.0.1'
 ];
@@ -21,7 +23,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': allowed || ALLOWED_ORIGINS[0],
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-PH-Token',
     'Access-Control-Max-Age': '86400'
   };
 }
@@ -43,12 +45,30 @@ export default {
       return new Response(null, { status: 204, headers });
     }
 
+    // Stripe webhook: server-to-server, authenticated by its own signature and
+    // carrying no browser Origin — handle BEFORE the Origin/token gate.
+    if (url.pathname === '/stripe-webhook') {
+      if (request.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405, headers);
+      return stripeWebhook(request, env);
+    }
+
     if (request.method !== 'POST') {
       return jsonResponse({ error: 'POST only' }, 405, headers);
     }
 
-    if (origin && !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+    // Browser endpoints below: require a known Origin (deny missing/unknown — a
+    // no-Origin POST is curl/server-to-server, not our app) plus the shared
+    // client token. This is what stops anonymous abuse of the paid AI proxy.
+    if (!origin || !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
       return jsonResponse({ error: 'Origin not allowed' }, 403, headers);
+    }
+    // Token is fail-open when the secret isn't configured, so deploying this
+    // before `wrangler secret put PH_PROXY_TOKEN` cannot lock out the app.
+    if (env.PH_PROXY_TOKEN) {
+      const token = request.headers.get('X-PH-Token') || '';
+      if (token !== env.PH_PROXY_TOKEN) {
+        return jsonResponse({ error: 'Unauthorized' }, 401, headers);
+      }
     }
 
     if (url.pathname === '/validate-code') {
@@ -59,11 +79,7 @@ export default {
       return syncProgress(request, env, headers);
     }
 
-    if (url.pathname === '/stripe-webhook') {
-      return stripeWebhook(request, env);  // bypasses CORS — server-to-server
-    }
-
-    // Default: AI proxy
+    // Default: AI proxy (rate-limited + size-capped in proxyGemini)
     return proxyGemini(request, env, headers);
   }
 };
@@ -73,6 +89,17 @@ export default {
 async function proxyGemini(request, env, headers) {
   try {
     const body = await request.text();
+    // Size cap — a toddler photo as base64 JSON is a few MB; reject anything
+    // clearly oversized to blunt payload-abuse of the paid endpoint.
+    if (body.length > 8 * 1024 * 1024) {
+      return jsonResponse({ error: 'Payload too large' }, 413, headers);
+    }
+    // Per-IP rate limit so a leaked URL can't drain the Gemini quota. Best-effort
+    // (KV is eventually consistent); fails open on any error so real play never
+    // breaks. For production-grade limits, add a Cloudflare WAF rate-limit rule.
+    if (!(await rateLimitOk(request, env))) {
+      return jsonResponse({ error: 'Too many requests — slow down a moment.' }, 429, headers);
+    }
     const apiUrl = `${GEMINI_URL}?key=${env.GEMINI_API_KEY}`;
     const resp = await fetch(apiUrl, {
       method: 'POST',
@@ -86,6 +113,23 @@ async function proxyGemini(request, env, headers) {
     });
   } catch (err) {
     return jsonResponse({ error: 'Proxy error: ' + err.message }, 500, headers);
+  }
+}
+
+// Best-effort per-IP rate limit using KV minute-buckets. Generous (60/min) so a
+// real child is never throttled; fails open if KV is unbound or errors.
+async function rateLimitOk(request, env) {
+  try {
+    if (!env.UNLOCK_CODES) return true;
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const minute = Math.floor(Date.now() / 60000);
+    const key = 'rl:' + ip + ':' + minute;
+    const count = parseInt((await env.UNLOCK_CODES.get(key)) || '0', 10) || 0;
+    if (count >= 60) return false;
+    await env.UNLOCK_CODES.put(key, String(count + 1), { expirationTtl: 120 });
+    return true;
+  } catch (e) {
+    return true;
   }
 }
 

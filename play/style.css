@@ -1416,10 +1416,11 @@ body.ph-install-open .splash-content {
 .story-card:active { transform: translateY(3px) scale(0.97); }
 .story-emoji {
   font-size: 2.2rem;
+  flex-shrink: 0;
   filter: drop-shadow(0 3px 6px rgba(27,17,64,0.20));
 }
-.story-info { text-align: left; }
-.story-name { font-weight: var(--fw-bold); font-size: 1rem; letter-spacing: 0.01em; }
+.story-info { text-align: left; min-width: 0; flex: 1 1 auto; }
+.story-name { font-weight: var(--fw-bold); font-size: 1rem; letter-spacing: 0.01em; overflow-wrap: anywhere; line-height: 1.15; }
 .story-meta { font-size: 0.78rem; opacity: 0.9; margin-top: 2px; font-weight: var(--fw-semi); }
 .story-completed { opacity: 0.85; }
 .story-badge {
@@ -1546,6 +1547,7 @@ body.ph-install-open .splash-content {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 .storyline-hero-title {
   font-size: 1.3rem;
@@ -1556,6 +1558,7 @@ body.ph-install-open .splash-content {
   font-size: 0.9rem;
   font-weight: var(--fw-reg, 600);
   opacity: 0.92;
+  overflow-wrap: anywhere;
 }
 
 
@@ -1806,6 +1809,15 @@ body.ph-install-open .splash-content {
     min-height: 144px;
     padding: var(--sp-6) var(--sp-4);
   }
+  /* Match the story grid to the category grid so the adventure modes don't look
+     under-built next to it on a tablet. */
+  .story-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .story-card { min-height: 104px; }
   .target-area { padding: var(--sp-8) var(--sp-6) var(--sp-5); }
 }
 

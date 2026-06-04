@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v95';
+var CACHE_VERSION = 'ph-v96';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -211,9 +211,12 @@ var PRECACHE_URLS = [
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      // Use addAll — if any file fails, the whole install fails
-      // This ensures we only go offline-ready when EVERYTHING is cached
-      return cache.addAll(PRECACHE_URLS);
+      // Tolerant precache: cache each asset individually so a single missing/404
+      // file can't abort the entire install (which would break offline-readiness
+      // and wedge the cache-version upgrade). Skips are logged, not fatal.
+      return Promise.all(PRECACHE_URLS.map(function(u) {
+        return cache.add(u).catch(function(e) { console.warn('[SW] precache skip:', u, e && e.message); });
+      }));
     }).then(function() {
       // Skip waiting so new SW activates immediately
       return self.skipWaiting();
@@ -277,7 +280,8 @@ self.addEventListener('fetch', function(event) {
         // Return cached version immediately
         // Also update the cache in the background (stale-while-revalidate)
         var fetchPromise = fetch(event.request).then(function(networkResponse) {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 &&
+              url.origin === self.location.origin) {
             var responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then(function(cache) {
               cache.put(event.request, responseToCache);

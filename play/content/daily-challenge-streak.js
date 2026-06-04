@@ -248,15 +248,18 @@ var DailyStreak = (function() {
       + (daily.item.img
           ? '<img src="' + daily.item.img + '" class="daily-img" alt="">'
           : '<span class="daily-emoji">' + daily.item.emoji + '</span>')
-      + '<span class="daily-name">' + dailyPromptText(daily.item) + '</span>'
+      + '<span class="daily-name">' + (daily.item.name.charAt(0).toUpperCase() + daily.item.name.slice(1)) + '</span>'
       + '</div>'
       + statusHtml;
 
     if (!data.todayDone) {
       card.onclick = function() {
         if (typeof playClick === 'function') playClick();
-        // Start a game with the daily item's category
-        if (typeof startNewGame === 'function') {
+        // Route through playCategory so the paywall + daily-cap gate applies — a
+        // date-seeded daily item often lands in a premium category.
+        if (typeof playCategory === 'function') {
+          playCategory(daily.catId);
+        } else if (typeof startNewGame === 'function') {
           startNewGame(daily.catId);
         }
       };

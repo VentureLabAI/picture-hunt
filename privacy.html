@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy Policy — Picture Hunt</title>
   <meta name="theme-color" content="#FFF8E7">
-  <link rel="stylesheet" href="landing.css?v=5">
+  <link rel="stylesheet" href="landing.css?v=6">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
 
 <h2 style="text-align: left;">The short version</h2>
 <p>Picture Hunt is built to collect almost nothing. There's no signup, no account, no email collection at app level. Your child's progress lives in the browser on their device. Photos are sent to Google's Gemini Vision API for matching and then disappear — they're not stored or trained on.</p>
-<p>If you subscribe to Premium, Stripe handles your payment information — we never see your card. We do see the email address you put on the receipt and an unlock code mapped to it.</p>
+<p>When you purchase Premium, Stripe handles your payment information — we never see your card. We do see the email address you put on the receipt and an unlock code mapped to it.</p>
 
 <h2 style="text-align: left;">What we collect</h2>
 
@@ -34,7 +34,7 @@
 
 <h3>From you paying</h3>
 <ul style="margin-left: 24px;">
-  <li><b>Email + unlock code</b>: when you pay through Stripe, Stripe sends us your email and a payment confirmation. We generate a random unlock code, store the email + code + plan + expiry on Cloudflare KV, and email you the code. We use this so we can verify your subscription if you switch devices.</li>
+  <li><b>Email + unlock code</b>: when you pay through Stripe, Stripe sends us your email and a payment confirmation. We generate a random unlock code, store the email + code + plan on Cloudflare KV, and email you the code. We use this so we can verify your purchase if you switch devices.</li>
   <li><b>Payment information</b>: handled entirely by Stripe. We never see your card number.</li>
 </ul>
 
@@ -50,16 +50,16 @@
 </ul>
 
 <h2 style="text-align: left;">COPPA + parental consent</h2>
-<p>Picture Hunt is designed to comply with the US Children's Online Privacy Protection Act (COPPA). Because we don't collect personal information from the child user (no names, emails, or accounts at app level), we don't trigger COPPA's verifiable parental consent requirement. The only personal data we hold is the parent's email tied to their subscription.</p>
+<p>Picture Hunt is designed to comply with the US Children's Online Privacy Protection Act (COPPA). Because we don't collect personal information from the child user (no names, emails, or accounts at app level), we don't trigger COPPA's verifiable parental consent requirement. The only personal data we hold is the parent's email tied to their purchase.</p>
 
 <h2 style="text-align: left;">Camera permission</h2>
 <p>The app uses your device's camera to take photos for the scavenger hunt. Photos are captured locally in the browser, sent once to Google for matching, and not retained. We do not have access to your device's photo library.</p>
 
 <h2 style="text-align: left;">Data retention + deletion</h2>
-<p>If you cancel your subscription or want all data removed, email <a href="mailto:hello@venturelab.ai">hello@venturelab.ai</a>. We'll remove your subscription record from Cloudflare KV within 30 days. Your local browser data lives on your device — clear it via your browser's site data settings or by uninstalling the PWA from your home screen.</p>
+<p>If you request deletion of your purchase data or want all data removed, email <a href="mailto:hello@venturelab.ai">hello@venturelab.ai</a>. We'll remove your purchase record from Cloudflare KV within 30 days. Your local browser data lives on your device — clear it via your browser's site data settings or by uninstalling the PWA from your home screen.</p>
 
 <h2 style="text-align: left;">Changes to this policy</h2>
-<p>If we materially change what we collect, we'll update this page and email subscribers. Older versions are in the project's git history.</p>
+<p>If we materially change what we collect, we'll update this page and email customers who purchased. Older versions are in the project's git history.</p>
 
 <h2 style="text-align: left;">Contact</h2>
 <p><a href="mailto:hello@venturelab.ai">hello@venturelab.ai</a></p>

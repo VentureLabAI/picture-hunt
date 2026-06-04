@@ -167,7 +167,7 @@ var ProgressSync = (function() {
       if (merged && typeof renderSplash === 'function') {
         // Refresh splash so newly-synced progress + stickers reflect immediately
         renderSplash();
-        if (typeof StickerBook !== 'undefined' && StickerBook.refresh) StickerBook.refresh();
+        if (typeof StickerBook !== 'undefined' && StickerBook.addButtonToSplash) StickerBook.addButtonToSplash();
       }
     });
   }

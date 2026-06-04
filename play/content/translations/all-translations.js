@@ -385,6 +385,139 @@ var ITEM_TRANSLATIONS = {
     de: 'Socke', ko: '양말', it: 'calzino', hi: 'मोज़ा', pt: 'meia', ar: 'جورب'
   },
   // Note: 'hat' is already in Things category above
+
+  // ========================================
+  // HALLOWEEN CATEGORY (10 items, seasonal)
+  // ========================================
+
+  'pumpkin': {
+    es: 'calabaza', fr: 'citrouille', zh: '南瓜', ja: 'かぼちゃ',
+    de: 'Kürbis', ko: '호박', it: 'zucca', hi: 'कद्दू', pt: 'abóbora', ar: 'يقطين'
+  },
+  'ghost': {
+    es: 'fantasma', fr: 'fantôme', zh: '鬼', ja: 'おばけ',
+    de: 'Gespenst', ko: '유령', it: 'fantasma', hi: 'भूत', pt: 'fantasma', ar: 'شبح'
+  },
+  'candy': {
+    es: 'dulce', fr: 'bonbon', zh: '糖果', ja: 'キャンディ',
+    de: 'Bonbon', ko: '사탕', it: 'caramella', hi: 'कैंडी', pt: 'doce', ar: 'حلوى'
+  },
+  'witch hat': {
+    es: 'sombrero de bruja', fr: 'chapeau de sorcière', zh: '女巫帽', ja: '魔女の帽子',
+    de: 'Hexenhut', ko: '마녀 모자', it: 'cappello da strega', hi: 'चुड़ैल की टोपी', pt: 'chapéu de bruxa', ar: 'قبعة الساحرة'
+  },
+  'spider': {
+    es: 'araña', fr: 'araignée', zh: '蜘蛛', ja: 'クモ',
+    de: 'Spinne', ko: '거미', it: 'ragno', hi: 'मकड़ी', pt: 'aranha', ar: 'عنكبوت'
+  },
+  'spider web': {
+    es: 'telaraña', fr: 'toile d\'araignée', zh: '蜘蛛网', ja: 'クモの巣',
+    de: 'Spinnennetz', ko: '거미줄', it: 'ragnatela', hi: 'मकड़ी का जाला', pt: 'teia de aranha', ar: 'شبكة العنكبوت'
+  },
+  'black cat': {
+    es: 'gato negro', fr: 'chat noir', zh: '黑猫', ja: '黒猫',
+    de: 'schwarze Katze', ko: '검은 고양이', it: 'gatto nero', hi: 'काली बिल्ली', pt: 'gato preto', ar: 'قطة سوداء'
+  },
+  'bat': {
+    es: 'murciélago', fr: 'chauve-souris', zh: '蝙蝠', ja: 'コウモリ',
+    de: 'Fledermaus', ko: '박쥐', it: 'pipistrello', hi: 'चमगादड़', pt: 'morcego', ar: 'خفاش'
+  },
+  'skeleton': {
+    es: 'esqueleto', fr: 'squelette', zh: '骷髅', ja: 'がいこつ',
+    de: 'Skelett', ko: '해골', it: 'scheletro', hi: 'कंकाल', pt: 'esqueleto', ar: 'هيكل عظمي'
+  },
+  'treat bag': {
+    es: 'bolsa de dulces', fr: 'sac à bonbons', zh: '糖果袋', ja: 'お菓子の袋',
+    de: 'Süßigkeitentüte', ko: '사탕 주머니', it: 'sacchetto di caramelle', hi: 'कैंडी बैग', pt: 'saco de doces', ar: 'كيس الحلوى'
+  },
+
+  // ========================================
+  // CHRISTMAS CATEGORY (9 missing items, seasonal)
+  // Note: 'star' is already in Shapes category above
+  // ========================================
+
+  'Christmas tree': {
+    es: 'árbol de Navidad', fr: 'sapin de Noël', zh: '圣诞树', ja: 'クリスマスツリー',
+    de: 'Weihnachtsbaum', ko: '크리스마스 트리', it: 'albero di Natale', hi: 'क्रिसमस ट्री', pt: 'árvore de Natal', ar: 'شجرة عيد الميلاد'
+  },
+  'ornament': {
+    es: 'adorno', fr: 'boule de Noël', zh: '装饰球', ja: 'オーナメント',
+    de: 'Christbaumkugel', ko: '장식품', it: 'pallina di Natale', hi: 'सजावट', pt: 'enfeite', ar: 'زينة'
+  },
+  'stocking': {
+    es: 'calcetín de Navidad', fr: 'chaussette de Noël', zh: '圣诞袜', ja: 'クリスマスの靴下',
+    de: 'Weihnachtsstrumpf', ko: '크리스마스 양말', it: 'calza di Natale', hi: 'क्रिसमस मोज़ा', pt: 'meia de Natal', ar: 'جورب عيد الميلاد'
+  },
+  'Christmas lights': {
+    es: 'luces de Navidad', fr: 'guirlande lumineuse', zh: '圣诞灯', ja: 'クリスマスのライト',
+    de: 'Lichterkette', ko: '크리스마스 조명', it: 'luci di Natale', hi: 'क्रिसमस की रोशनी', pt: 'luzes de Natal', ar: 'أضواء عيد الميلاد'
+  },
+  'Santa': {
+    es: 'Papá Noel', fr: 'Père Noël', zh: '圣诞老人', ja: 'サンタクロース',
+    de: 'Weihnachtsmann', ko: '산타클로스', it: 'Babbo Natale', hi: 'सांता क्लॉज़', pt: 'Papai Noel', ar: 'بابا نويل'
+  },
+  'gift': {
+    es: 'regalo', fr: 'cadeau', zh: '礼物', ja: 'プレゼント',
+    de: 'Geschenk', ko: '선물', it: 'regalo', hi: 'उपहार', pt: 'presente', ar: 'هدية'
+  },
+  'wreath': {
+    es: 'corona', fr: 'couronne', zh: '花环', ja: 'リース',
+    de: 'Kranz', ko: '화환', it: 'ghirlanda', hi: 'माला', pt: 'guirlanda', ar: 'إكليل'
+  },
+  'snowman': {
+    es: 'muñeco de nieve', fr: 'bonhomme de neige', zh: '雪人', ja: '雪だるま',
+    de: 'Schneemann', ko: '눈사람', it: 'pupazzo di neve', hi: 'हिममानव', pt: 'boneco de neve', ar: 'رجل الثلج'
+  },
+  'candy cane': {
+    es: 'bastón de caramelo', fr: 'sucre d\'orge', zh: '拐杖糖', ja: 'キャンディケーン',
+    de: 'Zuckerstange', ko: '사탕 지팡이', it: 'bastoncino di zucchero', hi: 'कैंडी कैन', pt: 'bengala doce', ar: 'عصا الحلوى'
+  },
+  'reindeer': {
+    es: 'reno', fr: 'renne', zh: '驯鹿', ja: 'トナカイ',
+    de: 'Rentier', ko: '순록', it: 'renna', hi: 'बारहसिंगा', pt: 'rena', ar: 'رنة'
+  },
+
+  // ========================================
+  // SPRING CATEGORY (8 missing items, seasonal)
+  // Note: 'bird' is already in Animals category above
+  // ========================================
+
+  'flower': {
+    es: 'flor', fr: 'fleur', zh: '花', ja: '花',
+    de: 'Blume', ko: '꽃', it: 'fiore', hi: 'फूल', pt: 'flor', ar: 'زهرة'
+  },
+  'butterfly': {
+    es: 'mariposa', fr: 'papillon', zh: '蝴蝶', ja: 'ちょうちょ',
+    de: 'Schmetterling', ko: '나비', it: 'farfalla', hi: 'तितली', pt: 'borboleta', ar: 'فراشة'
+  },
+  'rainbow': {
+    es: 'arcoíris', fr: 'arc-en-ciel', zh: '彩虹', ja: '虹',
+    de: 'Regenbogen', ko: '무지개', it: 'arcobaleno', hi: 'इंद्रधनुष', pt: 'arco-íris', ar: 'قوس قزح'
+  },
+  'umbrella': {
+    es: 'paraguas', fr: 'parapluie', zh: '雨伞', ja: '傘',
+    de: 'Regenschirm', ko: '우산', it: 'ombrello', hi: 'छाता', pt: 'guarda-chuva', ar: 'مظلة'
+  },
+  'rain boots': {
+    es: 'botas de lluvia', fr: 'bottes de pluie', zh: '雨靴', ja: '長靴',
+    de: 'Gummistiefel', ko: '장화', it: 'stivali da pioggia', hi: 'बरसाती जूते', pt: 'botas de chuva', ar: 'حذاء المطر'
+  },
+  'bee': {
+    es: 'abeja', fr: 'abeille', zh: '蜜蜂', ja: 'ハチ',
+    de: 'Biene', ko: '벌', it: 'ape', hi: 'मधुमक्खी', pt: 'abelha', ar: 'نحلة'
+  },
+  'Easter egg': {
+    es: 'huevo de Pascua', fr: 'œuf de Pâques', zh: '复活节彩蛋', ja: 'イースターエッグ',
+    de: 'Osterei', ko: '부활절 달걀', it: 'uovo di Pasqua', hi: 'ईस्टर अंडा', pt: 'ovo de Páscoa', ar: 'بيضة الفصح'
+  },
+  'bunny': {
+    es: 'conejito', fr: 'lapin', zh: '兔子', ja: 'うさぎ',
+    de: 'Häschen', ko: '토끼', it: 'coniglietto', hi: 'खरगोश', pt: 'coelhinho', ar: 'أرنب'
+  },
+  'sunshine': {
+    es: 'sol', fr: 'soleil', zh: '阳光', ja: '太陽',
+    de: 'Sonnenschein', ko: '햇빛', it: 'sole', hi: 'धूप', pt: 'sol', ar: 'أشعة الشمس'
+  },
 };
 
 /**

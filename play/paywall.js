@@ -115,6 +115,9 @@ var Paywall = (function() {
     } else if (reason === 'storyline') {
       headline = '🗺️ Story Quests';
       sub = 'Go on guided treasure-hunt adventures — and learn a second language along the way. Unlock with Premium.';
+    } else if (reason === 'bilingual') {
+      headline = '🌍 Learn a Language Together';
+      sub = 'Bilingual mode teaches your child words in 10 languages — Spanish, French, Mandarin and more — right as they find each real thing. Unlock with Premium.';
     } else {
       headline = '⭐ Unlock Picture Hunt Premium';
       sub = 'All 10 categories, bilingual learning mode, story quests, and unlimited play.';
@@ -152,7 +155,7 @@ var Paywall = (function() {
 
       +   '<div class="paywall-features">'
       +     '<div class="pf">🌍 Bilingual learning mode</div>'
-      +     '<div class="pf">✨ All 10 categories (78+ items)</div>'
+      +     '<div class="pf">✨ All 10 categories (100+ items)</div>'
       +     '<div class="pf">🗺️ Story quests</div>'
       +     '<div class="pf">📅 Daily challenge + streak</div>'
       +     '<div class="pf">♾️ Unlimited plays</div>'

@@ -378,7 +378,7 @@ function _confirmReset() {
   overlay.id = 'dashboard-confirm-reset';
   overlay.className = 'dashboard-confirm-overlay';
   overlay.innerHTML = '<div class="dashboard-confirm-box">'
-    + '<div class="dashboard-confirm-text">Reset ALL progress?<br>This cannot be undone.</div>'
+    + '<div class="dashboard-confirm-text">Reset all category progress?<br>Your stickers and streak are kept. This cannot be undone.</div>'
     + '<button class="dashboard-confirm-yes" onclick="_doReset()">Yes, Reset</button>'
     + '<button class="dashboard-confirm-no" onclick="document.getElementById(\'dashboard-confirm-reset\').remove()">Cancel</button>'
     + '</div>';
@@ -396,7 +396,7 @@ function _doReset() {
   var toast = document.createElement('div');
   toast.className = 'dashboard-toast';
   toast.setAttribute('role', 'status');
-  toast.textContent = 'All progress reset.';
+  toast.textContent = 'Progress reset.';
   document.body.appendChild(toast);
   setTimeout(function() { toast.remove(); }, 2600);
 }

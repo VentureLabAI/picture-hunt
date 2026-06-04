@@ -3,3 +3,8 @@ node_modules/
 # Wrangler local state / auth cache — machine-local, churns on every login/deploy
 .wrangler/
 .dev.vars
+
+# Local test / verification artifacts — never part of the deployed app
+.playwright-mcp/
+play/audio_backup/
+verify-*.png
