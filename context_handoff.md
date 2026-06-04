@@ -1,6 +1,26 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-04 (Full Spanish recorded audio + paywall iOS close-button fix **SHIPPED**, cache **v107 / ph-v107**)
+**Last updated:** 2026-06-04 (Full Spanish recorded audio + paywall iOS close-button fix **SHIPPED + live**, cache **v107 / ph-v107**)
+
+## ⏩ START HERE — current state & next move (2026-06-04, cache v107/ph-v107, live)
+
+Big polish + strategy session (cache v97→v107, all shipped to `main` + browser-verified; detailed newest-first log below). Cold-start snapshot:
+
+**Working & live now:**
+- **Freemium model:** free = 3 real-object categories (household / animals / food) + **Spanish bilingual** + Daily Challenge + 1 sample Story Quest; **$24.99 one-time** unlocks all 10 categories / all 10 languages / all Story Quests. Spanish bilingual is the FREE hook. (Full rationale + the one-time-vs-subscription decision: `docs/STRATEGY.md`.)
+- **Adventure Trail** storybook UI for all 8 Story Quests (fox narrator + speech bubble + stepping-stone trail + cover page + page-turns). Design decisions: `docs/ADVENTURE-TRAIL-NOTES.md`.
+- **Home greeting:** the fox welcomes the child on the first home entry each session (recorded coral voice).
+- **Bilingual audio:** ALL 109 items play **recorded Spanish** (coral voice) — reliable on iOS. (Other 9 languages still browser TTS — see open questions.)
+- Adventure-mode surfaces re-themed light; sticker-badge, splash-overflow-clip, victory-celebration crash, story-bridge double-read, and iOS paywall-close-button bugs all fixed.
+
+**Open questions / owner decisions (nothing else is blocking):**
+1. **Stripe is THE gate.** `STRIPE_LINK` in `play/paywall.js` is still a placeholder → paywall shows "checkout opens soon"; the **$24.99 buy button renders the moment a real one-time Payment Link is pasted** + cache-bumped. (Unlock-code path works; demo code `LAUNCH2026`.) **Most-leveraged next move.**
+2. **Other 9 languages = browser TTS** (silent on iOS for premium users who pick them). Only Spanish is recorded. To record a language: `node ph-tools/build_foreign_manifest.js <code>` → `python ph-tools/gen_foreign_audio.py <LangName>` (auto-rebuilds the app manifest); all 10 ≈ ~1090 clips; spot-check zh/ja/ko/hi/ar pronunciation. Owner's call whether/when.
+3. The home-greeting wording + the fox voice are easy to re-record on request.
+
+**Test target:** the owner tests on **iPhone / iOS Safari** — verify there for anything audio / modal / viewport / safe-area (this is how the TTS-silent + paywall-X bugs were caught). See project memory `owner-tests-on-iphone`.
+
+---
 
 > **v107 — full Spanish audio + paywall iOS fix.** (1) **Recorded ALL 103 Spanish words** (every category item) in the coral voice, not just the 8-word PoC. Pipeline: `node ph-tools/build_foreign_manifest.js es` vm-loads the app + writes `ph-tools/foreign-manifest.json` (full `{lang/es/<slug>: word}` from the real `phTranslationLookupName`/`getTranslationByName`/`phSlug`), then `python ph-tools/gen_foreign_audio.py Spanish` generates `play/audio/lang/es/*.mp3` (−16 LUFS) and rebuilds `foreign-audio-manifest.js`. Every item now plays a **recorded** clip (reliable on iOS) instead of browser TTS — which was **silent on the user's iPhone** (root cause of "animals Spanish didn't play"; only `dog` was in the PoC, the rest fell back to TTS). **Other 9 languages still TTS** — to record one, run the same two commands with its code (`build_foreign_manifest.js <code>` → `gen_foreign_audio.py <LangName>`); all 10 ≈ ~1090 clips. (2) **Paywall close button hidden behind the iOS Safari URL bar:** the centered modal (`max-height:90vh` + its own internal scroll) was taller than the visible viewport, so its top (the X) sat behind the URL bar and scrolling the modal bounced back. Fix (`paywall.css`): the **overlay** scrolls now (`overflow-y:auto` + `align-items: flex-start` then `safe center` + `padding: env(safe-area-inset-*)`); `.paywall-modal` dropped `max-height`/`overflow`. The X is reachable at the top even when the modal overflows (verified 390×520, modal 779px → close-btn top:91, in viewport).
 
