@@ -1430,6 +1430,7 @@ body.ph-install-open .splash-content {
 .story-name { font-weight: var(--fw-bold); font-size: 1rem; letter-spacing: 0.01em; overflow-wrap: anywhere; line-height: 1.15; }
 .story-meta { font-size: 0.78rem; opacity: 0.9; margin-top: 2px; font-weight: var(--fw-semi); }
 .story-completed { opacity: 0.85; }
+.story-card.locked { opacity: 0.9; }
 .story-badge {
   display: inline-block;
   background: rgba(255,255,255,0.28);
@@ -1610,6 +1611,7 @@ body.ph-install-open .splash-content {
   transform: translateY(4px);
   box-shadow: 0 0 0 var(--ink);
 }
+.lang-picker-option.locked { opacity: 0.6; }
 .lang-picker-option.selected {
   background: linear-gradient(180deg, #4FE3B6 0%, #2DD4A4 100%);
   color: var(--paper);

@@ -308,8 +308,11 @@ function speakItem(item, cat, onEnd) {
 // only when a language is selected AND the user is premium; otherwise the
 // foreign word/badge is hidden and the picker routes to the paywall.
 function bilingualActive() {
-  if (typeof getSelectedLanguage !== 'function' || getSelectedLanguage().code === 'none') return false;
-  if (typeof Paywall !== 'undefined' && !Paywall.isPremium()) return false;
+  if (typeof getSelectedLanguage !== 'function') return false;
+  var code = getSelectedLanguage().code;
+  if (code === 'none') return false;
+  // Spanish is the free bilingual hook; the other 9 languages are Premium.
+  if (typeof Paywall !== 'undefined' && !Paywall.isPremium() && !Paywall.isFreeLanguage(code)) return false;
   return true;
 }
 // Colors → "orange" must resolve to the colour word, not the fruit (both exist
@@ -641,14 +644,17 @@ function renderSplash() {
   if (typeof SUPPORTED_LANGUAGES !== 'undefined') {
     var langPrem = (typeof Paywall === 'undefined') || Paywall.isPremium();
     var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
-    var langLabel = !langPrem
-      ? '🌍 Learn a Language 🔒'
-      : (currentLang.code === 'none'
-          ? '🌍 Learn a Language'
-          : currentLang.emoji + ' Learning ' + currentLang.name);
-    var langSubLabel = !langPrem
-      ? 'Premium — 10 languages'
-      : (currentLang.code === 'none' ? 'Tap to add bilingual mode' : 'Tap to change');
+    // Spanish (the free hook) is always available; the other 9 are Premium.
+    var langLabel, langSubLabel;
+    if (currentLang.code !== 'none') {
+      langLabel = currentLang.emoji + ' Learning ' + currentLang.name;
+      langSubLabel = (!langPrem && typeof Paywall !== 'undefined' && Paywall.isFreeLanguage(currentLang.code))
+        ? 'Free · tap for 9 more'
+        : 'Tap to change';
+    } else {
+      langLabel = '🌍 Learn a Language';
+      langSubLabel = langPrem ? 'Tap to add bilingual mode' : 'Spanish free · tap to start';
+    }
     langHtml = '<div class="lang-selector">'
       + '<button class="lang-btn" onclick="openLangPicker()">' + langLabel + '</button>'
       + '<div class="lang-sub">' + langSubLabel + '</div>'
@@ -748,8 +754,8 @@ function renderSplash() {
 
 // Storyline is the primary engagement mode (the "treasure hunt" framing that
 // beats toddler boredom — see docs/STRATEGY.md). It renders as a prominent
-// hero card above the category grid, visible to everyone. Premium users launch
-// it directly; free users get the paywall (Storyline quests are a paid value).
+// hero card above the category grid, visible to everyone. Everyone can open it;
+// free users get 1 sample quest, the rest unlock with Full Access.
 function renderStorylineFeature(premium) {
   var container = document.getElementById('storyline-feature');
   if (!container) return;
@@ -757,22 +763,17 @@ function renderStorylineFeature(premium) {
     container.innerHTML = '';
     return;
   }
-  var locked = (typeof Paywall !== 'undefined') && !premium;
-  container.innerHTML = '<button class="storyline-hero' + (locked ? ' locked' : '') + '" id="storyline-hero-btn">'
+  container.innerHTML = '<button class="storyline-hero" id="storyline-hero-btn">'
     + '<img class="storyline-hero-fox" src="img/mascot/fox-point.png" alt="">'
     + '<span class="storyline-hero-text">'
-    + '<span class="storyline-hero-title">Story Quests' + (locked ? ' 🔒' : '') + '</span>'
-    + '<span class="storyline-hero-sub">Go on an adventure to find things!</span>'
+    + '<span class="storyline-hero-title">Story Quests</span>'
+    + '<span class="storyline-hero-sub">' + (premium ? 'Go on an adventure to find things!' : 'Go on an adventure — first quest free!') + '</span>'
     + '</span>'
     + '</button>';
   var heroBtn = document.getElementById('storyline-hero-btn');
   if (heroBtn) {
     heroBtn.onclick = function() {
       playClick();
-      if (locked) {
-        if (typeof Paywall !== 'undefined') Paywall.show('storyline');
-        return;
-      }
       openStorySelector();
     };
   }
@@ -1596,9 +1597,10 @@ function cycleLanguage() {
 function openLangPicker() {
   if (typeof SUPPORTED_LANGUAGES === 'undefined') return;
   playClick();
-  // Bilingual mode is a Premium feature — free users get the paywall instead.
-  if (typeof Paywall !== 'undefined' && !Paywall.isPremium()) { Paywall.show('bilingual'); return; }
-  // Remove any existing picker
+  // Spanish is the free bilingual hook; the other languages are Premium. Free
+  // users can still open the picker (Off or Spanish); a locked language routes
+  // to the paywall.
+  var premium = (typeof Paywall === 'undefined') || Paywall.isPremium();
   var existing = document.getElementById('lang-picker-overlay');
   if (existing) existing.remove();
 
@@ -1611,13 +1613,17 @@ function openLangPicker() {
   modal.className = 'lang-picker-modal';
   modal.innerHTML = ''
     + '<div class="lang-picker-title">Bilingual Mode</div>'
-    + '<div class="lang-picker-sub">When on, your child hears each prompt in English and the target language. Foreign words are also shown on screen.</div>';
+    + '<div class="lang-picker-sub">Your child hears each prompt in English and the target language, and sees the foreign word on screen. <b>Spanish is free</b> — unlock the rest with Full Access.</div>';
 
   SUPPORTED_LANGUAGES.forEach(function(lang) {
+    var isFree = lang.code === 'none' || (typeof Paywall !== 'undefined' && Paywall.isFreeLanguage(lang.code));
+    var locked = !premium && !isFree;
     var btn = document.createElement('button');
-    btn.className = 'lang-picker-option' + (lang.code === current.code ? ' selected' : '');
-    btn.textContent = lang.emoji + ' ' + lang.name;
+    btn.className = 'lang-picker-option' + (lang.code === current.code ? ' selected' : '') + (locked ? ' locked' : '');
+    btn.textContent = lang.emoji + ' ' + lang.name
+      + (locked ? ' 🔒' : (!premium && isFree && lang.code !== 'none' ? ' · Free' : ''));
     btn.onclick = function() {
+      if (locked) { closeLangPicker(); if (typeof Paywall !== 'undefined') Paywall.show('language'); return; }
       setSelectedLanguage(lang.code);
       playClick();
       closeLangPicker();

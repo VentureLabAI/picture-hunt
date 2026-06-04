@@ -1,7 +1,10 @@
 // Picture Hunt — Paywall + Free-Tier Gating
 //
-// Free tier: 3 categories (household, shapes, colors), 5 plays/day, no premium modes.
-// Full Access: one-time $19.99 unlock — everything, forever, all devices.
+// Freemium (2026-06-04): the free tier deliberately INCLUDES the bilingual hook.
+// Free tier: 3 real-object categories (household, animals, food), Spanish
+//   bilingual ON, Daily Challenge, 1 sample Story Quest, 5 plays/day.
+// Full Access: one-time $24.99 unlock — all 10 categories, all 10 languages,
+//   all Story Quests, unlimited plays, every device, forever.
 //
 // Full Access is unlocked by entering a code that the worker validates against KV.
 // The worker still returns a `validUntil` (we set it far in the future for the
@@ -16,7 +19,9 @@ var Paywall = (function() {
 
   var STORE_KEY = 'PH_PREMIUM';
   var PLAY_LOG_KEY = 'PH_PLAY_LOG';
-  var FREE_CATEGORIES = ['household', 'shapes', 'colors'];
+  var FREE_CATEGORIES = ['household', 'animals', 'food'];
+  var FREE_LANGUAGE = 'es';            // Spanish is the free bilingual hook
+  var FREE_STORY = 'bear-breakfast';   // one Story Quest free as a sample
   var FREE_DAILY_CAP = 5;
 
   // Worker endpoint. Same origin as the AI proxy — extends with /validate-code path.
@@ -24,7 +29,7 @@ var Paywall = (function() {
   // unreachable (e.g. Boss Man hasn't deployed the new worker yet).
   var VALIDATE_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/validate-code';
 
-  // Stripe Payment Link for the one-time $19.99 Full Access unlock.
+  // Stripe Payment Link for the one-time $24.99 Full Access unlock.
   // REPLACE the placeholder with the real Payment Link from the Stripe dashboard
   // (create a one-time, non-recurring product). See docs/PAYWALL-DEPLOY.md.
   var STRIPE_LINK = 'https://buy.stripe.com/PLACEHOLDER_LIFETIME';
@@ -67,6 +72,9 @@ var Paywall = (function() {
   function isFreeCategory(catId) {
     return FREE_CATEGORIES.indexOf(catId) !== -1;
   }
+
+  function isFreeLanguage(code) { return code === FREE_LANGUAGE; }
+  function isFreeStory(id) { return id === FREE_STORY; }
 
   function playsToday() {
     return getPlayLog()[todayKey()] || 0;
@@ -113,14 +121,14 @@ var Paywall = (function() {
       headline = '🌙 That\'s 5 plays today!';
       sub = 'Free plays reset tomorrow, or unlock unlimited play with Premium.';
     } else if (reason === 'storyline') {
-      headline = '🗺️ Story Quests';
-      sub = 'Go on guided treasure-hunt adventures — and learn a second language along the way. Unlock with Premium.';
-    } else if (reason === 'bilingual') {
-      headline = '🌍 Learn a Language Together';
-      sub = 'Bilingual mode teaches your child words in 10 languages — Spanish, French, Mandarin and more — right as they find each real thing. Unlock with Premium.';
+      headline = '🗺️ More Story Quests';
+      sub = 'You\'ve played the free quest! Unlock <b>all</b> the Story Quests — guided treasure-hunt adventures in your language — with Full Access.';
+    } else if (reason === 'language' || reason === 'bilingual') {
+      headline = '🌍 All 10 Languages';
+      sub = '<b>Spanish is free.</b> Unlock French, Mandarin, Japanese and 7 more — all 10 languages — with Full Access.';
     } else {
-      headline = '⭐ Unlock Picture Hunt Premium';
-      sub = 'All 10 categories, bilingual learning mode, story quests, and unlimited play.';
+      headline = '⭐ Unlock Everything';
+      sub = 'All 10 categories, all 10 languages, every Story Quest, and unlimited play — one time, yours forever.';
     }
 
     var overlay = document.createElement('div');
@@ -135,9 +143,9 @@ var Paywall = (function() {
 
     var plansBlock = stripeReady
       ? ''
-        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener" aria-label="Unlock everything for $19.99, one time"'
+        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener" aria-label="Unlock everything for $24.99, one time"'
         +   ' onclick="this.classList.add(\'is-loading\'); var l=this.querySelector(\'.paywall-buy-label\'); if(l)l.textContent=\'Opening checkout…\';">'
-        +   '<span class="paywall-buy-price">$19.99</span>'
+        +   '<span class="paywall-buy-price">$24.99</span>'
         +   '<span class="paywall-buy-label">Unlock everything — one time</span>'
         + '</a>'
         + '<p class="paywall-buy-note">No subscription. Yours forever, on every device.</p>'
@@ -154,7 +162,7 @@ var Paywall = (function() {
       +   '<p class="paywall-sub">' + sub + '</p>'
 
       +   '<div class="paywall-features">'
-      +     '<div class="pf">🌍 Bilingual learning mode</div>'
+      +     '<div class="pf">🌍 All 10 languages</div>'
       +     '<div class="pf">✨ All 10 categories (100+ items)</div>'
       +     '<div class="pf">🗺️ Story quests</div>'
       +     '<div class="pf">📅 Daily challenge + streak</div>'
@@ -297,6 +305,8 @@ var Paywall = (function() {
     init: init,
     isPremium: isPremium,
     isFreeCategory: isFreeCategory,
+    isFreeLanguage: isFreeLanguage,
+    isFreeStory: isFreeStory,
     canPlay: canPlay,
     recordPlay: recordPlay,
     playsRemaining: playsRemaining,

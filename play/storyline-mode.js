@@ -252,17 +252,20 @@ function renderStorySelector() {
   var html = '<h1 class="home-title">📖 Pick a Story!</h1>';
   html += '<div class="story-grid">';
 
+  var premium = (typeof Paywall === 'undefined') || Paywall.isPremium();
+
   STORIES.forEach(function(story) {
     var completed = isStoryCompleted(story.id);
     var count = getStoryCompletedCount(story.id);
     var ageLabel = story.ageRange === '2-3' ? '⭐' : (story.ageRange === '3-5' ? '⭐⭐' : '⭐⭐⭐');
+    var locked = !premium && !(typeof Paywall !== 'undefined' && Paywall.isFreeStory(story.id));
 
-    html += '<button class="story-card' + (completed ? ' story-completed' : '') + '" '
+    html += '<button class="story-card' + (completed ? ' story-completed' : '') + (locked ? ' locked' : '') + '" '
       + 'style="background:' + story.gradient + '" '
       + 'onclick="playStory(\'' + story.id + '\')">'
       + '<div class="story-emoji">' + story.emoji + '</div>'
       + '<div class="story-info">'
-      + '<div class="story-name">' + story.title + '</div>'
+      + '<div class="story-name">' + story.title + (locked ? ' 🔒' : '') + '</div>'
       + '<div class="story-meta">' + ageLabel + ' · ' + story.steps.length + ' finds'
       + (completed ? ' · ✅ ' + count + 'x' : '')
       + '</div>'
@@ -298,6 +301,11 @@ function openStorySelector() {
 // ═══════════════════════════════════════════════════════════════
 function playStory(storyId) {
   if (typeof playClick === 'function') playClick();
+  // Freemium gate: 1 sample quest is free, the rest are Full Access.
+  if (typeof Paywall !== 'undefined' && !Paywall.isPremium() && !Paywall.isFreeStory(storyId)) {
+    Paywall.show('storyline');
+    return;
+  }
   if (typeof stopAllPulses === 'function') stopAllPulses();
 
   var story = STORIES.find(function(s) { return s.id === storyId; });
