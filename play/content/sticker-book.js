@@ -222,13 +222,20 @@ var StickerBook = (function() {
     // the button too.
     var bottom = document.querySelector('.splash-bottom');
     if (bottom && !document.getElementById('sticker-book-btn')) {
+      // Own labeled row, stacked BELOW the Settings/Sound icons, so the "book"
+      // clearly reads as the kid's sticker collection (not a generic book icon).
+      var shelf = document.createElement('div');
+      shelf.className = 'sticker-shelf';
       var btn = document.createElement('button');
       btn.id = 'sticker-book-btn';
-      btn.className = 'setup-icon-btn';
-      btn.setAttribute('aria-label', 'Sticker book');
-      btn.innerHTML = '📕<span class="sticker-btn-count" hidden></span>';
+      btn.className = 'sticker-shelf-btn';
+      btn.setAttribute('aria-label', 'Stickers — your collection album');
+      btn.innerHTML = '<span class="sticker-shelf-icon" aria-hidden="true">📕</span>'
+        + '<span class="sticker-shelf-label">Stickers</span>'
+        + '<span class="sticker-btn-count" hidden></span>';
       btn.onclick = openBook;
-      bottom.insertBefore(btn, bottom.firstChild);
+      shelf.appendChild(btn);
+      bottom.parentNode.insertBefore(shelf, bottom.nextSibling);
     }
     // Live count bubble on the book button.
     var btnCount = document.querySelector('#sticker-book-btn .sticker-btn-count');

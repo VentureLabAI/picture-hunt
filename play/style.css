@@ -490,6 +490,37 @@ body.ph-install-open .splash-content {
   box-shadow: 0 0 0 var(--ink), 0 2px 6px rgba(27,17,64,0.20);
 }
 
+/* Sticker collection — its own labeled row, stacked below the Settings/Sound
+   icons so the "book" clearly reads as the kid's sticker album. */
+.sticker-shelf {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--sp-3);
+}
+.sticker-shelf-btn {
+  position: relative;            /* anchor for the .sticker-btn-count corner badge */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-main);
+  font-weight: var(--fw-bold);
+  font-size: 1.2rem;
+  padding: var(--sp-2) var(--sp-6);
+  min-height: 56px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--ink), 0 8px 16px rgba(27,17,64,0.15);
+  transition: transform var(--dur-fast) var(--ease-bounce), box-shadow var(--dur-fast);
+}
+.sticker-shelf-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--ink), 0 2px 6px rgba(27,17,64,0.20);
+}
+.sticker-shelf-icon { font-size: 1.5rem; line-height: 1; }
+
 
 /* ════════════════════════════════════════════════════════════
    BIG BUTTONS — Shared toy-button system
@@ -1133,6 +1164,9 @@ body.ph-install-open .splash-content {
 
 .skip-area { text-align: center; margin-top: var(--sp-2); }
 .skip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   background: var(--paper);
   border: 3px solid var(--ink);
   color: var(--ink);
@@ -1150,6 +1184,8 @@ body.ph-install-open .splash-content {
   transform: translateY(4px);
   box-shadow: 0 0 0 var(--ink);
 }
+/* Word label next to the skip icon (clarity for parents; icon stays for toddlers) */
+.skip-label { font-size: 1.2rem; line-height: 1; }
 
 /* Inline SVG control icons sit centered in their toy buttons */
 .setup-icon-btn svg, .home-btn svg, .skip-btn svg, .repeat-btn svg {

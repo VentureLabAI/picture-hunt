@@ -204,35 +204,38 @@ var SeasonalManager = (function() {
    * @returns {string} HTML string
    */
   function renderSeasonalToggles() {
-    var html = '<div class="seasonal-toggles" style="margin-top:16px;">';
-    html += '<h3 style="font-size:18px;margin-bottom:12px;">🎃 Seasonal Hunts</h3>';
+    // NOTE: the "🎃 Seasonal Hunts" heading is rendered by the dashboard section
+    // wrapper (parent-dashboard.js). Don't repeat it here, or it shows twice.
+    var html = '<div class="seasonal-toggles" style="margin-top:8px;">';
+    html += '<p style="font-size:13px;color:#6B5E8C;margin:0 0 14px;line-height:1.35;">'
+          + 'Choose when each holiday pack (Halloween, Christmas, Spring) shows up in the game.</p>';
+
+    var OPTS = [
+      { val: 'auto', label: 'In season', hint: 'Show only during the holiday (default)' },
+      { val: 'on',   label: 'Always',    hint: 'Show all year round' },
+      { val: 'off',  label: 'Off',       hint: 'Hide this pack' }
+    ];
 
     SEASONAL_IDS.forEach(function(packId) {
       var window = SEASONAL_WINDOWS[packId];
       var override = getOverride(packId);
-      var visible = isPackVisible(packId);
       var status = getPackStatus(packId);
 
-      html += '<div class="seasonal-toggle-row" style="display:flex;align-items:center;justify-content:space-between;' +
-              'padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.1);">';
+      html += '<div class="seasonal-toggle-row" style="padding:10px 0;border-bottom:1px solid rgba(27,17,64,0.08);">';
+      html += '<div style="font-size:16px;font-weight:600;color:#1B1140;">' + window.displayName + '</div>';
+      html += '<div style="font-size:12px;color:#8A7CA8;margin-bottom:8px;">' + status + '</div>';
 
-      html += '<div>';
-      html += '<span style="font-size:16px;">' + window.displayName + '</span>';
-      html += '<div style="font-size:12px;color:#888;">' + status + '</div>';
-      html += '</div>';
-
-      html += '<div style="display:flex;gap:4px;">';
-      ['auto','on','off'].forEach(function(val) {
-        var label = val === 'auto' ? '🕐' : val === 'on' ? '✅' : '❌';
-        var active = override === val || (!override && val === 'auto');
-        html += '<button onclick="SeasonalManager.setOverride(\'' + packId + '\',\'' + val + '\');' +
-                'SeasonalManager.refreshUI();" ' +
-                'style="font-size:18px;padding:6px 10px;border:' + (active ? '2px solid #4CAF50' : '1px solid #ccc') +
-                ';border-radius:8px;background:' + (active ? '#E8F5E9' : '#f5f5f5') +
-                ';cursor:pointer;">' + label + '</button>';
+      html += '<div style="display:flex;gap:6px;">';
+      OPTS.forEach(function(o) {
+        var active = override === o.val || (!override && o.val === 'auto');
+        html += '<button onclick="SeasonalManager.setOverride(\'' + packId + '\',\'' + o.val + '\');'
+              + 'SeasonalManager.refreshUI();" title="' + o.hint + '" '
+              + 'style="flex:1;font-size:13px;font-weight:600;font-family:inherit;padding:9px 6px;border:'
+              + (active ? '2px solid #2DD4A4' : '1px solid #C9C2D8')
+              + ';border-radius:10px;background:' + (active ? '#E6FBF4' : '#F6F4FA')
+              + ';color:#1B1140;cursor:pointer;">' + o.label + '</button>';
       });
       html += '</div>';
-
       html += '</div>';
     });
 

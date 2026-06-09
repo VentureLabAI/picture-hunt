@@ -1,6 +1,6 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-09 (iOS reachability/overlap sweep — game / landing / language-picker / **victory** overflow traps + install-pill overlap **SHIPPED + live**, cache **v109 / ph-v109**)
+**Last updated:** 2026-06-09 (iOS reachability sweep + UX clarity tweaks — overflow traps fixed, Skip/Stickers labeled, Seasonal Hunts dedup'd **SHIPPED + live**, cache **v110 / ph-v110**)
 
 ## ⏩ START HERE — current state & next move (2026-06-04, cache v107/ph-v107, live)
 
@@ -21,6 +21,8 @@ Big polish + strategy session (cache v97→v107, all shipped to `main` + browser
 **Test target:** the owner tests on **iPhone / iOS Safari** — verify there for anything audio / modal / viewport / safe-area (this is how the TTS-silent + paywall-X bugs were caught). See project memory `owner-tests-on-iphone`.
 
 ---
+
+> **v110 — UX clarity tweaks (SHIPPED, cache v110/ph-v110, verified locally @ 390×844 & 390×580).** Owner-requested label/clarity fixes: (1) **Skip button** now shows the word "Skip" next to the skip-forward icon (icon kept for toddlers) — `play/index.html` `.skip-btn` made `inline-flex` + new `.skip-label` (style.css). (2) **Sticker-book button** relabeled + relocated: was a bare `📕` circle identical in shape to Settings/Sound (ambiguous); now a **"📕 Stickers" pill on its OWN row below** the Settings/Sound icons (`content/sticker-book.js` `addButtonToSplash` → new `.sticker-shelf` / `.sticker-shelf-btn` in style.css; the live count badge is preserved, button keeps `position:relative` so the badge anchors). Settings & Sound stay as plain icon circles (owner said those are already clear). (3) **Parent dashboard → Seasonal Hunts**: removed the **DUPLICATE title** (the dashboard `<h2 class="dashboard-section-title">` AND `renderSeasonalToggles`'s own `<h3>` both said "🎃 Seasonal Hunts" → dropped the `<h3>`), added a one-line explainer, and replaced the cryptic emoji-only 🕐/✅/❌ buttons with a worded segmented control **In season / Always / Off** (+ `title=` tooltips), recolored to the app palette (`content/seasonal-manager.js` `renderSeasonalToggles`). `renderSeasonalToggles` has only the one dashboard caller. Files: `play/index.html`, `play/style.css`, `play/content/sticker-book.js`, `play/content/seasonal-manager.js`.
 
 > **v109 — victory screen overflow fix (SHIPPED, cache v109/ph-v109, verified @ 390×580).** Follow-up to v108: the `#victory` screen had the same trap (`overflow:hidden` + inherited `justify-content:center`). At 390×580 the **"🏠 Home" button clipped off the bottom (bottom 595 > 580), unreachable, no scroll** (Play Again was borderline). Applied the same pattern: `overflow-y:auto; justify-content:flex-start; justify-content:safe center;` + safe-area padding, and `#victory::before` → `position:fixed` (it was inflating scrollHeight). Verified Home reachable after scroll. Also confirmed via an **AI-stub harness** (`window.identifyObject` override → drive `submitPhoto` / `showMissResult` / `showVictory` with no camera) that the **success & miss result screens are fine** — they render into `#feedback-area` inside the now-scrollable `#game` (v108), so Retake / Skip + the parent-override long-press stay reachable. `#victory` was the last unfixed instance of the v108 trap class.
 
