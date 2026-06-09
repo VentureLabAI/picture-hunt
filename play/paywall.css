@@ -311,7 +311,7 @@
 .install-pill {
   position: fixed;
   left: 50%;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   transform: translate(-50%, 80px);
   background: #FFFFFF;
   color: #1B1140;

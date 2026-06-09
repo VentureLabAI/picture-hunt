@@ -88,6 +88,13 @@ var InstallPrompt = (function() {
     document.body.appendChild(pill);
     document.body.classList.add('ph-install-open');
     setTimeout(function() { pill.classList.add('install-pill-visible'); }, 50);
+    // Reserve exactly the pill's real (text-wrapped) height on the splash scroll
+    // content so it never covers the bottom controls (sticker book / settings /
+    // sound / daily card). offsetHeight is transform-independent (the entrance
+    // animation uses translate); +64 covers the bottom offset + home indicator
+    // + a small gap. The CSS rule is a generous static fallback.
+    var sc = document.querySelector('#splash .splash-content');
+    if (sc) sc.style.paddingBottom = (pill.offsetHeight + 64) + 'px';
   }
 
   function fire() {
@@ -108,6 +115,8 @@ var InstallPrompt = (function() {
     var p = document.getElementById('install-pill');
     if (p) p.remove();
     document.body.classList.remove('ph-install-open');
+    var sc = document.querySelector('#splash .splash-content');
+    if (sc) sc.style.paddingBottom = '';
   }
 
   function init() {

@@ -1676,6 +1676,10 @@ function openLangPicker() {
 
   var modal = document.createElement('div');
   modal.className = 'lang-picker-modal';
+  // The modal is the full-screen dim layer (it covers the overlay, so
+  // overlay.onclick can never fire). Close when the tap lands on the dim area
+  // itself rather than on an option.
+  modal.onclick = function(e) { if (e.target === modal) closeLangPicker(); };
   modal.innerHTML = ''
     + '<div class="lang-picker-title">Bilingual Mode</div>'
     + '<div class="lang-picker-sub">Your child hears each prompt in English and the target language, and sees the foreign word on screen. <b>Spanish is free</b> — unlock the rest with Full Access.</div>';
