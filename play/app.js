@@ -1278,7 +1278,7 @@ function goHome() {
   if (wasStory) { storylineActive = false; currentStory = null; }
   // End dashboard session if mid-game
   if (typeof dashboardEndSession === 'function' && _currentSession) {
-    dashboardEndSession(_currentSession, currentIndex);
+    dashboardEndSession(_currentSession, _currentSession.found);
     _currentSession = null;
   }
   if (wasStory) {
@@ -1318,7 +1318,7 @@ function showVictory() {
 
   // End dashboard session
   if (typeof dashboardEndSession === 'function' && _currentSession) {
-    dashboardEndSession(_currentSession, shuffledItems.length);
+    dashboardEndSession(_currentSession, _currentSession.found);
     _currentSession = null;
   }
 
@@ -1404,6 +1404,7 @@ async function submitPhoto() {
       if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function' && storylineHandlePhotoSuccess()) return;
       if (typeof hideHintButton === 'function') hideHintButton(); // don't let the 💡 linger through the celebration
       recordProgress(currentCategory, shuffledItems[currentIndex].name);
+      if (_currentSession) _currentSession.found++; // count real finds (not skips) for the dashboard session log
       if (typeof Paywall !== 'undefined') Paywall.recordPlay();
       // Streak sound: fire after 3+ consecutive finds
       if (!window._phStreak) window._phStreak = 0;
@@ -1522,6 +1523,7 @@ function forceAccept() {
   playClick();
   if (typeof hideHintButton === 'function') hideHintButton();
   recordProgress(currentCategory, shuffledItems[currentIndex].name);
+  if (_currentSession) _currentSession.found++; // parent-override find also counts in the session log
   // Use sticker pop for parent override
   if (typeof celebrateStickerPop === 'function') {
     celebrateStickerPop('👏', 1500);
