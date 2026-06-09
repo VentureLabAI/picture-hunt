@@ -301,9 +301,16 @@ function onHintTap() {
     }
   };
   if (typeof playBuffer === 'function' && playBuffer(hintKey, afterHint)) {
-    // Buffer played; afterHint fires when audio ends
+    // Recorded clip already decoded in memory — play it.
+  } else if (typeof preloadAudio === 'function') {
+    // Hint clips aren't precached, so the first tap on an item finds nothing in
+    // memory. Load it on demand and THEN play the recorded (coral) clip; only
+    // fall back to TTS if the load/decode actually fails. Without this, the first
+    // hint tap on every item blurted the device's robot voice.
+    preloadAudio(hintKey).then(function() {
+      if (!playBuffer(hintKey, afterHint)) speak(hintText, afterHint);
+    }).catch(function() { speak(hintText, afterHint); });
   } else {
-    if (typeof preloadAudio === 'function') preloadAudio(hintKey);
     speak(hintText, afterHint);
   }
 }
