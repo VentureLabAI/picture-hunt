@@ -1,6 +1,6 @@
 # Active Project Context — Picture Hunt
 
-**Last updated:** 2026-06-09 (iOS reachability/overlap sweep — game / landing / language-picker overflow traps + install-pill overlap **SHIPPED + live**, cache **v108 / ph-v108**)
+**Last updated:** 2026-06-09 (iOS reachability/overlap sweep — game / landing / language-picker / **victory** overflow traps + install-pill overlap **SHIPPED + live**, cache **v109 / ph-v109**)
 
 ## ⏩ START HERE — current state & next move (2026-06-04, cache v107/ph-v107, live)
 
@@ -21,6 +21,8 @@ Big polish + strategy session (cache v97→v107, all shipped to `main` + browser
 **Test target:** the owner tests on **iPhone / iOS Safari** — verify there for anything audio / modal / viewport / safe-area (this is how the TTS-silent + paywall-X bugs were caught). See project memory `owner-tests-on-iphone`.
 
 ---
+
+> **v109 — victory screen overflow fix (SHIPPED, cache v109/ph-v109, verified @ 390×580).** Follow-up to v108: the `#victory` screen had the same trap (`overflow:hidden` + inherited `justify-content:center`). At 390×580 the **"🏠 Home" button clipped off the bottom (bottom 595 > 580), unreachable, no scroll** (Play Again was borderline). Applied the same pattern: `overflow-y:auto; justify-content:flex-start; justify-content:safe center;` + safe-area padding, and `#victory::before` → `position:fixed` (it was inflating scrollHeight). Verified Home reachable after scroll. Also confirmed via an **AI-stub harness** (`window.identifyObject` override → drive `submitPhoto` / `showMissResult` / `showVictory` with no camera) that the **success & miss result screens are fine** — they render into `#feedback-area` inside the now-scrollable `#game` (v108), so Retake / Skip + the parent-override long-press stay reachable. `#victory` was the last unfixed instance of the v108 trap class.
 
 > **v108 — iOS reachability & overlap sweep (SHIPPED, cache v108/ph-v108, verified locally @ 390×660).** Owner reported persistent iPhone bugs: "overlapping, buttons hidden, covered, can scroll to get to it." Root cause = the base `.screen` rule (`flex-direction:column; align-items:center; justify-content:center;` default `overflow:visible`): any screen whose content exceeds a short iOS viewport (Safari URL bar showing ≈ 390×660) centers the content and clips the top+bottom controls with no way to scroll. The splash (v99), story-mode `#game`, and paywall (v107) had each been patched, but the SAME trap was still live on the surfaces below. All fixes reuse the proven pattern: `overflow-y:auto; -webkit-overflow-scrolling:touch; justify-content:flex-start; justify-content:safe center;` + `env(safe-area-inset-*)`.
 >  1. **`#game` (regular hunt) — BLOCKER.** Was `overflow:visible`, content 700px > 660px → **Home button clipped above (top −40px), Skip clipped below (bottom 700px)** = couldn't reliably exit or skip a hunt. Now scrolls (verified Home top=20, Skip reachable at bottom). Also added `padding-bottom: env(safe-area-inset-bottom)` to `#game` in the safe-area `@supports` block.
