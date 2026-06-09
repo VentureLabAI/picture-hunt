@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Source for the 1200x630 social share card (og-image.png).
+     Render: open at a 1200x630 viewport and screenshot to og-image.png. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; }
+  body {
+    font-family: 'Fredoka', 'Arial Rounded MT Bold', system-ui, sans-serif;
+    color: #4A3728;
+    background:
+      radial-gradient(ellipse 60% 70% at 88% 18%, rgba(255,255,255,0.35), transparent 60%),
+      linear-gradient(125deg, #FFF3B0 0%, #FFD93D 28%, #FFAB76 66%, #FF6B6B 100%);
+    overflow: hidden;
+  }
+  .card { display: flex; align-items: center; width: 1200px; height: 630px; padding: 66px 70px; gap: 28px; }
+  .copy { flex: 1.35; }
+  .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
+  .brand img { width: 60px; height: 60px; border-radius: 15px; box-shadow: 0 4px 0 rgba(74,55,40,0.25); }
+  .brand span { font-weight: 800; font-size: 36px; letter-spacing: -0.01em; }
+  h1 { font-weight: 800; font-size: 64px; line-height: 1.06; letter-spacing: -0.015em; margin-bottom: 26px; }
+  .sub { font-weight: 600; font-size: 27px; color: #5B4636; line-height: 1.3; }
+  .visual { flex: 1; display: flex; justify-content: center; align-items: center; }
+  .visual img { width: 400px; height: auto; filter: drop-shadow(0 20px 32px rgba(74,55,40,0.32)); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="copy">
+      <div class="brand"><img src="apple-touch-icon.png" alt=""><span>Picture Hunt</span></div>
+      <h1>Finally, a kids&rsquo; game that gets them off the couch.</h1>
+      <div class="sub">A real-world scavenger hunt &middot; 10 languages &middot; as young as 2 &middot; no reading</div>
+    </div>
+    <div class="visual"><img src="play/img/mascot/fox-hero.png" alt=""></div>
+  </div>
+</body>
+</html>
