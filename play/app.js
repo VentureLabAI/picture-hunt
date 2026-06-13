@@ -1459,6 +1459,16 @@ async function submitPhoto() {
     pendingBase64 = null; pendingMimeType = null;
     // Offline card already shown by identifyObject's 503 path.
     if (err && err.message === 'offline') return;
+    // A backend/service error (bad key, quota, oversized, 5xx) is NOT a wrong
+    // photo — never show "Not quite!" and never reset the streak. Show a friendly
+    // "the camera's napping" card so a kid keeps a correct object on screen instead
+    // of being told they failed when the service failed.
+    if (err && err.message === 'service') {
+      if (typeof showOfflineMessage === 'function') {
+        showOfflineMessage({ emoji: '😴', title: 'Camera Nap!', body: "The magic camera is taking a little nap.<br>Try again in a minute!" });
+      }
+      return;
+    }
     // First-load (service worker not yet controlling) or timeout/abort: this is
     // a connectivity problem, not a wrong photo — show the friendly offline card.
     if (!navigator.onLine || (err && err.name === 'AbortError')) {
@@ -1590,7 +1600,14 @@ async function identifyObject(base64Data, mimeType) {
         throw new Error('offline');
       }
     }
-    var e = await resp.text(); throw new Error('Gemini API error ' + resp.status + ': ' + e);
+    // Any other non-OK status (revoked/invalid key 400/403, quota 429, oversized
+    // 413, worker/Gemini 5xx) is a SERVICE failure, NOT a wrong photo. Log the
+    // real status for the owner and tag the error so submitPhoto shows a friendly
+    // "camera nap" card instead of telling the child "Not quite!" (the 2026-06-09
+    // outage shape: a dead key silently failed every photo as a miss).
+    var e = await resp.text();
+    console.error('[PH] recognition service error ' + resp.status + ': ' + e);
+    var svcErr = new Error('service'); svcErr.status = resp.status; throw svcErr;
   }
   var data = await resp.json();
   var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&

@@ -80,7 +80,11 @@ if ('serviceWorker' in navigator) {
 //
 // The function below creates and manages the offline UI:
 
-function showOfflineMessage() {
+function showOfflineMessage(opts) {
+  opts = opts || {};
+  var emoji = opts.emoji || '📡';
+  var title = opts.title || 'No Internet!';
+  var body = opts.body || 'We need the internet to check your photo.<br>Try again in a moment!';
   // Don't show if already showing
   if (document.getElementById('offline-msg')) return;
 
@@ -104,10 +108,10 @@ function showOfflineMessage() {
   ].join(';');
 
   msg.innerHTML = [
-    '<div style="font-size: 4rem; margin-bottom: 12px;">📡</div>',
-    '<h2 style="color: #4A3728; font-size: 1.5rem; margin: 0 0 8px;">No Internet!</h2>',
+    '<div style="font-size: 4rem; margin-bottom: 12px;">' + emoji + '</div>',
+    '<h2 style="color: #4A3728; font-size: 1.5rem; margin: 0 0 8px;">' + title + '</h2>',
     '<p style="color: #6B5240; font-size: 1.1rem; margin: 0 0 20px;">',
-    'We need the internet to check your photo.<br>Try again in a moment!</p>',
+    body + '</p>',
     '<button onclick="this.parentElement.remove()" ',
     'style="background: linear-gradient(135deg, #6ECB63, #5BB855); color: #FFFFFF; border: none; border-radius: 16px; ',
     'padding: 16px 40px; font-size: 1.3rem; font-weight: bold; cursor: pointer; ',
