@@ -1104,11 +1104,12 @@ function shuffle(arr) {
 // ═══════════════════════════════════════════════════════════════
 // GAME FLOW
 // ═══════════════════════════════════════════════════════════════
-function playCategory(catId) {
+function playCategory(catId, opts) {
   playClick();
-  // Paywall gate — locked category or daily cap exceeded
+  // Paywall gate — locked category or daily cap exceeded. opts.allowOverCap (set
+  // by the Daily Challenge card) bypasses only the daily-cap part.
   if (typeof Paywall !== 'undefined') {
-    var gate = Paywall.canPlay(catId);
+    var gate = Paywall.canPlay(catId, opts);
     if (!gate.ok) {
       Paywall.show(gate.reason, gate.catId);
       return;

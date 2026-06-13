@@ -279,9 +279,10 @@ var DailyStreak = (function() {
         if (typeof playClick === 'function') playClick();
         // Route through playCategory. Free users now only ever get a daily item
         // from a free category (see getDailyItem), so this no longer dead-ends in
-        // the locked-category paywall; the 5-plays/day cap still applies.
+        // the locked-category paywall. allowOverCap keeps the daily challenge
+        // playable even past the 5/day cap so the streak is always keepable.
         if (typeof playCategory === 'function') {
-          playCategory(daily.catId);
+          playCategory(daily.catId, { allowOverCap: true });
         } else if (typeof startNewGame === 'function') {
           startNewGame(daily.catId);
         }

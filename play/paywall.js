@@ -98,11 +98,15 @@ var Paywall = (function() {
     setPlayLog(log);
   }
 
-  // Returns { ok: true } or { ok: false, reason: 'locked-category'|'daily-cap' }
-  function canPlay(catId) {
+  // Returns { ok: true } or { ok: false, reason: 'locked-category'|'daily-cap' }.
+  // opts.allowOverCap lets the Daily Challenge launch even past the 5/day cap so
+  // the streak (the free tier's retention anchor) is always keepable; the
+  // locked-category gate still applies. The daily card goes inert once today's
+  // item is found, so this can't become an unlimited-play loophole.
+  function canPlay(catId, opts) {
     if (isPremium()) return { ok: true };
     if (!isFreeCategory(catId)) return { ok: false, reason: 'locked-category', catId: catId };
-    if (playsToday() >= FREE_DAILY_CAP) return { ok: false, reason: 'daily-cap' };
+    if (!(opts && opts.allowOverCap) && playsToday() >= FREE_DAILY_CAP) return { ok: false, reason: 'daily-cap' };
     return { ok: true };
   }
 
