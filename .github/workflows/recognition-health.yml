@@ -10,9 +10,13 @@
 # Owner note: make sure GitHub Actions failure notifications are on for your
 # account (github.com/settings/notifications -> Actions) so the email arrives.
 #
-# Nothing secret here: the X-PH-Token below is the SAME public token already
-# shipped in play/app.js (the worker's real cost guard is its per-IP rate limit).
-# The Origin + browser User-Agent are required or Cloudflare returns error 1010.
+# The image below is a hardcoded 64x64 PNG that Gemini is known to accept
+# (verified returning a clean "No"). It's embedded rather than generated at
+# runtime so the probe has zero tool dependencies beyond curl + jq (both
+# preinstalled on ubuntu-latest). Nothing here is secret: the X-PH-Token is the
+# SAME public token already shipped in play/app.js (the worker's real cost guard
+# is its per-IP rate limit). The Origin + browser User-Agent are required or
+# Cloudflare returns error 1010.
 
 name: Recognition health probe
 
@@ -25,12 +29,9 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Make a small valid test image
-        run: convert -size 64x64 xc:skyblue png:- | base64 -w0 > img.b64
-
       - name: Probe worker -> Gemini
         run: |
-          IMG=$(cat img.b64)
+          IMG="iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACLSURBVHhe7dAxAQAgEIDAb287i3wI3akAwy2MzLn7zIbBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYfOCd8v4rHWC4AAAAAElFTkSuQmCC"
           BODY=$(jq -nc --arg img "$IMG" '{contents:[{parts:[{text:"Does this image contain an apple? Answer yes or no."},{inlineData:{mimeType:"image/png",data:$img}}]}],generationConfig:{temperature:0}}')
           RESP=$(curl -sS -m 30 -w $'\n%{http_code}' \
             -X POST "https://picture-hunt-api.aidevlab3.workers.dev/" \
