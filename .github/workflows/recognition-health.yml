@@ -1,0 +1,54 @@
+# Recognition health probe
+# =========================
+# Every 6 hours, send one tiny image through the REAL path the app uses
+# (Cloudflare Worker -> Gemini) and fail the workflow unless a well-formed
+# yes/no comes back. If the GEMINI_API_KEY is ever revoked/unbilled again
+# (the 2026-06-09 outage returned API_KEY_INVALID for every photo, which the
+# app rendered to kids as "Not quite!" on every shot), this run goes red and
+# GitHub emails the repo owner — instead of the outage being silent.
+#
+# Owner note: make sure GitHub Actions failure notifications are on for your
+# account (github.com/settings/notifications -> Actions) so the email arrives.
+#
+# Nothing secret here: the X-PH-Token below is the SAME public token already
+# shipped in play/app.js (the worker's real cost guard is its per-IP rate limit).
+# The Origin + browser User-Agent are required or Cloudflare returns error 1010.
+
+name: Recognition health probe
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch: {}       # allow a manual run from the Actions tab
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make a small valid test image
+        run: convert -size 64x64 xc:skyblue png:- | base64 -w0 > img.b64
+
+      - name: Probe worker -> Gemini
+        run: |
+          IMG=$(cat img.b64)
+          BODY=$(jq -nc --arg img "$IMG" '{contents:[{parts:[{text:"Does this image contain an apple? Answer yes or no."},{inlineData:{mimeType:"image/png",data:$img}}]}],generationConfig:{temperature:0}}')
+          RESP=$(curl -sS -m 30 -w $'\n%{http_code}' \
+            -X POST "https://picture-hunt-api.aidevlab3.workers.dev/" \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost" \
+            -H "X-PH-Token: ph_pub_2k9Qx7mZr4Tn8Wv5" \
+            -H "User-Agent: Mozilla/5.0 (PictureHunt-HealthProbe)" \
+            --data "$BODY")
+          CODE=$(printf '%s' "$RESP" | tail -n1)
+          JSON=$(printf '%s' "$RESP" | sed '$d')
+          echo "HTTP $CODE"
+          printf '%s' "$JSON" | head -c 800; echo
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Recognition DOWN — worker returned HTTP $CODE (expected 200). Check the worker + GEMINI_API_KEY."
+            exit 1
+          fi
+          if ! printf '%s' "$JSON" | jq -e '.candidates[0].content.parts[0].text' >/dev/null 2>&1; then
+            echo "::error::Recognition DOWN/degraded — no candidate text in the response. A revoked/unbilled GEMINI_API_KEY looks like this (API_KEY_INVALID). Re-set the key per docs."
+            exit 1
+          fi
+          echo "Recognition healthy. Model said: $(printf '%s' "$JSON" | jq -r '.candidates[0].content.parts[0].text' | tr -d '\n' | head -c 80)"
