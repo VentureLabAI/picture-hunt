@@ -310,9 +310,17 @@
 /* PWA install prompt pill */
 .install-pill {
   position: fixed;
-  left: 50%;
+  /* Anchor BOTH edges so the box can size against the full viewport, then center
+     with auto margins. The old `left:50%` made shrink-to-fit resolve against only
+     the right half (~195px on a phone), so max-width never engaged and the text
+     wrapped one word per line into a tall blob. width:max-content keeps it a
+     compact pill for short text; max-width wraps the longer iOS text gracefully. */
+  left: 12px;
+  right: 12px;
+  margin-inline: auto;
+  width: max-content;
   bottom: calc(16px + env(safe-area-inset-bottom));
-  transform: translate(-50%, 80px);
+  transform: translateY(80px);
   background: #FFFFFF;
   color: #1B1140;
   padding: 12px 16px;
@@ -331,7 +339,7 @@
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
 .install-pill.install-pill-visible {
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   opacity: 1;
 }
 .install-pill-text {
