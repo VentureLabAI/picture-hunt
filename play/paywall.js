@@ -148,14 +148,14 @@ var Paywall = (function() {
     var plansBlock = stripeReady
       ? ''
         + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener" aria-label="Unlock everything for $24.99, one time"'
-        +   ' onclick="this.classList.add(\'is-loading\'); var l=this.querySelector(\'.paywall-buy-label\'); if(l)l.textContent=\'Opening checkout…\';">'
+        +   ' onclick="event.preventDefault(); Paywall.buyClicked();">'
         +   '<span class="paywall-buy-price">$24.99</span>'
         +   '<span class="paywall-buy-label">Unlock everything — one time</span>'
         + '</a>'
         + '<p class="paywall-buy-note">No subscription. Yours forever, on every device.</p>'
       : ''
         + '<div class="paywall-coming-soon">'
-        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access">hello@venturelab.ai</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
+        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access" onclick="event.preventDefault(); Paywall.emailClicked();">hello@venturelab.ai</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
         + '</div>';
 
     overlay.innerHTML = ''
@@ -279,6 +279,69 @@ var Paywall = (function() {
     }, 1000);
   }
 
+  // ── Parental gate ──
+  // Apple's Kids Category (and basic good practice) requires an adult gate before
+  // any outbound commerce or contact action a child could tap into. We gate ONLY
+  // the buy + email taps — the unlock-code entry stays frictionless for parents.
+  // A small multiplication is trivial for an adult and unsolvable for a 2-5yo.
+  function removeGate() {
+    var el = document.getElementById('parent-gate-overlay');
+    if (el) el.remove();
+  }
+
+  function parentGate(onPass) {
+    if (document.getElementById('parent-gate-overlay')) return;
+    var a = 3 + Math.floor(Math.random() * 7);  // 3..9
+    var b = 3 + Math.floor(Math.random() * 7);  // 3..9
+    var answer = a * b;
+
+    var ov = document.createElement('div');
+    ov.id = 'parent-gate-overlay';
+    ov.className = 'parent-gate-overlay';
+    ov.innerHTML = ''
+      + '<div class="parent-gate-card" role="dialog" aria-modal="true" aria-label="Grown-ups only">'
+      +   '<h2>🧑 Grown-ups only!</h2>'
+      +   '<p class="pg-sub">Ask a grown-up to continue.</p>'
+      +   '<div class="parent-gate-q" id="parent-gate-q">What is ' + a + ' × ' + b + '?</div>'
+      +   '<input class="parent-gate-input" id="parent-gate-input" type="number" inputmode="numeric" aria-label="What is ' + a + ' times ' + b + '?" autocomplete="off">'
+      +   '<button class="parent-gate-go" id="parent-gate-go" type="button">Go</button>'
+      +   '<p class="parent-gate-msg" id="parent-gate-msg" role="status" aria-live="polite"></p>'
+      +   '<button class="parent-gate-cancel" id="parent-gate-cancel" type="button">Cancel</button>'
+      + '</div>';
+    ov.onclick = function(e) { if (e.target === ov) removeGate(); };
+    document.body.appendChild(ov);
+
+    var input = document.getElementById('parent-gate-input');
+    var msg = document.getElementById('parent-gate-msg');
+    var submit = function() {
+      if (parseInt(input.value, 10) === answer) {
+        removeGate();
+        onPass();
+      } else {
+        msg.textContent = 'Not quite — try again!';
+        // Reshuffle so a child can't pass by repeating the same guess.
+        a = 3 + Math.floor(Math.random() * 7);
+        b = 3 + Math.floor(Math.random() * 7);
+        answer = a * b;
+        document.getElementById('parent-gate-q').textContent = 'What is ' + a + ' × ' + b + '?';
+        input.value = '';
+        input.focus();
+      }
+    };
+    document.getElementById('parent-gate-go').onclick = submit;
+    document.getElementById('parent-gate-cancel').onclick = removeGate;
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    setTimeout(function() { input.focus(); }, 50);
+  }
+
+  function buyClicked() {
+    parentGate(function() { window.open(STRIPE_LINK, '_blank', 'noopener'); });
+  }
+
+  function emailClicked() {
+    parentGate(function() { window.location.href = 'mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access'; });
+  }
+
   function init() {
     // ?upgrade=1 → open the paywall on load (linked from landing page)
     // ?code=XYZ  → auto-validate and unlock (delivered in Stripe receipt URL)
@@ -316,6 +379,8 @@ var Paywall = (function() {
     playsRemaining: playsRemaining,
     show: show,
     close: close,
-    redeem: redeem
+    redeem: redeem,
+    buyClicked: buyClicked,
+    emailClicked: emailClicked
   };
 })();
