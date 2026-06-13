@@ -54,14 +54,25 @@ var DailyStreak = (function() {
   // ═══════════════════════════════════════════════════════════════
   // DATE HELPERS
   // ═══════════════════════════════════════════════════════════════
+  // Use the LOCAL calendar day, not UTC. toISOString() is UTC, so in US time
+  // zones the "day" flipped at 5-8pm local — an evening find could log under
+  // tomorrow's date (silently breaking the streak) and the daily item visibly
+  // changed mid-evening. localDateStr keeps the boundary at the child's midnight.
+  function localDateStr(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
   function todayStr() {
-    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return localDateStr(new Date());
   }
 
   function yesterdayStr() {
     var d = new Date();
     d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
+    return localDateStr(d);
   }
 
   function daysBetween(dateStr1, dateStr2) {
@@ -172,34 +183,45 @@ var DailyStreak = (function() {
   // DAILY ITEM SELECTION — seeded by date for consistency
   // ═══════════════════════════════════════════════════════════════
   function getDailyItem() {
-    if (typeof CATEGORIES === 'undefined') return null;
+    if (typeof CATEGORIES === 'undefined' || typeof CATEGORY_ORDER === 'undefined') return null;
 
-    // Simple hash of date for deterministic selection
+    // Build the pool of ELIGIBLE categories before picking:
+    //   1. In-season only — so the daily challenge never demands an out-of-season
+    //      item (e.g. "find Santa" in June), which is impossible and silently
+    //      burns the streak.
+    //   2. Free users → free categories only — otherwise a date-seeded item lands
+    //      in a premium category ~60% of days and the daily card routes straight
+    //      into the paywall, so a free family can never keep the streak.
+    var order = CATEGORY_ORDER.slice();
+    if (typeof SeasonalManager !== 'undefined' && SeasonalManager.filterVisibleCategories) {
+      order = SeasonalManager.filterVisibleCategories(order);
+    }
+    if (typeof Paywall !== 'undefined' && Paywall.isPremium && !Paywall.isPremium() && Paywall.isFreeCategory) {
+      var freeOnly = order.filter(function(catId) { return Paywall.isFreeCategory(catId); });
+      if (freeOnly.length) order = freeOnly;
+    }
+
+    function flatten(cats) {
+      var out = [];
+      cats.forEach(function(catId) {
+        var cat = CATEGORIES[catId];
+        if (cat && cat.items) cat.items.forEach(function(item) { out.push({ catId: catId, item: item, cat: cat }); });
+      });
+      return out;
+    }
+    var allItems = flatten(order);
+    // Safety net: never return null just because filtering emptied the pool.
+    if (allItems.length === 0) allItems = flatten(CATEGORY_ORDER);
+    if (allItems.length === 0) return null;
+
+    // Deterministic date-seeded pick — same item all day for a given tier/season.
     var today = todayStr();
     var hash = 0;
     for (var i = 0; i < today.length; i++) {
       hash = ((hash << 5) - hash) + today.charCodeAt(i);
       hash = hash & hash; // Convert to 32-bit int
     }
-
-    // Flatten all items across all categories
-    var allItems = [];
-    if (typeof CATEGORY_ORDER !== 'undefined') {
-      CATEGORY_ORDER.forEach(function(catId) {
-        var cat = CATEGORIES[catId];
-        if (cat && cat.items) {
-          cat.items.forEach(function(item) {
-            allItems.push({ catId: catId, item: item, cat: cat });
-          });
-        }
-      });
-    }
-
-    if (allItems.length === 0) return null;
-
-    // Pick item based on hash (same item all day)
-    var idx = Math.abs(hash) % allItems.length;
-    return allItems[idx];
+    return allItems[Math.abs(hash) % allItems.length];
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -255,8 +277,9 @@ var DailyStreak = (function() {
     if (!data.todayDone) {
       card.onclick = function() {
         if (typeof playClick === 'function') playClick();
-        // Route through playCategory so the paywall + daily-cap gate applies — a
-        // date-seeded daily item often lands in a premium category.
+        // Route through playCategory. Free users now only ever get a daily item
+        // from a free category (see getDailyItem), so this no longer dead-ends in
+        // the locked-category paywall; the 5-plays/day cap still applies.
         if (typeof playCategory === 'function') {
           playCategory(daily.catId);
         } else if (typeof startNewGame === 'function') {
