@@ -626,7 +626,16 @@ function onSplashEnter() {
   setTimeout(function() {
     if (!window._homeGreeted) {
       window._homeGreeted = true;
-      showHomeGreeting();
+      // First run ever: a one-time parent card (privacy notice + "want Spanish?"
+      // choice) precedes the kid-facing fox greeting. After that it never shows
+      // again; later sessions go straight to the greeting (once per session).
+      var firstRun = false;
+      try { firstRun = !localStorage.getItem('PH_FIRST_RUN_DONE'); } catch(e) {}
+      if (firstRun && typeof showFirstRunSetup === 'function') {
+        showFirstRunSetup(showHomeGreeting);
+      } else {
+        showHomeGreeting();
+      }
     } else {
       pulseCategories();
     }
@@ -663,6 +672,48 @@ function showHomeGreeting() {
   } else {
     setTimeout(dismiss, 4200); // muted: still show the visual welcome
   }
+}
+
+// First-run parent card: shown ONCE ever, before the kid-facing greeting. Two
+// jobs in one parent-facing step: (1) the COPPA-style privacy notice (photos go
+// to Google's vision AI to match, then are discarded; aim at things, not people)
+// and (2) the bilingual opt-in the owner approved. Either button records an
+// explicit PH_LANG choice and sets PH_FIRST_RUN_DONE so it never shows again.
+// Uses the scroll/safe-center overlay pattern (LESSONS-LEARNED).
+function showFirstRunSetup(onDone) {
+  if (document.getElementById('first-run-setup')) { if (onDone) onDone(); return; }
+  var ov = document.createElement('div');
+  ov.id = 'first-run-setup';
+  ov.className = 'first-run-overlay';
+  ov.innerHTML =
+    '<div class="first-run-card" role="dialog" aria-modal="true" aria-label="Welcome, grown-ups">'
+    + '<img class="first-run-fox" src="img/mascot/fox-hero.png" alt="" aria-hidden="true">'
+    + '<h2 class="first-run-title">Welcome, grown-ups! 👋</h2>'
+    + '<p class="first-run-privacy">Picture Hunt sends each photo to Google\'s vision AI just to find a match, then it\'s gone — <b>never stored</b>. Best pointed at things, not people.</p>'
+    + '<div class="first-run-divider"></div>'
+    + '<p class="first-run-q">Want your child to hear everyday words in <b>Spanish</b> too, as they play? <span class="first-run-free">Free</span></p>'
+    + '<button class="first-run-yes" id="first-run-yes" type="button">Sí, add Spanish! 🇪🇸</button>'
+    + '<button class="first-run-no" id="first-run-no" type="button">Maybe later</button>'
+    + '</div>';
+  document.body.appendChild(ov);
+
+  var done = false;
+  function finish(langCode) {
+    if (done) return;
+    done = true;
+    if (typeof setSelectedLanguage === 'function') setSelectedLanguage(langCode);
+    try { localStorage.setItem('PH_FIRST_RUN_DONE', '1'); } catch(e) {}
+    if (typeof renderSplash === 'function') renderSplash(); // refresh the lang bar to match the choice
+    ov.classList.add('first-run-out');
+    setTimeout(function() {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      if (onDone) onDone();
+    }, 300);
+  }
+  var yes = document.getElementById('first-run-yes');
+  var no = document.getElementById('first-run-no');
+  if (yes) yes.onclick = function() { if (typeof playClick === 'function') playClick(); finish('es'); };
+  if (no) no.onclick = function() { if (typeof playClick === 'function') playClick(); finish('none'); };
 }
 
 function renderSplash() {
