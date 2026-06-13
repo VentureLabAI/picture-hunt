@@ -1364,26 +1364,57 @@ function showVictory() {
 var pendingBase64 = null;
 var pendingMimeType = null;
 
+// Cap the photo at 1024px on the long edge and re-encode as JPEG before it ever
+// leaves the device. This (a) cuts Gemini image-token cost ~6-12x, (b) strips the
+// EXIF/GPS metadata the camera embeds (privacy), (c) shrinks the upload on
+// cellular, and (d) keeps big iPhone JPEGs under the worker's 8MB cap. 1024px is
+// well above Gemini's 768px tiling, so recognition is unaffected. Falls back to
+// the raw file if the image can't be decoded (e.g. an unexpected format).
+var PHOTO_MAX_EDGE = 1024;
+function downscalePhoto(file, done) {
+  var reader = new FileReader();
+  reader.onload = function() {
+    var rawDataUrl = reader.result;
+    var img = new Image();
+    img.onload = function() {
+      try {
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        done(canvas.toDataURL('image/jpeg', 0.8), 'image/jpeg');
+      } catch (e) {
+        console.warn('[PH] photo downscale failed, sending original', e);
+        done(rawDataUrl, file.type || 'image/jpeg');
+      }
+    };
+    img.onerror = function() {
+      console.warn('[PH] photo decode failed, sending original');
+      done(rawDataUrl, file.type || 'image/jpeg');
+    };
+    img.src = rawDataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
 function handlePhoto(input) {
   var file = input.files && input.files[0];
   if (!file) return;
   stopAllPulses(); resetInactivity();
 
-  var reader = new FileReader();
-  reader.onload = function() {
-    var dataUrl = reader.result;
+  cameraLabel.style.display = 'none';
+  var skipArea = document.querySelector('.skip-area');
+  if (skipArea) skipArea.style.display = 'none';
+
+  downscalePhoto(file, function(dataUrl, mime) {
     pendingBase64 = dataUrl.split(',')[1];
-    pendingMimeType = file.type || 'image/jpeg';
-
-    cameraLabel.style.display = 'none';
-    var skipArea = document.querySelector('.skip-area');
-    if (skipArea) skipArea.style.display = 'none';
-
+    pendingMimeType = mime;
     feedbackArea.innerHTML = '<div class="photo-preview">'
       + '<img src="' + dataUrl + '" class="preview-img" alt="Your photo"></div>';
     submitPhoto();
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 async function submitPhoto() {
