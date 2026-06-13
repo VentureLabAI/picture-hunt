@@ -1,8 +1,8 @@
 {
   "name": "Picture Hunt!",
   "short_name": "Picture Hunt",
-  "start_url": "/picture-hunt/play/",
-  "scope": "/picture-hunt/play/",
+  "start_url": "/play/",
+  "scope": "/play/",
   "display": "fullscreen",
   "background_color": "#FFF8E7",
   "theme_color": "#FFF8E7",

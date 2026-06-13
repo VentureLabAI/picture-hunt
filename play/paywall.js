@@ -155,7 +155,7 @@ var Paywall = (function() {
         + '<p class="paywall-buy-note">No subscription. Yours forever, on every device.</p>'
       : ''
         + '<div class="paywall-coming-soon">'
-        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access" onclick="event.preventDefault(); Paywall.emailClicked();">hello@venturelab.ai</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
+        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@picturehunt.app?subject=Picture+Hunt+early+access" onclick="event.preventDefault(); Paywall.emailClicked();">hello@picturehunt.app</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
         + '</div>';
 
     overlay.innerHTML = ''
@@ -228,7 +228,7 @@ var Paywall = (function() {
         // codes (LAUNCH2026 etc.) now validate server-side, so we no longer
         // override the verdict here. FALLBACK_CODES is purely an offline safety
         // net — see the .catch below.
-        setMsg('That code didn\'t work. Double-check and try again, or email hello@venturelab.ai.', 'err');
+        setMsg('That code didn\'t work. Double-check and try again, or email hello@picturehunt.app.', 'err');
       }
     }).catch(function() {
       // Worker unreachable — accept the offline fallback codes so a known code
@@ -339,7 +339,7 @@ var Paywall = (function() {
   }
 
   function emailClicked() {
-    parentGate(function() { window.location.href = 'mailto:hello@venturelab.ai?subject=Picture+Hunt+early+access'; });
+    parentGate(function() { window.location.href = 'mailto:hello@picturehunt.app?subject=Picture+Hunt+early+access'; });
   }
 
   function init() {
