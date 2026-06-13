@@ -1522,6 +1522,13 @@ function skipFromMiss() {
 function forceAccept() {
   playClick();
   if (typeof hideHintButton === 'function') hideHintButton();
+  // Story mode: route the override through the story success path so the child
+  // stays in the storybook chrome and the quest advances via advanceStoryItem,
+  // instead of dropping into the normal advanceItem flow.
+  if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandlePhotoSuccess === 'function') {
+    storylineHandlePhotoSuccess();
+    return;
+  }
   recordProgress(currentCategory, shuffledItems[currentIndex].name);
   if (_currentSession) _currentSession.found++; // parent-override find also counts in the session log
   // Use sticker pop for parent override

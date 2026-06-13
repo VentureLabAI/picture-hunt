@@ -502,8 +502,12 @@ function showStoryItem() {
   var cat = CATEGORIES[step.category];
   var item = shuffledItems[storyStepIndex];
 
-  // Temporarily set currentCategory to this step's category for AI prompt
+  // Temporarily set currentCategory + currentIndex to this step's target. The AI
+  // recognition path (identifyObject) and the hint path both read
+  // shuffledItems[currentIndex]; story mode advances storyStepIndex, so without
+  // this sync every photo from step 2 on is checked against step 1's item.
   currentCategory = step.category;
+  currentIndex = storyStepIndex;
 
   // Storybook chrome for this step (fox + bridge line + trail)
   renderQuestStep();
