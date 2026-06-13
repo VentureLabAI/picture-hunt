@@ -28,7 +28,13 @@ var SUPPORTED_LANGUAGES = [
  * Returns the language object, or the 'none' entry if not set.
  */
 function getSelectedLanguage() {
-  var code = localStorage.getItem('PH_LANG') || 'none';
+  // Default NEW users to Spanish — the free bilingual hook — so the "¿una
+  // manzana?" moment fires on the very first hunt instead of staying silent until
+  // a parent finds the language button. This is the product's core thesis and the
+  // free tier per STRATEGY ("Spanish bilingual ON"). An explicit "Off" is stored
+  // as 'none' by setSelectedLanguage, so a parent's opt-out is still respected;
+  // only the never-chosen (unset) state falls through to this default.
+  var code = localStorage.getItem('PH_LANG') || 'es';
   return SUPPORTED_LANGUAGES.find(function(l) { return l.code === code; }) || SUPPORTED_LANGUAGES[0];
 }
 
