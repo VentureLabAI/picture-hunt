@@ -13,7 +13,7 @@
   <div class="hero-inner" style="grid-template-columns: 1fr; max-width: 760px;">
     <div class="hero-copy" style="text-align: center;">
       <h1 style="font-size: 2.4rem;">Privacy Policy</h1>
-      <p class="lede" style="margin-bottom: 0;">Last updated: 2026-05-09</p>
+      <p class="lede" style="margin-bottom: 0;">Last updated: 2026-06-13</p>
     </div>
   </div>
 </section>
@@ -21,7 +21,7 @@
 <section style="background: #FFF8E7; max-width: 760px; margin: 0 auto; padding: 60px 24px 40px;">
 
 <h2 style="text-align: left;">The short version</h2>
-<p>Picture Hunt is built to collect almost nothing. There's no signup, no account, no email collection at app level. Your child's progress lives in the browser on their device. Photos are sent to Google's Gemini Vision API for matching and then disappear — they're not stored or trained on.</p>
+<p>Picture Hunt is built to collect almost nothing. There's no signup, no account, no email collection at app level. Your child's progress lives in the browser on their device (with Premium it also syncs across your devices — see below). Photos are sent to Google's Gemini Vision API to find a match and are never stored by us; on our paid API tier, Google doesn't use them to train its models.</p>
 <p>When you purchase Premium, Stripe handles your payment information — we never see your card. We do see the email address you put on the receipt and an unlock code mapped to it.</p>
 
 <h2 style="text-align: left;">What we collect</h2>
@@ -29,6 +29,7 @@
 <h3>From your child playing</h3>
 <ul style="margin-left: 24px;">
   <li><b>Local browser storage</b> on the device: progress (which items they've found), sticker book contents, daily streak, settings (sound on/off, language, difficulty).</li>
+  <li><b>Cross-device sync (Premium only)</b>: if you unlock Premium, that same progress — found items, sticker book, daily streak — is also stored on Cloudflare KV, keyed to your unlock code (not to any name or account), so it can follow you to another device. Request deletion any time via the email below.</li>
   <li><b>Photos</b>: each photo is sent in a single API call to Google's Gemini Vision API for matching. The photo is not stored by us. Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">privacy policy</a> applies to the moment it's processed by them; per their <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener">API terms</a>, paid Gemini API usage is not used for training.</li>
 </ul>
 
@@ -50,10 +51,10 @@
 </ul>
 
 <h2 style="text-align: left;">COPPA + parental consent</h2>
-<p>Picture Hunt is designed to comply with the US Children's Online Privacy Protection Act (COPPA). Because we don't collect personal information from the child user (no names, emails, or accounts at app level), we don't trigger COPPA's verifiable parental consent requirement. The only personal data we hold is the parent's email tied to their purchase.</p>
+<p>Picture Hunt is designed for COPPA compliance and to collect as little as possible from children. The app has no child accounts and collects no names, emails, contacts, or location from the child. A photo a child takes can incidentally include a person; those photos are sent to Google only to find a match, are never stored by us, and on our paid API tier are not used to train Google's models. The app is built for use with adult supervision, and the only personal data we retain is the parent's purchase email. If you have COPPA questions or want data removed, email us (below).</p>
 
 <h2 style="text-align: left;">Camera permission</h2>
-<p>The app uses your device's camera to take photos for the scavenger hunt. Photos are captured locally in the browser, sent once to Google for matching, and not retained. We do not have access to your device's photo library.</p>
+<p>The app uses your device's camera to take photos for the scavenger hunt. Photos are captured locally in the browser, sent once to Google for matching, and not retained by us. The app only receives the photo you take or choose to give it — it can't browse your photo library.</p>
 
 <h2 style="text-align: left;">Data retention + deletion</h2>
 <p>If you request deletion of your purchase data or want all data removed, email <a href="mailto:hello@picturehunt.app">hello@picturehunt.app</a>. We'll remove your purchase record from Cloudflare KV within 30 days. Your local browser data lives on your device — clear it via your browser's site data settings or by uninstalling the PWA from your home screen.</p>
