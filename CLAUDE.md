@@ -81,6 +81,15 @@ npx wrangler deploy        # needs `npx wrangler login` once
 KV namespace `UNLOCK_CODES` is bound (id in `wrangler.toml`). Secrets:
 `GEMINI_API_KEY` (set), `STRIPE_WEBHOOK_SECRET` + `STRIPE_API_KEY` (pending).
 
+**Gemini tier (verified 2026-06-13): PAID — Google AI Studio Tier 2, postpay/billing
+enabled.** This is load-bearing for two reasons and must stay paid on any key
+rotation: (1) per Google's Gemini API terms, paid-tier content is NOT used to train
+Google's models or read by human reviewers — this is what makes the privacy claim
+"photos are never trained on" actually true (on the free/unpaid tier it would be
+false for photos of children's homes); (2) the free tier's ~250 requests/day global
+cap is gone, so traffic spikes won't silently fail recognition for everyone. If the
+key is ever re-created, re-enable billing and keep it on a billed project.
+
 ## Session opening rule
 
 1. Read `docs/STRATEGY.md` — the locked strategy.
