@@ -42,13 +42,23 @@ var DailyStreak = (function() {
   // STORAGE
   // ═══════════════════════════════════════════════════════════════
   function getData() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    } catch(e) { return {}; }
+    var data;
+    try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch(e) { data = {}; }
+    if (!data || typeof data !== 'object') data = {};
+    // Normalize the shape so the streak logic never crashes on partial, migrated,
+    // or cross-version sync data (e.g. completeToday's data.badges.indexOf threw
+    // when badges was absent). Missing fields get safe defaults.
+    if (typeof data.streak !== 'number') data.streak = 0;
+    if (!Array.isArray(data.badges)) data.badges = [];
+    if (typeof data.freezes !== 'number') data.freezes = FREEZES_PER_WEEK;
+    if (typeof data.todayDone !== 'boolean') data.todayDone = false;
+    return data;
   }
 
   function saveData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Storage-safe: setItem throws in private/quota-full/storage-disabled contexts.
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -96,21 +106,37 @@ var DailyStreak = (function() {
       data.freezes = FREEZES_PER_WEEK;
       data.badges = [];
       data.todayDone = false;
+      data.lastFreezeRefill = today; // seed so the first miss doesn't trigger an instant refill
+      data.lastCheck = today;
       saveData(data);
       return data;
     }
 
-    // Already updated today
+    // IDEMPOTENCY GUARD: evaluate the gap at most once per calendar day. This
+    // function runs several times per page load (startup init + every renderSplash
+    // re-render), and the gap===2 branch decremented a freeze on EVERY call without
+    // advancing lastDate — so a single missed day burned ALL freezes across the
+    // repeated calls and then broke the streak. lastCheck makes the evaluation
+    // happen once per day regardless of how many times it's called.
+    if (data.lastCheck === today) {
+      return data;
+    }
+
+    // Already completed today — nothing to evaluate, just mark today's check done.
     if (data.lastDate === today) {
+      data.lastCheck = today;
+      saveData(data);
       return data;
     }
 
     // Check if streak should continue or break
     var gap = daysBetween(data.lastDate, today);
 
-    if (gap === 1) {
-      // Yesterday was the last activity — streak continues if today is completed
-      // Don't increment yet, just mark today as not done
+    if (gap <= 1) {
+      // gap === 1: yesterday was the last activity — streak continues if today is
+      // completed (don't increment yet). gap < 1: the device clock moved backward
+      // (or timezone travel) — do NOT penalize an innocent child by wiping the
+      // streak; just wait for today's completion.
       data.todayDone = false;
     } else if (gap === 2) {
       // Missed one day — try to use a freeze
@@ -137,6 +163,7 @@ var DailyStreak = (function() {
       data.lastFreezeRefill = today;
     }
 
+    data.lastCheck = today;
     saveData(data);
     return data;
   }
