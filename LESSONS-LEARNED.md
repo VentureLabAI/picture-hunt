@@ -70,3 +70,39 @@ Any change under `play/` requires bumping `?v=N` in `play/index.html` **and**
 `CACHE_VERSION` in `play/sw.js` together, and adding any new file to
 `PRECACHE_URLS`. Verify post-bump: no stale `?v=<old>` remain and every edited
 file is referenced at the new version.
+
+## 4. Audio: every spoken line needs a recorded clip (dynamic strings → robot voice)
+
+**Class:** `speak(text)` routes text → `textToAudioKey(text)` → a recorded coral
+clip via `playBuffer`. If the text doesn't map to a key, it falls back to the
+device's speech-synthesis **robot voice** (jarring next to the fox voice, and
+silent/broken on iOS for some phrases). Any spoken string built with a
+**variable / count / number** can't match a fixed key, so it ALWAYS blurts the
+robot voice — and usually carries a count-grammar bug too ("You have 1 stickers").
+Shipped broken on the sticker book and the streak milestone (v129); the bilingual
+**Victory Echo** was a sibling failure — an unrecorded TTS line that also *overlapped*
+and cut off the preceding clip (v128). One report ("stickers said it in the robot
+voice") = sweep the whole class, not just that line.
+
+**The rule for any NEW spoken line:**
+1. Use a **fixed phrase** — never interpolate a number/name into spoken text
+   (say "Here are your stickers!" not "You have N stickers").
+2. Add the phrase → key mapping in `textToAudioKey` (`play/app.js`).
+3. Generate the recorded clip via `ph-tools/regen_clips.py` (voice "coral",
+   -16 LUFS loudnorm); drop the mp3 in `play/audio/`.
+4. Add the key to `preloadAllAudio` (so it's warm) **and** the file to
+   `sw.js` `PRECACHE_URLS` — then do the atomic cache bump (#3).
+
+**How to audit (run it, don't eyeball):** in the browser, run `textToAudioKey()`
+on every static `speak('…')` literal **plus** every `CATEGORIES[c].speakPrompt(item)`
+and `CATEGORIES[c].speakName`. Any that return null/empty = a robot-voice line.
+(As of v129: zero fall through; TTS now only fires as the genuine
+clip-load-FAILURE fallback for hints/prompts, which is the intended safety net.)
+When grepping `speak\(`, ignore `memory-hunt` / `review-mode` / `sorting-safari` /
+`phonics-hunt` — those modules are dead code, not loaded by `index.html`.
+
+**Debugging an audio cutoff:** there is ONE playback channel (`currentAudioSource`),
+stopped before each new clip. A clip cutting off mid-word = something started a
+second sound on top of it (an echo, a translation, an overlapping `speak`).
+Instrument `playBuffer` / `speak` / `speakFallback` with timestamped logs and look
+for the second start that lands inside the first clip's duration.
