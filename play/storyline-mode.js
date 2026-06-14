@@ -487,19 +487,28 @@ function playStory(storyId) {
   // Decode the intro clip BEFORE speaking it, so the first story line is the
   // recorded fox voice — not a lag or the robot-TTS fallback that wins the cold
   // 1200ms race when story clips aren't precached/warmed yet (owner-reported).
+  var advanced = false;
+  var goFirstItem = function() { if (advanced) return; advanced = true; showStoryItem(); };
   var speakIntro = function() {
-    speakStoryAudio(story.id + '-intro', story.intro, function() { showStoryItem(); });
+    speakStoryAudio(story.id + '-intro', story.intro, goFirstItem);
   };
   if (typeof preloadAudio === 'function') {
     preloadAudio('story-' + story.id + '-intro').then(speakIntro).catch(speakIntro);
   } else {
     speakIntro();
   }
+  // Safety: never strand the child on the cover page if the intro narration's
+  // onEnd never fires (rare TTS edge) — advance to the first item after 12s.
+  setTimeout(goFirstItem, 12000);
 }
 
 function showStoryItem() {
   if (typeof stopAllPulses === 'function') stopAllPulses();
   if (typeof resetInactivity === 'function') resetInactivity();
+  // Per-step hint reset. The hint system monkey-patches showCurrentItem (regular
+  // hunts) but story mode uses showStoryItem, so without this the hint button
+  // stays disabled/✅ for the rest of the quest after one use.
+  if (typeof resetHints === 'function') resetHints();
 
   if (storyStepIndex >= currentStory.steps.length) {
     finishStory();
@@ -618,14 +627,10 @@ function finishStory() {
   clearQuestChrome();
   recordStoryComplete(currentStory.id);
 
-  // Record progress for each found item in their categories
-  shuffledItems.forEach(function(item, idx) {
-    if (idx < storyItemsFound) {
-      if (typeof recordProgress === 'function') {
-        recordProgress(item._storyCategory, item.name);
-      }
-    }
-  });
+  // Progress is already recorded per-find in storylineHandlePhotoSuccess with the
+  // correct category+item. The old `idx < storyItemsFound` loop here mis-credited
+  // SKIPPED steps (e.g. skip step 2, find 3-5 → it credited 1,2,3 instead of the
+  // real finds) — removed; recordProgress dedupes the genuine ones anyway.
 
   // Show victory with story outro
   var cat = CATEGORIES[currentStory.steps[0].category]; // primary category for display
