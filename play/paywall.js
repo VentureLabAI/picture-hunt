@@ -122,7 +122,7 @@ var Paywall = (function() {
         ? CATEGORIES[catId].name : 'this category';
       sub = 'Unlock <b>' + catName + '</b> and all 10 categories with Premium.';
     } else if (reason === 'daily-cap') {
-      headline = '🌙 That\'s 5 finds today!';
+      headline = '🌙 That\'s ' + FREE_DAILY_CAP + ' finds today!';
       sub = 'Free finds reset tomorrow, or unlock unlimited play with Premium.';
     } else if (reason === 'storyline') {
       headline = '🗺️ More Story Quests';
@@ -169,7 +169,7 @@ var Paywall = (function() {
       +     '<div class="pf">🌍 All 10 languages</div>'
       +     '<div class="pf">✨ All 10 categories (100+ items)</div>'
       +     '<div class="pf">🗺️ Story quests</div>'
-      +     '<div class="pf">📅 Daily challenge + streak</div>'
+      +     '<div class="pf">🎃 Seasonal packs (Halloween, Christmas, Spring)</div>'
       +     '<div class="pf">♾️ Unlimited finds</div>'
       +     '<div class="pf">📲 Works on all your devices</div>'
       +   '</div>'
