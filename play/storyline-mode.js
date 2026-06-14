@@ -484,9 +484,17 @@ function playStory(storyId) {
   // Storybook cover page while the intro narration plays
   renderQuestCover();
   // Speak the story intro (recorded voice), then show first item
-  speakStoryAudio(story.id + '-intro', story.intro, function() {
-    showStoryItem();
-  });
+  // Decode the intro clip BEFORE speaking it, so the first story line is the
+  // recorded fox voice — not a lag or the robot-TTS fallback that wins the cold
+  // 1200ms race when story clips aren't precached/warmed yet (owner-reported).
+  var speakIntro = function() {
+    speakStoryAudio(story.id + '-intro', story.intro, function() { showStoryItem(); });
+  };
+  if (typeof preloadAudio === 'function') {
+    preloadAudio('story-' + story.id + '-intro').then(speakIntro).catch(speakIntro);
+  } else {
+    speakIntro();
+  }
 }
 
 function showStoryItem() {
@@ -588,6 +596,7 @@ function repeatStoryPrompt() {
 }
 
 function advanceStoryItem() {
+  if (!currentStory) return; // child left the story (goHome nulled it) before this fired
   storyStepIndex++;
   if (storyStepIndex >= currentStory.steps.length) {
     finishStory();
@@ -678,11 +687,12 @@ function storylineHandlePhotoSuccess() {
   speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-found', step.foundText);
   if (typeof playSuccess === 'function') setTimeout(function() { playSuccess(); }, 300);
 
-  // Auto-advance after delay
-  if (typeof autoAdvanceTimer !== 'undefined') {
-    if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
-  }
-  setTimeout(function() {
+  // Auto-advance after delay. Assign to autoAdvanceTimer (NOT an anonymous timer)
+  // so showScreen/goHome's existing cleanup cancels it — otherwise tapping Home
+  // within 4.5s of a find fires advanceStoryItem after currentStory is nulled
+  // (uncaught TypeError). The advanceStoryItem null-guard backs this up.
+  if (typeof autoAdvanceTimer !== 'undefined' && autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = setTimeout(function() {
     if (typeof resetCameraUI === 'function') resetCameraUI();
     advanceStoryItem();
   }, 4500);

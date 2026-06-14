@@ -282,7 +282,7 @@ var DailyStreak = (function() {
         // the locked-category paywall. allowOverCap keeps the daily challenge
         // playable even past the 5/day cap so the streak is always keepable.
         if (typeof playCategory === 'function') {
-          playCategory(daily.catId, { allowOverCap: true });
+          playCategory(daily.catId, { allowOverCap: true, forceItem: daily.item.name });
         } else if (typeof startNewGame === 'function') {
           startNewGame(daily.catId);
         }

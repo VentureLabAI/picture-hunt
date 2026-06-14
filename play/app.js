@@ -597,6 +597,9 @@ function unlockAudio() {
   // Warm the very first prompt the child will hear FIRST, then everything else,
   // so the home greeting is decoded before onSplashEnter tries to play it.
   preloadAudio('home-greeting');
+  // Also warm the free Story Quest's opening line so its first narration plays in
+  // the recorded fox voice instantly (story-* clips aren't in preloadAllAudio).
+  preloadAudio('story-bear-breakfast-intro');
   preloadAllAudio();
 }
 
@@ -796,6 +799,12 @@ function renderSplash() {
       + '</div></div></button>';
   });
   grid.innerHTML = html;
+
+  // The Daily Challenge card lives INSIDE #category-grid, so the innerHTML rebuild
+  // above wipes it. Re-add it on every render (addCardToSplash is dedupe-guarded)
+  // so it survives unlock / difficulty / language / seasonal-toggle re-renders
+  // instead of vanishing until the next home re-entry.
+  if (typeof DailyStreak !== 'undefined' && DailyStreak.addCardToSplash) DailyStreak.addCardToSplash();
 
   // Free-tier play meter + upgrade CTA. Re-render-safe (uses fixed IDs).
   var meter = document.getElementById('play-meter');
@@ -1174,7 +1183,9 @@ function playCategory(catId, opts) {
   speak(cat.speakName, function() {
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
-    if (saved && saved.category === catId) {
+    // Skip resume for a forced-item launch (Daily Challenge) — we want a fresh
+    // hunt guaranteed to include today's item.
+    if (!(opts && opts.forceItem) && saved && saved.category === catId) {
       var catItems = CATEGORIES[catId].items;
       shuffledItems = saved.items.map(function(name) { return catItems.find(function(i) { return i.name === name; }); }).filter(Boolean);
       currentIndex = saved.index;
@@ -1182,11 +1193,11 @@ function playCategory(catId, opts) {
         showScreen('game'); showCurrentItem(); return;
       }
     }
-    startNewGame(catId);
+    startNewGame(catId, opts);
   });
 }
 
-function startNewGame(catId) {
+function startNewGame(catId, opts) {
   localStorage.removeItem('PH_GAME_STATE');
   currentCategory = catId || currentCategory;
   shuffledItems = shuffle(getSelectedItems(currentCategory));
@@ -1204,6 +1215,18 @@ function startNewGame(catId) {
 
   // Sort by difficulty ascending — easy items first for early success
   shuffledItems.sort(function(a, b) { return (a.d || 1) - (b.d || 1); });
+
+  // Daily Challenge: guarantee today's item is present AND first, even if the
+  // difficulty filter or the parent's item selection would have excluded it —
+  // otherwise the "Find this today!" item never appears in the hunt and the
+  // streak can't be completed (e.g. a d:3 item on Medium).
+  if (opts && opts.forceItem && CATEGORIES[currentCategory]) {
+    var forced = (CATEGORIES[currentCategory].items || []).find(function(i) { return i.name === opts.forceItem; });
+    if (forced) {
+      shuffledItems = shuffledItems.filter(function(i) { return i.name !== opts.forceItem; });
+      shuffledItems.unshift(forced);
+    }
+  }
 
   currentIndex = 0;
 
@@ -1540,8 +1563,12 @@ async function submitPhoto() {
     console.error('Error:', err);
     loadingOverlay.classList.add('hidden');
     pendingBase64 = null; pendingMimeType = null;
+    // For every service/connectivity outcome below, RESTORE the camera + skip UI
+    // (resetCameraUI) before returning — handlePhoto hid them and showed the photo
+    // preview, so without this the child is stranded on a dead preview with no way
+    // to retake or skip once the card is dismissed.
     // Offline card already shown by identifyObject's 503 path.
-    if (err && err.message === 'offline') return;
+    if (err && err.message === 'offline') { resetCameraUI(); return; }
     // A backend/service error (bad key, quota, oversized, 5xx) is NOT a wrong
     // photo — never show "Not quite!" and never reset the streak. Show a friendly
     // "the camera's napping" card so a kid keeps a correct object on screen instead
@@ -1550,12 +1577,15 @@ async function submitPhoto() {
       if (typeof showOfflineMessage === 'function') {
         showOfflineMessage({ emoji: '😴', title: 'Camera Nap!', body: "The magic camera is taking a little nap.<br>Try again in a minute!" });
       }
+      resetCameraUI();
       return;
     }
     // First-load (service worker not yet controlling) or timeout/abort: this is
     // a connectivity problem, not a wrong photo — show the friendly offline card.
     if (!navigator.onLine || (err && err.name === 'AbortError')) {
-      if (typeof showOfflineMessage === 'function') { showOfflineMessage(); return; }
+      if (typeof showOfflineMessage === 'function') showOfflineMessage();
+      resetCameraUI();
+      return;
     }
     showMissResult();
   }
