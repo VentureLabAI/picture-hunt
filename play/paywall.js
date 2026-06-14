@@ -223,6 +223,15 @@ var Paywall = (function() {
     }).then(function(res) {
       if (res.status === 200 && res.data && res.data.valid) {
         unlock(code, res.data.validUntil, res.data.email);
+      } else if (res.status === 503 && res.data && res.data.error === 'offline') {
+        // The service worker returns its offline sentinel as a RESOLVED 503 (not a
+        // network rejection), so the .catch below never fires. Treat it like the
+        // offline case so a known fallback code still unlocks with no connection.
+        if (FALLBACK_CODES.indexOf(code) !== -1) {
+          unlockWithFallback(code);
+        } else {
+          setMsg('Couldn\'t reach the unlock server. Check your internet and try again.', 'err');
+        }
       } else {
         // Worker is authoritative — if it says invalid, it's invalid. Promo
         // codes (LAUNCH2026 etc.) now validate server-side, so we no longer
@@ -242,9 +251,21 @@ var Paywall = (function() {
   }
 
   function refreshSplashAfterUnlock() {
-    // renderSplash() re-renders the Storyline hero + premium badge for the
-    // now-unlocked user. Memory/Review/Sorting were cut 2026-05-18.
+    // renderSplash() refreshes the splash surfaces (category cards, language bar,
+    // Storyline hero, premium badge). But two premium-gated surfaces render their
+    // 🔒 locks independently and would otherwise keep STALE locks after unlock:
+    //  1. The Story Quest selector REPLACES #splash .splash-content (so
+    //     #category-grid is gone and renderSplash early-returns doing nothing) —
+    //     detect it via the saved _originalHTML and re-render it directly.
+    //  2. The language picker modal, if it happens to be open.
     if (typeof renderSplash === 'function') renderSplash();
+    var sc = document.querySelector('#splash .splash-content');
+    if (sc && sc._originalHTML && typeof renderStorySelector === 'function') {
+      renderStorySelector();
+    }
+    if (document.getElementById('lang-picker-overlay') && typeof openLangPicker === 'function') {
+      openLangPicker(); // rebuilds the picker with the now-unlocked state
+    }
   }
 
   function unlock(code, validUntil, email) {
