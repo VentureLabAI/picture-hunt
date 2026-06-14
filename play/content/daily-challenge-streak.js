@@ -237,7 +237,7 @@ var DailyStreak = (function() {
     setTimeout(function() { el.remove(); }, 3000);
 
     if (typeof speak === 'function') {
-      speak(milestone + ' day streak! Amazing!');
+      speak('Amazing! What a streak! Keep it up!');
     }
   }
 

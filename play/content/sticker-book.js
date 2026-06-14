@@ -190,7 +190,7 @@ var StickerBook = (function() {
       if (totalCount >= totalPossible && totalPossible > 0) {
         speak('You collected all the stickers! Amazing!');
       } else if (totalCount > 0) {
-        speak('You have ' + totalCount + ' stickers! Keep hunting!');
+        speak('Here are your stickers! Keep hunting!');
       } else {
         speak('Your sticker book is empty! Find items to earn stickers!');
       }

@@ -998,7 +998,7 @@ function preloadAllAudio() {
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
     'cat-halloween','cat-christmas','cat-spring',
-    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sort-need-more','sorting-victory','sorting-safari-intro','phonics-hunt-intro','practice-need-more','practice-complete','round-complete','stickers-amazing','memory-amazing'
+    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sticker-book-some','streak-milestone','sort-need-more','sorting-victory','sorting-safari-intro','phonics-hunt-intro','practice-need-more','practice-complete','round-complete','stickers-amazing','memory-amazing'
   ];
   // Preload all find prompts (skip items with speakOverride — those use TTS)
   Object.keys(CATEGORIES).forEach(function(catId) {
@@ -1071,6 +1071,8 @@ function textToAudioKey(text) {
     'You found it! Now find the next one!': 'found-now-next',
     'Not quite! Try again!': 'not-quite',
     'Your sticker book is empty! Find items to earn stickers!': 'sticker-book-empty',
+    'Here are your stickers! Keep hunting!': 'sticker-book-some',
+    'Amazing! What a streak! Keep it up!': 'streak-milestone',
     'Find more things first, then come sort them!': 'sort-need-more',
     'Great sorting! You put everything in the right group!': 'sorting-victory',
     'Sorting Safari! Put things in the right group!': 'sorting-safari-intro',

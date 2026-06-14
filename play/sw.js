@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v128';
+var CACHE_VERSION = 'ph-v129';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -194,6 +194,8 @@ var PRECACHE_URLS = [
   './audio/found-now-next.mp3',
   './audio/not-quite.mp3',
   './audio/sticker-book-empty.mp3',
+  './audio/sticker-book-some.mp3',
+  './audio/streak-milestone.mp3',
   './audio/sort-need-more.mp3',
   './audio/sorting-victory.mp3',
   './audio/sorting-safari-intro.mp3',
