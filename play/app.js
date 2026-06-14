@@ -20,7 +20,15 @@ var PH_PROXY_TOKEN = 'ph_pub_2k9Qx7mZr4Tn8Wv5';
 // the address bar into localStorage. The app always uses the Worker proxy, so
 // reading a network credential off an untrusted URL was a needless abuse vector.)
 
-let GEMINI_API_KEY = localStorage.getItem('PH_KEY') || '';
+// Storage-safe accessors: localStorage getters/setters throw a SecurityError in
+// some environments (Safari "Block All Cookies", locked-down in-app webviews,
+// kiosk modes). An UNGUARDED read at top-level would abort all of app.js before
+// DOMContentLoaded, leaving the landing button's handler undefined (dead first
+// launch). Always go through these.
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+
+let GEMINI_API_KEY = lsGet('PH_KEY') || '';
 
 function hasApiAccess() {
   return PROXY_URL || GEMINI_API_KEY;
@@ -326,7 +334,7 @@ function phTranslationLookupName(itemName, catId) {
 // SOUND EFFECTS (Web Audio API)
 // ═══════════════════════════════════════════════════════════════
 var audioCtx = null;
-var soundEnabled = localStorage.getItem('PH_SOUND') !== 'off';
+var soundEnabled = lsGet('PH_SOUND') !== 'off';
 
 function ensureAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -517,7 +525,7 @@ var currentCategory = null;
 var currentIndex = 0;
 var shuffledItems = [];
 var autoAdvanceTimer = null;
-var currentDifficulty = localStorage.getItem('PH_DIFFICULTY') || 'medium';
+var currentDifficulty = lsGet('PH_DIFFICULTY') || 'medium';
 var _currentSession = null; // Dashboard session tracking
 
 // ═══════════════════════════════════════════════════════════════
@@ -1184,10 +1192,10 @@ function playCategory(catId, opts) {
   // Announce category name, then start game
   speak(cat.speakName, function() {
     var saved = null;
-    try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+    try { saved = JSON.parse(lsGet('PH_GAME_STATE')); } catch(e) {}
     // Skip resume for a forced-item launch (Daily Challenge) — we want a fresh
     // hunt guaranteed to include today's item.
-    if (!(opts && opts.forceItem) && saved && saved.category === catId) {
+    if (!(opts && opts.forceItem) && saved && saved.category === catId && CATEGORIES[catId] && Array.isArray(saved.items)) {
       var catItems = CATEGORIES[catId].items;
       shuffledItems = saved.items.map(function(name) { return catItems.find(function(i) { return i.name === name; }); }).filter(Boolean);
       currentIndex = saved.index;
@@ -1374,8 +1382,9 @@ function skipItem() {
   if (typeof playRichSkip === 'function') { playRichSkip(); } else { playClick(); }
   stopAllPulses(); resetInactivity();
   if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleSkip === 'function' && storylineHandleSkip()) return;
-  speak("Let's try another one!");
-  advanceItem();
+  // Chain the advance so the reassurance clip plays fully before the next prompt
+  // interrupts it (single audio channel). onEnd always fires — incl. when muted.
+  speak("Let's try another one!", advanceItem);
 }
 
 function advanceItem() {
@@ -1641,8 +1650,7 @@ function retakeFromMiss() {
 function skipFromMiss() {
   playClick(); stopAllPulses(); resetInactivity();
   resetCameraUI();
-  speak("Let's try another one!");
-  advanceItem();
+  speak("Let's try another one!", advanceItem);
 }
 
 // Parent override: long-press green button on miss screen
@@ -1666,7 +1674,10 @@ function forceAccept() {
   }
   playSuccess(); speak('Great job!');
   resetCameraUI();
-  setTimeout(advanceItem, 800);
+  // Track the timer (reuse autoAdvanceTimer) so navigating Home during the 800ms
+  // window clears it — showScreen() clears autoAdvanceTimer — instead of firing
+  // advanceItem against a screen the child already left.
+  autoAdvanceTimer = setTimeout(advanceItem, 800);
 }
 
 function resetCameraUI() {
@@ -1867,8 +1878,11 @@ window.addEventListener('DOMContentLoaded', function() {
   setupDoneBtn.addEventListener('click', setupDone);
 
   var saved = null;
-  try { saved = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
-  if (saved && saved.category) {
+  try { saved = JSON.parse(lsGet('PH_GAME_STATE')); } catch(e) {}
+  // Guard the SHAPE, not just the parse: a stale save pointing at a category that
+  // no longer exists (renamed/removed/seasonal-not-loaded) would throw on
+  // CATEGORIES[saved.category].items and abort the entire startup init.
+  if (saved && saved.category && CATEGORIES[saved.category] && Array.isArray(saved.items)) {
     currentCategory = saved.category;
     var catItems = CATEGORIES[saved.category].items;
     shuffledItems = saved.items.map(function(name) { return catItems.find(function(i) { return i.name === name; }); }).filter(Boolean);
