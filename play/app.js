@@ -838,8 +838,8 @@ function renderSplash() {
       pm.id = 'play-meter';
       pm.className = 'play-meter' + (remaining <= 1 ? ' warn' : '');
       pm.textContent = remaining === 0
-        ? 'No free plays left today — come back tomorrow, or unlock premium ↑'
-        : remaining + ' free play' + (remaining === 1 ? '' : 's') + ' left today';
+        ? 'No free finds left today — come back tomorrow, or unlock premium ↑'
+        : remaining + ' free find' + (remaining === 1 ? '' : 's') + ' left today';
       grid.parentNode.insertBefore(pm, grid);
     }
   }

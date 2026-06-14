@@ -2,9 +2,9 @@
 //
 // Freemium (2026-06-04): the free tier deliberately INCLUDES the bilingual hook.
 // Free tier: 3 real-object categories (household, animals, food), Spanish
-//   bilingual ON, Daily Challenge, 1 sample Story Quest, 5 plays/day.
+//   bilingual ON, Daily Challenge, 1 sample Story Quest, 5 finds/day.
 // Full Access: one-time $24.99 unlock — all 10 categories, all 10 languages,
-//   all Story Quests, unlimited plays, every device, forever.
+//   all Story Quests, unlimited finds, every device, forever.
 //
 // Full Access is unlocked by entering a code that the worker validates against KV.
 // The worker still returns a `validUntil` (we set it far in the future for the
@@ -122,8 +122,8 @@ var Paywall = (function() {
         ? CATEGORIES[catId].name : 'this category';
       sub = 'Unlock <b>' + catName + '</b> and all 10 categories with Premium.';
     } else if (reason === 'daily-cap') {
-      headline = '🌙 That\'s 5 plays today!';
-      sub = 'Free plays reset tomorrow, or unlock unlimited play with Premium.';
+      headline = '🌙 That\'s 5 finds today!';
+      sub = 'Free finds reset tomorrow, or unlock unlimited play with Premium.';
     } else if (reason === 'storyline') {
       headline = '🗺️ More Story Quests';
       sub = 'You\'ve played the free quest! Unlock <b>all</b> the Story Quests — guided treasure-hunt adventures in your language — with Full Access.';
@@ -170,7 +170,7 @@ var Paywall = (function() {
       +     '<div class="pf">✨ All 10 categories (100+ items)</div>'
       +     '<div class="pf">🗺️ Story quests</div>'
       +     '<div class="pf">📅 Daily challenge + streak</div>'
-      +     '<div class="pf">♾️ Unlimited plays</div>'
+      +     '<div class="pf">♾️ Unlimited finds</div>'
       +     '<div class="pf">📲 Works on all your devices</div>'
       +   '</div>'
 
