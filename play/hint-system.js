@@ -247,6 +247,16 @@ function hideHintButton() {
 function resetHints() {
   hintTier = 0;
   hintCooldown = false;
+  // Restore the button from any tier-3 "✅ / disabled" state. Without this the
+  // button stayed ✅ with pointer-events:none for the REST of the session once a
+  // child used all 3 hints on a single item — hints were silently dead thereafter.
+  var btn = document.getElementById('hint-btn');
+  if (btn) {
+    btn.innerHTML = '<span aria-hidden="true">💡</span>';
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+    btn.setAttribute('aria-label', 'Get a hint');
+  }
   hideHintButton();
 }
 
@@ -291,9 +301,10 @@ function onHintTap() {
     if (hintTier >= 3) {
       var btn = document.getElementById('hint-btn');
       if (btn) {
-        btn.innerHTML = '✅';
+        btn.innerHTML = '<span aria-hidden="true">✅</span>';
         btn.style.opacity = '0.5';
         btn.style.pointerEvents = 'none';
+        btn.setAttribute('aria-label', 'No more hints for this one');
       }
     } else {
       // Update button to show remaining hints
