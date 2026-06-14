@@ -1531,24 +1531,26 @@ async function submitPhoto() {
         fireConfetti(3500);
       }
       // Play voice FIRST, then chime after a beat — iOS can't play both simultaneously
-      speak('You found it! Great job!');
-      setTimeout(typeof playRichSuccess === 'function' ? playRichSuccess : playSuccess, 300);
-
-      // Victory Echo: 'How do you say X in Spanish? ... zapato!'
+      // Bilingual echo: AFTER the celebration line finishes, replay the word in the
+      // recorded coral voice (speakForeignWordForItem → recorded clip, iOS-reliable)
+      // and show the badge. The old playVictoryEcho fired 800ms in — cutting "You
+      // found it!" off — and spoke an UNRECORDED "How do you say…" TTS line that is
+      // silent/robotic on iOS, then a TTS foreign word whose speechSynthesis.cancel()
+      // chopped the audio. That was the "starts, cuts off, says the Spanish word" bug.
+      var foundItem = shuffledItems[currentIndex];
       var hasLang = bilingualActive();
-      var echoDuration = 0;
-      if (hasLang && typeof playVictoryEcho === 'function') {
-        // Show translation badge in feedback area
-        var echoResult = (typeof getTranslationByName === 'function') ? getTranslationByName(phTranslationLookupName(foundItemName, currentCategory)) : null;
+      var echoResult = (hasLang && typeof getTranslationByName === 'function')
+        ? getTranslationByName(phTranslationLookupName(foundItemName, currentCategory)) : null;
+      var echoDuration = echoResult ? 4000 : 0;
+
+      speak('You found it! Great job!', function() {
         if (echoResult) {
-          echoDuration = 4000; // extra time for echo
-          setTimeout(function() {
-            feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>'
-              + '<div class="translation-echo">' + echoResult.emoji + ' ' + echoResult.word + '</div>';
-            playVictoryEcho(foundItemName);
-          }, 800);
+          feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>'
+            + '<div class="translation-echo">' + echoResult.emoji + ' ' + echoResult.word + '</div>';
+          if (typeof speakForeignWordForItem === 'function') speakForeignWordForItem(foundItem, function(){});
         }
-      }
+      });
+      setTimeout(typeof playRichSuccess === 'function' ? playRichSuccess : playSuccess, 300);
 
       autoAdvanceTimer = setTimeout(function() {
         resetCameraUI();
