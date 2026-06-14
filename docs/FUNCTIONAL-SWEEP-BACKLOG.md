@@ -2,9 +2,9 @@
 
 **Generated** 2026-06-14 from a multi-agent re-sweep (workflow run `wf_a8b9f974-1f4`), rebuilt after the original 29-agent sweep transcript was purged from temp. This file is the durable, in-git record — do not let it live only in a transcript again.
 
-**184 findings** across 15/20 avenues · **37 verified REAL** · 1 rejected · **146 unverified** (their verifier agents were rate-limited mid-run — treat as candidates, verify on fix).
+**251 findings** across **20/20 avenues** · **37 verified REAL** · 1 rejected · **213 unverified** (verifier agents rate-limited mid-run, plus the 67 review-only gap-fill findings — all treated as candidates, verify on fix).
 
-**Avenues still pending a review pass** (review agent rate-limited, no data yet): a11y, splash-category, copy-i18n, daily-streak, seasonal.
+All 20 avenues now reviewed: the first 15 are in the main sections below; the final 5 (splash-category, daily-streak, seasonal, a11y, copy-i18n) were rate-limited in the main run and re-reviewed in a gap-fill pass — see **"Gap-fill pass"** near the end of this file.
 
 ## How to read
 - `[sev]` = effective severity (verifier-corrected where a verdict exists, else the reviewer's).
@@ -1259,5 +1259,415 @@ NET: real but minor edge-case visual inconsistency (requires 15s idle THEN a fin
     - **what:** `"You're a " + cat.name + ' champion!'` combines the article 'a' with a plural noun for plural-named categories.
     - **repro:** Fully complete Colors or Shapes. Sub reads 'You're a Colors champion!' / 'You're a Shapes champion!'.
     - **fix:** Drop the article for plural names or reword (e.g. 'You're a Color champion!' or 'Colors champion — you found them all!').
+
+
+
+---
+
+# Gap-fill pass — the 5 rate-limited avenues (review-only, unverified)
+
+Added 2026-06-14 from workflow run `wf_76c11773-6a0` (the 5 avenues whose reviewer died in the main sweep). Review-only — no adversarial verification pass, so all are status `?` (candidates). 67 findings.
+
+## Accessibility (`a11y`)
+
+- [ ] **[medium · ?]** Camera button: unlabeled focusable input + invisible keyboard focus
+    - **where:** index.html 88-91
+    - **what:** The primary game action is a <label id="camera-label" role="button" aria-label="Take a photo"> wrapping a file input. In style.css:630-635 the input is hidden with width:0;height:0;opacity:0;pointer-events:none but NOT display:none/visibility:hidden, so it stays in the tab order. Two problems: (1) Keyboard focus lands on the input, but the visible focus ring rule .camera-btn:focus-visible (style.css:128-133) targets the label, which has no tabindex and never receives focus — so there is NO visible focus indicator on the game's main button (WCAG 2.4.7). (2) The focusable input has no accessible name: the aria-label 'Take a photo' is on the non-focusable label (role=button), and the only label text is the aria-hidden 📷 span, so the input's computed name is empty — a screen reader announces an unlabeled file-upload control.
+    - **repro:** Open a game, Tab with a keyboard or VoiceOver/NVDA. Focus moves to #camera-input with no visible ring; the screen reader reads a nameless 'file upload' / 'button'.
+    - **fix:** Make the label the single control: keep role="button" but add tabindex="0" to the label and tabindex="-1" aria-hidden="true" to the input; add a ring via .camera-btn:focus-visible{outline:4px solid #fff;box-shadow:...}. Alternatively add aria-label="Take a photo" directly to the input and add .camera-btn:focus-within{outline...} so the visible label shows the ring.
+
+- [ ] **[medium · ?]** feedback-area (aria-live=assertive) double-announces 'You found it'
+    - **where:** app.js 1527,1550
+    - **what:** #feedback-area is aria-live="assertive" (index.html:86). On a successful find the region is written '🎉 You found it!' at app.js:1527, then in bilingual mode the speak() callback REWRITES the whole region to the same '🎉 You found it!' plus the translation echo at app.js:1550. Because the entire innerHTML is replaced, the assertive region re-announces the identical 'You found it!' a second time before the foreign word. (Even monolingual, handlePhoto first writes the photo-preview img alt 'Your photo' at app.js:1492, so assertive fires on the preview AND the result, interrupting the spoken prompt twice.) This is the documented feedback-area double-fire.
+    - **repro:** Turn on Spanish, find an item: screen reader says 'party popper You found it' then 'party popper You found it [Spanish word]'.
+    - **fix:** On the second write, append only a new translation-echo child node instead of replacing innerHTML (so the success text isn't re-read); or move the celebration text out of the live region and keep one concise polite status. Consider switching aria-live to 'polite' for game feedback.
+
+- [ ] **[medium · ?]** prefers-reduced-motion not honored for the active celebration (canvas emoji rain)
+    - **where:** content/animations/new-celebrations.js 61
+    - **what:** On every find app.js:1529 calls celebrateEmojiRain() (a full-screen requestAnimationFrame canvas particle storm). celebrateEmojiRain (new-celebrations.js:61) and its canvas sibling loop (~line 264) never check matchMedia('(prefers-reduced-motion: reduce)'). Only the FALLBACK fireConfetti (app.js:1748) honors reduced-motion, but it is bypassed whenever new-celebrations.js is loaded (always, per index.html:133). So users who set 'Reduce Motion' still get the full particle storm. The global CSS reduced-motion reset (style.css:2316) only neutralizes CSS animations, not JS canvas.
+    - **repro:** Enable OS Reduce Motion, find an item — a full-screen emoji storm still plays.
+    - **fix:** Add the same guard at the top of celebrateEmojiRain and the other canvas loop: if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; (optionally render a single static sticker instead).
+
+- [ ] **[medium · ?]** Modals lack focus trap / focus move / restore; paywall modal missing dialog role
+    - **where:** paywall.js 162
+    - **what:** The paywall modal (.paywall-modal, paywall.js:162) is a plain <div> with no role="dialog"/aria-modal, so AT never announces a dialog and the background screen stays in the a11y tree. Neither the paywall nor the first-run card (app.js:692-700, which does set role/aria-modal) moves focus into the dialog on open (except the paywall has-code path at paywall.js:193), traps Tab, closes on Esc, or restores focus to the trigger on close. A keyboard user can Tab straight into the obscured screen behind the overlay.
+    - **repro:** Open Unlock Everything, press Tab repeatedly — focus walks onto the category buttons behind the modal; Esc does nothing.
+    - **fix:** Add role="dialog" aria-modal="true" aria-label to .paywall-modal; on open move focus to the first control/the dialog, trap Tab within the modal, close on Escape, and restore focus to the opening control on close. Apply the same focus management to the first-run card.
+
+- [ ] **[medium · ?]** Foreign words missing lang attribute + no RTL handling for Arabic
+    - **where:** app.js 1262
+    - **what:** The printed translation spans — target-translation (app.js:1262), translation-echo (app.js:1551), setup-card-translation (app.js:929) — carry no lang attribute, and <html lang="en"> (index.html:2) is never updated. A screen reader pronounces the Spanish/Mandarin/Arabic word with the English voice (WCAG 3.1.2 Language of Parts). Additionally there is zero RTL handling anywhere (no dir="rtl" ever set), yet Arabic is a supported language (languages-config.js: code 'ar', ar-SA). Arabic word + emoji ordering/punctuation will render with wrong directionality.
+    - **repro:** Select Arabic (or any language), enter a game: the foreign word span has no lang/dir; VoiceOver reads it as English; document stays LTR.
+    - **fix:** When a language is active set the word span's lang (and dir="rtl" for ar) from the language config (code/speechLang already available); set dir on the bilingual containers for RTL languages.
+
+- [ ] **[medium · ?]** Locked categories give no accessible indication of locked state
+    - **where:** app.js 788-799
+    - **what:** Free-tier locked categories render <button class="category-card locked"> whose accessible name is just the content, e.g. 'Animals 5/10 star' — nothing conveys that the tile is locked or that tapping opens a paywall. Locked is purely a CSS filter (style.css:413-415); there is no aria-disabled, no 'locked' text, and no 🔒. This is also inconsistent with story cards, which DO append '(locked)' to aria-label (storyline-mode.js:392).
+    - **repro:** Free tier + VoiceOver on home: every category reads the same with no lock cue; tapping a 'locked' one unexpectedly opens the paywall.
+    - **fix:** Append ' (locked)' to an aria-label on locked category buttons (and/or add a 🔒 with sr-only text), matching the story-card pattern.
+
+- [ ] **[medium · ?]** Game screen has no heading and the target prompt is never announced to AT
+    - **where:** index.html 74-101
+    - **what:** showScreen focuses el.querySelector('h1') || el (app.js:569-571). #game (index.html:74-101) has no <h1>, so focus lands on the bare container. The actual task #target-text ('Find a dog') is set via textContent at app.js:1264 with no role/aria-live, so the prompt is never announced as text on change — the recorded audio clip is not AT-readable text. A screen-reader user lands on an unnamed empty container with no readable prompt.
+    - **repro:** Start a hunt with VoiceOver: focus moves to #game but nothing announces the current target item.
+    - **fix:** Give #target-text role="status" aria-live="polite" aria-atomic="true" (so each new prompt is announced), or add a visually-hidden <h1> to #game so the screen has an announced name.
+
+- [ ] **[low · ?]** Sound toggle button does not expose on/off state
+    - **where:** app.js 373-379
+    - **what:** #sound-toggle keeps a static aria-label="Toggle sound" (index.html:53). toggleSound (app.js:373-379) only swaps the aria-hidden SVG and never sets aria-pressed or updates the label, so a screen-reader user can't tell whether sound is currently on or off.
+    - **repro:** Toggle sound with a screen reader — it always says 'Toggle sound, button' regardless of state.
+    - **fix:** Add aria-pressed and update it in toggleSound and on render (app.js:847-848), or change aria-label to 'Sound on' / 'Sound off' to reflect current state.
+
+- [ ] **[low · ?]** Difficulty selector active state not exposed; star emoji read verbatim
+    - **where:** app.js 727-731
+    - **what:** The diff-btn buttons indicate the selected difficulty only via the CSS .active class — no aria-pressed/aria-current. A screen-reader user can't tell which difficulty is active. The labels also embed bare emoji ('⭐⭐⭐ Hard' reads 'star star star Hard').
+    - **repro:** VoiceOver over Easy/Medium/Hard: none announces which is selected.
+    - **fix:** Add aria-pressed reflecting the active difficulty and wrap the ⭐ run in <span aria-hidden="true">.
+
+- [ ] **[low · ?]** Loading overlay during photo analysis is not announced
+    - **where:** index.html 96-100
+    - **what:** On submit, #loading (containing 'Looking at your photo...') is shown via classList toggle (app.js:1499) but has no role="status"/aria-live and focus isn't moved, so AT gives no feedback that the network identify call is in progress.
+    - **repro:** Submit a photo with a screen reader: silence during the API call until the result fires.
+    - **fix:** Add role="status" aria-live="polite" to #loading (or its <p>).
+
+- [ ] **[low · ?]** Progressbar value is off-by-one and never reaches 100%; no aria-valuetext
+    - **where:** app.js 1267-1269
+    - **what:** aria-valuenow = round(currentIndex/length*100) reflects items STARTED, not completed: the first item announces 0%, and finding the last item routes to showVictory (not showCurrentItem), so the bar never updates to 100 in the a11y tree (e.g., maxes at 80% for a 5-item hunt). There is also no aria-valuetext, so AT only exposes a stalling percentage.
+    - **repro:** With a screen reader, do a 5-item hunt and inspect the progressbar — it goes 0,20,40,60,80 and never 100.
+    - **fix:** Set aria-valuenow to 100 in showVictory (or base it on found count), and add aria-valuetext like 'Item 3 of 5'.
+
+- [ ] **[low · ?]** Emoji read verbatim inside live region and headings
+    - **where:** app.js 1527
+    - **what:** Decorative emoji are placed unguarded inside the assertive feedback region and headings: '🎉 You found it!' (app.js:1527,1550) reads 'party popper, You found it'; the victory h1 '🎉 You Did It! 🎉' (index.html:106) reads 'party popper You Did It party popper' on focus; cat-progress '5/10 ⭐' reads '...star'. The codebase already uses <span aria-hidden="true"> for icon-button emoji, so this is inconsistent.
+    - **repro:** Find an item / reach victory with a screen reader; emoji names are spoken around the message.
+    - **fix:** Wrap decorative emoji in <span aria-hidden="true"> (e.g. '<span aria-hidden="true">🎉</span> You found it!') in the feedback writes, victory h1, and category progress.
+
+- [ ] **[low · ?]** Pinch-zoom disabled via user-scalable=no
+    - **where:** index.html 6
+    - **what:** The viewport meta sets user-scalable=no, which blocks pinch-to-zoom for everyone, including low-vision parents using the setup screen, paywall copy, and unlock-code entry. This is a WCAG 1.4.4 / 1.4.10 failure.
+    - **repro:** On a phone, try to pinch-zoom the paywall pricing or code field — zoom is blocked.
+    - **fix:** Remove user-scalable=no (keep width=device-width, viewport-fit=cover). Toddler mis-zoom is rare and reversible; the WCAG benefit for parent-facing text outweighs it.
+
+- [ ] **[cosmetic · ?]** No landmark structure (no main/header/nav)
+    - **where:** index.html 26
+    - **what:** The body has no landmark roles — no <main>/role="main", header, or nav. Screen-reader landmark navigation (rotor / 'D' key) has nothing to jump to across the SPA.
+    - **repro:** Open the VoiceOver/NVDA landmarks list — empty.
+    - **fix:** Wrap the active screen area in <main> or add role="main" to the screen container.
+
+- [ ] **[cosmetic · ?]** rotate-lock message stays hidden from AT when displayed
+    - **where:** index.html 28-31
+    - **what:** #rotate-lock is permanently aria-hidden="true". When the phone is rotated to landscape it becomes visible ('Turn your device upright to play!') but remains aria-hidden, so a screen-reader user gets no explanation for why the game stopped responding.
+    - **repro:** Rotate to landscape with a screen reader running — no announcement of the rotate prompt.
+    - **fix:** Toggle aria-hidden off (or use role="alert") when the rotate lock is shown, e.g. via the same orientation media query / a small JS hook.
+
+## Copy & grammar (`copy-i18n`)
+
+- [ ] **[medium · ?]** Color "orange" speaks the fruit prompt (audio key collision on find-orange)
+    - **where:** app.js 1091-1092
+    - **what:** textToAudioKey() strips the leading article/quantifier with /^Can you find (?:a |an |some |something )?(.+)\?$/ and keys on the remaining word. The Colors prompt 'Can you find something orange?' and the Food prompt 'Can you find an orange?' therefore both resolve to the SAME key 'find-orange'. Only one clip exists (sw.js line 154 precaches a single ./audio/find-orange.mp3), so the Colors hunt plays whichever wording was recorded (the fruit prompt 'Can you find an orange?') while the on-screen text says 'Can you find something orange?'. Spoken copy contradicts displayed copy for that one item. (Note: the foreign-word path is fine — it uses the distinct 'orange (color)'→'orange-color' slug.)
+    - **repro:** Pick Colors, advance to the 'orange' target. Screen reads 'Can you find something orange?' but the recorded voice says the fruit phrasing.
+    - **fix:** Give the color a distinct audio key (e.g. special-case currentCategory==='colors' && name==='orange' → 'find-color-orange', or key colors prompts as 'find-color-<n>') and record/precache that clip; or in textToAudioKey detect the 'something ' branch and emit a color-specific key.
+
+- [ ] **[medium · ?]** Terms of Service claims the parent dashboard is Premium-only, but it's free for everyone
+    - **where:** C:/dev/picture-hunt/terms.html 28
+    - **what:** Terms says 'Premium unlocks all 10 categories, all 10 languages, every story quest, the parent dashboard, unlimited finds, and cross-device progress'. But parent-dashboard.js initDashboard() unconditionally appends the 📊 Stats button to the splash for ALL users with no premium gate (showDashboard has no isPremium check), so free users can open the full parent dashboard. The landing page and the paywall feature list do NOT list the dashboard as a paid perk — only Terms does — making Terms inaccurate.
+    - **repro:** As a free (non-unlocked) user, tap the 📊 button on the home screen — the full Progress dashboard opens.
+    - **fix:** Remove 'the parent dashboard' from the Premium list in terms.html (the dashboard is free), or gate it behind Paywall.isPremium() if it's meant to be paid.
+
+- [ ] **[medium · ?]** Landing page lists "Daily challenge" as BOTH a free feature and a Full Access perk
+    - **where:** C:/dev/picture-hunt/index.html 147
+    - **what:** The Free plan lists '1 story quest + daily challenge' (index.html:147) while the Full Access plan lists 'Daily challenge & streaks' (index.html:163) as a paid feature, and the paywall feature grid also advertises '📅 Daily challenge + streak' (paywall.js:172). The daily challenge is actually free (paywall.js header line 5 and daily-challenge-streak.js getDailyItem gives free users a free-category daily item, with allowOverCap so it's always playable). Presenting the same feature in both the free and paid columns is contradictory and could read as misleading. Terms.html correctly lists it only under Free.
+    - **repro:** Read the two pricing columns on the landing page side by side — 'daily challenge' appears in both.
+    - **fix:** Keep the daily challenge only in the Free column; if streak persistence/sync is the paid differentiator, word the paid bullet as that specifically (e.g. 'Streaks synced across devices').
+
+- [ ] **[low · ?]** Victory subtitle "You're a {Category} champion!" yields a/an + plural errors
+    - **where:** app.js 1404
+    - **what:** subEl.textContent = 'You\'re a ' + cat.name + ' champion!' injects the raw category name after the article 'a'. For the four plural-named categories this is ungrammatical: 'You\'re a Animals champion!' (needs 'an', and 'a Animals' is wrong), 'You\'re a Things champion!', 'You\'re a Shapes champion!', 'You\'re a Colors champion!'. Singular/holiday categories (Food, Furniture, Clothing, Halloween, Christmas, Spring) read fine.
+    - **repro:** Complete every item in Animals; victory subtitle shows 'You're a Animals champion!'.
+    - **fix:** Drop the article: 'You\'re a {Category} champion!' → '{Category} champion! 🏆' or 'You mastered {Category}!' so it reads regardless of plurality.
+
+- [ ] **[low · ?]** Age range inconsistent: marketing says "as young as 2" (open upper), Terms says "ages 2-5"
+    - **where:** C:/dev/picture-hunt/terms.html 51
+    - **what:** The landing page repeatedly says 'kids as young as 2' with an open-ended upper bound ('bigger kids enjoy the hunt too') — index.html lines 8, 12, 20, 43, 178 — and og-card.html:37 says 'as young as 2'. But terms.html:51 states 'Picture Hunt is designed for use by children ages 2-5'. A reader comparing the marketing claim and the legal terms sees two different audiences (open-ended vs capped at 5).
+    - **repro:** Compare landing FAQ 'Built for kids as young as 2' with terms.html 'children ages 2-5'.
+    - **fix:** Choose one canonical age statement and use it everywhere (e.g. 'ages 2-5' on both, or 'as young as 2' in both).
+
+- [ ] **[low · ?]** Paid tier is branded inconsistently as "Premium" and "Full Access"
+    - **where:** paywall.js 123
+    - **what:** The same paid product is called two different names. Landing names the plan 'Full Access' (index.html:155) but its own benefit copy says 'Premium syncs it across yours' (index.html:121). The paywall uses 'Premium' in some reasons ('🔒 Premium Category' / 'with Premium' — paywall.js:123,126) and 'Full Access' in others (paywall.js:129,132), and the in-app badge is '⭐ PREMIUM' (app.js:833). privacy.html and terms.html use 'Premium' throughout. This split branding is confusing for a purchase decision.
+    - **repro:** Open the paywall via a locked category ('Premium Category') vs via a locked language ('with Full Access') — two names for the same unlock.
+    - **fix:** Standardize on one customer-facing name (recommend 'Full Access', the plan label) across paywall.js, the badge, privacy.html and terms.html.
+
+- [ ] **[low · ?]** Hardcoded "5" in the daily-cap paywall headline not derived from FREE_DAILY_CAP
+    - **where:** paywall.js 125
+    - **what:** The headline literal is '🌙 That\'s 5 finds today!' while the cap is defined as FREE_DAILY_CAP = 5 (paywall.js:25). The number is duplicated as a string literal rather than interpolated, so changing the cap silently leaves stale marketing copy here (and in landing '5 free finds a day' / terms 'five finds per day').
+    - **repro:** Change FREE_DAILY_CAP to 3; the cap enforces 3 but the modal still says 'That's 5 finds today!'.
+    - **fix:** Interpolate: "🌙 That's " + FREE_DAILY_CAP + " finds today!" and keep landing/terms numbers in sync.
+
+- [ ] **[low · ?]** Treasure Hunt story tells the child a fork will work, but only a plate is accepted
+    - **where:** storyline-mode.js 176
+    - **what:** The step bridge says 'Last clue — something shiny like a gold coin! A plate or a fork will do!' but the step item is 'plate' (category household). identifyObject() checks the plate-specific override prompt (app.js plate override accepts only a plate/dinner plate), so a child who photographs a fork is told 'Not quite!' despite the narration explicitly inviting a fork.
+    - **repro:** Play Treasure Hunt to the final step, photograph a fork — rejected even though the prompt said a fork would do.
+    - **fix:** Reword the bridge to reference only a plate ('A shiny plate will do!'), or broaden the plate step to accept a fork.
+
+- [ ] **[low · ?]** Bilingual word badge has no RTL/bidi handling — Arabic word + flag emoji can mis-order
+    - **where:** app.js 1262
+    - **what:** The translation badge is built as langResult.emoji + ' ' + langResult.word inside a span with no dir attribute (app.js:1262; same pattern storyline-mode.js:551 and the success echo app.js:1551). For Arabic (an RTL language, speechLang ar-SA) the RTL word is placed in an LTR context with a leading 🇸🇦 emoji and no dir='auto'/'rtl', so the emoji and word ordering and any trailing punctuation can render in the wrong visual order. The page also never sets dir='rtl' when Arabic is active.
+    - **repro:** Set learning language to Arabic, start any hunt; inspect the '🇸🇦 <arabic>' badge ordering vs a native RTL rendering.
+    - **fix:** Add dir="auto" to the .target-translation span (and the .translation-echo / story translation span), or wrap the foreign word in its own <bdi> element.
+
+- [ ] **[cosmetic · ?]** Victory stat "X/Y unique {category} found!" reads ungrammatically for mass/proper-noun categories
+    - **where:** app.js 1405-1406
+    - **what:** statsEl uses ' unique ' + cat.name.toLowerCase() + ' found!'. Count-noun categories are fine ('22 unique things found!') but mass/proper-noun categories read badly: '11/11 unique food found!', '8/8 unique clothing found!', '9/9 unique furniture found!', '10/10 unique halloween found!', '11/11 unique christmas found!', '10/10 unique spring found!'. 'unique food/clothing/furniture/halloween' is not idiomatic English.
+    - **repro:** Complete the Clothing or Halloween category; stat shows 'unique clothing found!' / 'unique halloween found!'.
+    - **fix:** Use a neutral noun ('X/Y items found!') or drop 'unique', or store a display-plural per category.
+
+- [ ] **[cosmetic · ?]** Hint copy for 'dress' carries a gender stereotype
+    - **where:** hint-system.js 132
+    - **what:** The tier-3 hint for 'dress' is 'Girls wear it and it goes down to the knees!'. Gendering the garment ('Girls wear it') is an avoidable stereotype in a young-kids product and is the only such phrasing in the hint set.
+    - **repro:** In Clothing, target 'dress', exhaust hints to tier 3.
+    - **fix:** Reword to 'You can wear it and it goes down to your knees!' (and re-record the matching hint clip).
+
+- [ ] **[cosmetic · ?]** "Story Quest(s)" capitalization inconsistent across surfaces
+    - **where:** C:/dev/picture-hunt/index.html 115
+    - **what:** The feature is rendered with inconsistent casing: in-app/paywall use Title Case ('Story Quests' app.js:866; 'More Story Quests'/'every Story Quest' paywall.js:128-135), while the landing uses lower/sentence case ('Story quests keep them hooked' index.html:115, '1 story quest' index.html:147, 'Story quest adventures' index.html:163) and terms uses 'story quest' (terms.html:27-28).
+    - **repro:** Compare the landing benefit heading 'Story quests' with the in-app hero 'Story Quests'.
+    - **fix:** Pick one casing (recommend Title Case 'Story Quests' as a product-feature name) and apply consistently.
+
+- [ ] **[cosmetic · ?]** Parent dashboard duration units inconsistent ("min" vs "minutes")
+    - **where:** parent-dashboard.js 328
+    - **what:** Recent session rows render ' — ' + mins + ' min' (line 328) while the total playtime line renders totalMins + ' minutes' (line 339). Same screen uses two different unit labels ('min' vs 'minutes') for the same quantity.
+    - **repro:** Open the dashboard after a few sessions; a row shows '3 min' while the footer shows 'Total playtime: 12 minutes'.
+    - **fix:** Use one form consistently (e.g. 'min' in both, or 'minutes' in both).
+
+- [ ] **[cosmetic · ?]** Streak badge popup uses singular 'Day' for all counts
+    - **where:** content/daily-challenge-streak.js 235
+    - **what:** The popup text is milestone + ' Day Streak!' producing '3 Day Streak!', '7 Day Streak!', etc. As an attributive it's understandable but reads awkwardly without a hyphen; the conventional form is 'N-Day Streak'.
+    - **repro:** Hit a 7-day streak milestone; popup reads '7 Day Streak!'.
+    - **fix:** Use milestone + '-Day Streak!' ('7-Day Streak!').
+
+- [ ] **[cosmetic · ?]** APP_README.md is stale — wrong model, wrong item list, placeholder setup
+    - **where:** APP_README.md 3-39
+    - **what:** The README no longer matches the app: it instructs replacing 'YOUR_API_KEY' (the app uses the Worker proxy, no key paste), says photos go to 'Gemini 2.0 Flash' (app.js uses gemini-2.5-flash, line 1690), claims 'After all 8 items' and lists only 8 items 'Shoe, Cup, Ball, Teddy Bear, Book, Apple, Spoon, Pillow' (there are now 10 categories / 100+ items), says 'Audio: Web Speech API — no audio files needed' (the app ships recorded MP3s as the primary voice), and points at an old openclaw workspace path.
+    - **repro:** Open play/APP_README.md and compare against current app.js (model id, proxy, item count).
+    - **fix:** Refresh or remove APP_README.md so it reflects the proxy setup, gemini-2.5-flash, the recorded-audio pipeline, and the current category/item counts.
+
+## Daily challenge & streak (`daily-streak`)
+
+- [ ] **[high · ?]** Freeze never saves the streak: checkAndUpdateStreak is non-idempotent and runs 2+ times per page load (init + splash render)
+    - **where:** content/daily-challenge-streak.js 115-142 (gap===2 branch); app.js:1882 (init) + app.js:807 (renderSplash→addCardToSplash→checkAndUpdateStreak at :251)
+    - **what:** checkAndUpdateStreak() mutates freeze/streak state from `gap` but never records that it already processed the day, and it does NOT advance lastDate when a freeze is applied. On a 'missed exactly one day' day (gap===2), the FIRST call decrements freezes 1→0 and preserves the streak; the SECOND call sees gap still 2 but freezes now 0, falls into the else branch, and does `data.streak = 0; data.badges = []` — breaking the streak. The function is called at least twice on every cold start: DailyStreak.init() at app.js:1882, then renderSplash() → addCardToSplash() → checkAndUpdateStreak() at app.js:807/daily-challenge-streak.js:251. So for any established user (lastFreezeRefill already set within the last 7 days, the steady state), the freeze is consumed by call #1 and the streak is wiped by call #2 on the very same load — before the child can ever complete today's item. The freeze feature (advertised retention anchor) effectively never works. Navigating game→splash→splash re-triggers it too.
+    - **repro:** Set PH_DAILY = {streak:5, lastDate:'<2 days ago>', freezes:1, badges:[3], lastFreezeRefill:'<3 days ago>', todayDone:true}. Reload the app and land on the splash. Inspect PH_DAILY: streak is now 0 and badges []. The 'Daily Challenge' card shows 🔥 0 even though a freeze was available.
+    - **fix:** Make checkAndUpdateStreak idempotent per local day. At the top, after computing today: `if (data.lastProcessedDate === today) return data;` then set `data.lastProcessedDate = today;` before running the gap/freeze logic, and saveData. This guarantees the freeze is consumed (and the streak evaluated) exactly once per calendar day no matter how many times init/addCardToSplash/renderSplash call it.
+
+- [ ] **[medium · ?]** Milestone recorded clip (streak-milestone.mp3) is cut off by the 'You found it!' line — single audio channel conflict
+    - **where:** content/daily-challenge-streak.js 240 (speak in showBadgeNotification); app.js:1524 (onItemFound) then app.js:1548 (speak 'You found it! Great job!')
+    - **what:** On a milestone day, app.js:1524 calls DailyStreak.onItemFound → completeToday → showBadgeNotification → speak('Amazing! What a streak! Keep it up!') (mapped to the recorded key 'streak-milestone', and audio/streak-milestone.mp3 does exist). But ~24 lines later, synchronously in the same submitPhoto tick, app.js:1548 calls speak('You found it! Great job!'). Per the one-channel rule, speak() stops currentAudioSource and cancels speechSynthesis, so whichever resolves last wins — the milestone clip is cancelled or chopped. The payoff moment (the only time the recorded streak-milestone clip is ever used) is effectively never heard cleanly.
+    - **repro:** Build a streak to 2, then find today's daily item to hit the 3-day milestone. You hear 'You found it! Great job!' but not 'Amazing! What a streak!' (or it cuts mid-word).
+    - **fix:** Sequence the audio instead of racing it: pass the milestone announcement through the onEnd callback of the 'You found it! Great job!' speak() in submitPhoto (or have onItemFound defer the milestone speak via the same callback chain), so the recorded streak-milestone clip plays after the success line finishes. Optionally suppress the generic success line on milestone days.
+
+- [ ] **[medium · ?]** Daily card streak count and header emoji go stale after completion (only the status text updates)
+    - **where:** content/daily-challenge-streak.js 316-325 (onItemFound card update) and 249 (addCardToSplash dedupe guard)
+    - **what:** When the daily item is found, onItemFound updates only the `.daily-status` element to '✅ Done!'. It never updates the `.daily-streak` value ('🔥 N') or the header `streakEmoji`. Meanwhile addCardToSplash early-returns at line 249 whenever #daily-challenge-card already exists, so re-entering the splash does NOT re-render the card with the new count. Result: after completing the daily and incrementing the streak (e.g., 2→3), the card keeps showing '🔥 2' and the old 📅 header emoji (instead of 🌟) until a full page reload. The streak the child just earned is invisible on the card.
+    - **repro:** With streak 2, complete the daily challenge, then navigate back to the splash. The card reads '✅ Done!' but still '🔥 2'. Reload the page → it finally shows '🔥 3'.
+    - **fix:** In onItemFound's card-update block, also set the `.daily-streak` text to '🔥 ' + updatedData.streak and recompute the header streakEmoji; OR remove the existing card and call addCardToSplash() to fully re-render after completion.
+
+- [ ] **[medium · ?]** badges / freezes field absence crashes completeToday and silently breaks streaks for returning/migrated users
+    - **where:** content/daily-challenge-streak.js 111-116 (freeze check), 170-176 (badges.indexOf)
+    - **what:** checkAndUpdateStreak only initializes data.badges and data.freezes in the `!data.lastDate` (first-ever) branch. Any returning user whose stored PH_DAILY has a lastDate but is missing these fields (older schema before badges existed, partial/corrupt write, or hand-edited storage) hits two faults: (1) gap===2 evaluates `data.freezes > 0` where freezes is undefined → false → the else branch resets the streak even though a freeze should have applied; (2) completeToday at line 171 calls `data.badges.indexOf(m)` on an undefined badges → TypeError, aborting the completion (streak/lastDate never saved, daily never credited).
+    - **repro:** Set PH_DAILY = {streak:4, lastDate:'<yesterday>'} (no badges/freezes). Find today's daily item → console throws 'Cannot read properties of undefined (reading indexOf)' and todayDone is never persisted.
+    - **fix:** Normalize the shape on every read: in getData() (or at the top of checkAndUpdateStreak and completeToday) default `data.badges = data.badges || []` and `data.freezes = (typeof data.freezes === 'number') ? data.freezes : FREEZES_PER_WEEK` before any logic uses them.
+
+- [ ] **[medium · ?]** Backward clock / westward timezone travel wipes the streak AND all badges; forward clock trivially farms it
+    - **where:** content/daily-challenge-streak.js 108-132 (gap branches; negative gap falls through to else reset)
+    - **what:** gap = daysBetween(lastDate, today) can be negative when the device's local date moves backward (timezone travel across the date line, DST/clock correction, or manual clock change). A negative gap matches neither gap===1 nor gap===2, so it falls into the final else branch: `data.streak = 0; data.badges = []` — destroying the streak and every earned badge. Conversely, because there is no server validation, advancing the clock by one day each launch increments the streak indefinitely (clock-manipulation farming). For a 3-7 audience the farming is low-impact, but the backward-clock data loss is a real, silent loss of legitimately-earned progress for a family that travels or whose device clock gets corrected.
+    - **repro:** Set PH_DAILY lastDate to today and streak/badges populated. Set the device clock back one day, reopen the app → streak resets to 0 and badges are cleared.
+    - **fix:** Treat a negative gap as 'no change' rather than a break: `else if (gap < 0) { /* clock moved back — leave streak/badges untouched, just todayDone=false */ } else { reset }`. (Streak farming via forward clock is acceptable for this product; document it as a known non-goal.)
+
+- [ ] **[low · ?]** getDailyItem is recomputed at find-time and at render-time — pool changes (premium unlock, seasonal toggle, midnight rollover) silently fail to credit the daily
+    - **where:** content/daily-challenge-streak.js 185-225 (pool depends on Paywall.isPremium + SeasonalManager filter), 309-313 (onItemFound re-derives daily)
+    - **what:** The daily item is not cached — getDailyItem() rebuilds the eligible pool (tier + season filtered) and re-hashes the date on every call. addCardToSplash renders the card from one computation; onItemFound re-derives the daily item to compare against the found item. If the pool changes between render and find — the user unlocks Premium mid-session (free pool → full pool), a parent flips a seasonal pack override (changes pool length → different hash%len), or the local day rolls over past midnight while the app stays open (todayStr changes) — the two computations disagree and the displayed/hunted item no longer equals the recomputed daily item, so the streak is silently not credited despite the child finding exactly what the card showed.
+    - **repro:** Open the splash so the daily card renders. In another tab/parent settings, set a seasonal pack override 'on' (changes pool size). Find the item shown on the card → onItemFound's daily.item.name no longer matches → completeToday never runs.
+    - **fix:** Compute the daily item once per day and cache it in PH_DAILY (e.g., {dailyKey: today, catId, itemName}); have addCardToSplash and onItemFound both read that cached selection instead of recomputing, so render-time and find-time always agree.
+
+- [ ] **[low · ?]** Over-cap exemption yields a full multi-item session past the 5/day cap, not just one find
+    - **where:** paywall.js 106-110 (canPlay allowOverCap) ; app.js:1516 (recordPlay per find)
+    - **what:** The daily card launches with allowOverCap, bypassing the daily-cap gate at canPlay (paywall.js:109). The cap is only enforced at launch; recordPlay (app.js:1516) increments per find and is never re-checked mid-hunt. Because startNewGame builds a full shuffled hunt (forced daily item first, then the rest of the free category), a capped free user who launches via the daily card can keep finding every item in that session — each recording a play — not just the single daily item. The card only goes inert after the daily item is found (onItemFound), but the remaining items in the already-launched hunt stay playable. It is bounded to one over-cap session per day (returning to a normal category is blocked once playsToday>5), so impact is small.
+    - **repro:** As a free user, exhaust 5 finds. Launch the daily challenge card and keep photographing items — every find after the daily item still records and celebrates, exceeding the advertised 5/day.
+    - **fix:** If the intent is 'one daily find past the cap', end or lock the session after the forced daily item is found, or in submitPhoto stop counting/allowing finds once playsToday>=cap unless the current item is the daily forced item.
+
+- [ ] **[low · ?]** Paywall advertises 'Daily challenge + streak' as a Premium-only perk, but it is a free-tier feature
+    - **where:** paywall.js 172
+    - **what:** The paywall feature list (shown on every upgrade prompt) includes '📅 Daily challenge + streak' as a reason to buy Premium. But the daily challenge IS part of the free tier — paywall.js header comment (lines 3-7) lists 'Daily Challenge' under the free tier, and getDailyItem deliberately restricts free users to free-category items so they CAN keep the streak without paying. Listing a free feature as a premium selling point is misleading copy and undercuts the freemium hook.
+    - **repro:** Trigger any paywall (e.g., tap a locked category) → the feature list shows 'Daily challenge + streak' even though free users already have it.
+    - **fix:** Remove '📅 Daily challenge + streak' from the premium feature list, or reword it to a genuinely premium aspect (e.g., 'Daily challenge across all 10 categories').
+
+- [ ] **[low · ?]** lastFreezeRefill not initialized at first-run, so the first freeze use triggers an immediate same-call refill (effectively a free extra freeze)
+    - **where:** content/daily-challenge-streak.js 92-101 (init block omits lastFreezeRefill), 135-138 (refill condition uses !data.lastFreezeRefill)
+    - **what:** The first-ever init branch sets freezes but never sets lastFreezeRefill. The refill condition is `if (!data.lastFreezeRefill || daysBetween(...) >= 7)`. So the first checkAndUpdateStreak that gets past the early returns refills freezes and sets lastFreezeRefill = today. If that first qualifying call is a gap===2 day, the freeze is decremented 1→0 and then immediately refilled to 1 in the same call (because !lastFreezeRefill is still true), granting an unintended bonus freeze. Minor inconsistency in the '1 freeze per week' guarantee.
+    - **repro:** Fresh install, complete day 1, skip day 2, open on day 3 (gap 2): the freeze is consumed and refilled in the same checkAndUpdateStreak call so freezes stays 1.
+    - **fix:** Set data.lastFreezeRefill = todayStr() in the first-run init block (lines 92-101) so the weekly clock starts at install rather than at first freeze evaluation.
+
+- [ ] **[low · ?]** Daily card and milestone popup are hardcoded English — no i18n / RTL handling
+    - **where:** content/daily-challenge-streak.js 234-235 (badge popup text), 261-275 (card labels: 'Daily Challenge', 'Find this today!', '✅ Done!')
+    - **what:** All daily-feature UI strings ('Daily Challenge', 'Find this today!', '✅ Done!', 'N Day Streak!') are hardcoded English. The app ships multi-language support including Arabic (RTL). If the surrounding UI is meant to localize, these strings are an i18n gap; and the card (inserted at grid.firstChild) plus the emoji-then-text layout are not adjusted for RTL.
+    - **repro:** Switch the app to a non-English/RTL locale (where other UI localizes) — the daily card and badge popup remain English LTR.
+    - **fix:** Route these strings through the same localization mechanism the rest of the UI uses, and mirror the card layout under [dir=rtl]. If the UI is intentionally English-only, document that so this is a known non-goal.
+
+- [ ] **[low · ?]** SW precaches daily-challenge-streak.js/.css without ?v while index.html requests them with ?v=129; cache.match has no ignoreSearch
+    - **where:** sw.js 45-46 (PRECACHE_URLS bare paths), 281 (caches.match(event.request) — no ignoreSearch); index.html:23,135 (?v=129 requests)
+    - **what:** PRECACHE_URLS lists './content/daily-challenge-streak.js' and '.css' with no query string, but index.html loads them as '...?v=129'. The fetch handler uses caches.match(event.request) without {ignoreSearch:true}, so the versioned request never matches the precached bare-URL entry — the precache entry is dead and the file is only available offline after the runtime stale-while-revalidate path caches the versioned URL on first online load. CACHE_VERSION ('ph-v129') and the ?v=129 in index.html do match, so version atomicity is fine; this is the query-vs-precache mismatch. Note: this is an app-wide pattern (all PRECACHE_URLS are bare while index.html versions every asset), not unique to the daily files, but it does affect first-load offline availability of the daily feature.
+    - **repro:** Hard-reset caches, install the SW, then go offline before the page fetches content/daily-challenge-streak.js?v=129 → the request misses the precache (bare URL) and there is no network → daily module fails to load on a cold offline first run.
+    - **fix:** Either add the ?v=NNN suffix to the PRECACHE_URLS entries (keeping them in lockstep with index.html and CACHE_VERSION), or pass {ignoreSearch:true} to caches.match in the fetch handler so versioned requests resolve against the precached bare URLs.
+
+- [ ] **[cosmetic · ?]** Count strings not pluralized; '🔥 0' shown for a zero streak
+    - **where:** content/daily-challenge-streak.js 235 ('N Day Streak!'), 267 ('🔥 ' + data.streak)
+    - **what:** The milestone popup renders '<N> Day Streak!' with no pluralization (e.g., '3 Day Streak!' rather than '3-Day Streak' or '3 Days'). The card header always renders '🔥 ' + data.streak, so a brand-new or just-broken user sees a flame icon next to '0' ('🔥 0'), which reads oddly for a zero streak.
+    - **repro:** New user opens splash → card shows '🔥 0'. Hit a 3-day milestone → popup says '3 Day Streak!'.
+    - **fix:** Hyphenate the milestone label ('3-Day Streak!') or pluralize, and hide the 🔥 count (or show '📅 New!') when data.streak === 0.
+
+- [ ] **[cosmetic · ?]** dailyPromptText article grammar fails for plural/mass nouns lacking speakOverride (aria-label)
+    - **where:** content/daily-challenge-streak.js 35-39
+    - **what:** dailyPromptText falls back to 'Can you find ' + (vowel ? 'an ' : 'a ') + name + '?'. The article logic only checks the leading vowel, so a plural or mass-noun item without a speakOverride produces 'an apples?' / 'a stairs?'. This string is used for the card's aria-label (line 293), so screen-reader users hear the ungrammatical phrasing.
+    - **repro:** If a free-pool item named e.g. 'apples' (no speakOverride) is the daily item, the card aria-label reads 'Daily challenge: Can you find an apples?'.
+    - **fix:** Ensure plural/mass items carry a speakOverride, or detect trailing 's'/known mass nouns and drop the article ('Can you find apples?').
+
+- [ ] **[cosmetic · ?]** Dead always-true condition `data.freezes >= 0` in completeToday
+    - **where:** content/daily-challenge-streak.js 158
+    - **what:** completeToday's freeze-path guard is `else if (daysBetween(data.lastDate, today) === 2 && data.freezes >= 0)`. freezes is always >= 0, so the condition is meaningless — it does not actually verify a freeze was available (that decision was already made, or not made, in checkAndUpdateStreak). It happens to produce the right result only because the subsequent `if (data.streak === 0) data.streak = 1` patches the no-freeze case, but the code is misleading and fragile.
+    - **repro:** Code read only.
+    - **fix:** Either remove the `&& data.freezes >= 0` tautology, or replace this whole reconstruction with a single source of truth (have checkAndUpdateStreak set an explicit flag like data.streakContinues that completeToday reads).
+
+## Seasonal manager (`seasonal`)
+
+- [ ] **[medium · ?]** Seasonal victory voice always says "You found ALL the spooky things!" even on a partial/Easy hunt — and never plays the "champion" celebration when a seasonal pack is truly 100% complete
+    - **where:** app.js 1423-1435
+    - **what:** In the victory handler, `complete = found >= total` is computed against the WHOLE category (app.js:1392-1394), and the visual stat line + subtitle correctly distinguish complete vs partial (app.js:1404-1406, e.g. shows "🎃 5/10" with no 🏆). But the seasonal voice branch ignores `complete` entirely: `if (seasonalVictory[currentCategory]) speak('You found all the spooky things! Happy Halloween!')`. On Easy difficulty (default for 3-5yo) the hunt is filtered to only d:1 items, so a Halloween hunt that finds 5 of 10 items still triggers the victory screen with complete=false — the screen shows "5/10" (no trophy) while the voice declares "You found ALL the spooky things!". Voice contradicts the on-screen count. Conversely, when a seasonal pack IS fully complete (10/10 🏆), the festive message fires but the richer non-seasonal "Amazing! ... You are a champion!" celebration (app.js:1432-1434) is never reached for seasonal packs, so seasonal completion is under-celebrated.
+    - **repro:** Premium user, set difficulty to Easy, play Halloween in October, find the ~5 easy items to win the hunt. Victory screen shows "🎃 5/10" with no trophy but the narrator says "You found all the spooky things! Happy Halloween!".
+    - **fix:** Gate the festive line on completion: `if (complete && seasonalVictory[currentCategory]) { speak(seasonalVictory[currentCategory]); } else { speak(complete ? 'Amazing! ... champion!' : 'You did it! You found everything! Great job!'); }`. That keeps the holiday payoff for true 10/10 completion and stops the false "found all" claim on partial/Easy hunts.
+
+- [ ] **[medium · ?]** Tapping a seasonal toggle in the parent dashboard gives no visual feedback — refreshUI() only re-renders the splash, not the open dashboard
+    - **where:** content/seasonal-manager.js 250-255
+    - **what:** The seasonal toggle buttons are rendered into the parent dashboard (parent-dashboard.js:344-348 -> renderSeasonalToggles). Each button's onclick is `SeasonalManager.setOverride(packId,val); SeasonalManager.refreshUI();` (seasonal-manager.js:231-232). The active state (green 2px border, background) and the status line ("In season!"/"Available Oct…"/"Enabled year-round") are baked into the generated HTML at render time (seasonal-manager.js:224-236). But refreshUI() only calls renderSplash() — it never re-renders #dashboard-content. Since the dashboard overlay sits on top of the splash, the parent sees the toggle they just tapped NOT change to the active style and the status text NOT update. The override is saved correctly, but the control looks broken/unresponsive, inviting repeated taps.
+    - **repro:** Open 📊 dashboard, scroll to 🎃 Seasonal Hunts, tap "Always" on Halloween. The button does not visually become active and the status text under "Halloween 🎃" does not change until you close and reopen the dashboard.
+    - **fix:** Make refreshUI() also refresh the dashboard when it's visible: after renderSplash(), add `var d = document.getElementById('dashboard-screen'); if (d && d.style.display !== 'none' && typeof _renderDashboard === 'function') _renderDashboard();` (_renderDashboard is a global in parent-dashboard.js). Alternatively re-render just the seasonal-toggles container.
+
+- [ ] **[medium · ?]** Sticker book ignores SeasonalManager — shows out-of-season Halloween/Christmas/Spring sections year-round AND counts all 31 seasonal items in the total, making "You collected all the stickers!" effectively unreachable
+    - **where:** content/sticker-book.js 72-79
+    - **what:** Every other surface filters seasonal packs by visibility — renderSplash (app.js:774), renderSetupTabs (app.js:894), dashboard category list (parent-dashboard.js:224-231), dashboard all-complete check (parent-dashboard.js:118-128), and daily challenge (daily-challenge-streak.js:196-197). The sticker book does NOT. getTotalPossible() sums `Object.keys(CATEGORIES)` unconditionally (sticker-book.js:75-77), so the 31 seasonal items are always in the denominator, and the render loop iterates raw CATEGORY_ORDER (sticker-book.js:129-176) so a child in July sees Halloween/Christmas/Spring sections full of ❓ locked slots they cannot fill out of season (and free users can never fill them at all, since seasonal packs are premium). Net effect: the "X/Y" count and progress bar can essentially never reach 100%, and the completion celebration `if (totalCount >= totalPossible) speak('You collected all the stickers! Amazing!')` (sticker-book.js:190) — i.e. stickers-amazing.mp3 — becomes dead/unreachable in normal use. It is also a UX inconsistency: holiday content is surfaced off-season here but hidden everywhere else. Minor robustness aside: the loop also lacks the null-guard on `cat` that the dashboard has (sticker-book.js:131-133 dereferences cat.items with no `if (!cat) return`).
+    - **repro:** In June (or as a free user any time), open the sticker book: Halloween, Christmas and Spring sections appear with ❓ slots, and the header count denominator includes those 31 unfillable items, so it never reads 100%.
+    - **fix:** Apply seasonal filtering consistently: in both getTotalPossible() and the section loop, skip seasonal packs that aren't visible, e.g. wrap with `if (CATEGORIES[catId].seasonal && typeof SeasonalManager !== 'undefined' && !SeasonalManager.isPackVisible(catId)) return;` (mirror parent-dashboard.js:124). That makes the denominator track visible content so 100%/the all-stickers celebration can fire, and stops off-season holiday sections from showing.
+
+- [ ] **[medium · ?]** Seasonal find-prompt audio (29 recorded clips) is absent from sw.js PRECACHE_URLS even though every category-intro and victory clip is precached — seasonal hunts fall back to robot voice offline and after each cache-version bump
+    - **where:** sw.js 109-188
+    - **what:** PRECACHE_URLS precaches find-*.mp3 for Things/Animals/Food/Shapes/Colors/Furniture/Clothing (sw.js:109-188) and precaches all three seasonal category-intros (cat-halloween/christmas/spring, sw.js:94-96) and victories (sw.js:106-108) — but NOT the seasonal find prompts. The clips exist on disk (verified: find-pumpkin, find-ghost, find-candy, find-witch-hat, find-spider, find-spider-web, find-black-cat, find-bat, find-skeleton, find-treat-bag, find-christmas-tree, find-ornament, find-stocking, find-christmas-lights, find-santa, find-gift, find-wreath, find-snowman, find-candy-cane, find-reindeer, find-flower, find-butterfly, find-rainbow, find-umbrella, find-rain-boots, find-bee, find-easter-egg, find-bunny, find-sunshine — 29 clips; star/bird are covered via shapes/animals). Online they get runtime-cached because preloadAllAudio() fetches them (app.js:1003-1011), but on activate the SW deletes the old cache (sw.js:233-244), so immediately after every CACHE_VERSION bump (currently ph-v129) the runtime-cached seasonal clips are gone and the new precache never restores them — if the user is offline before the next online interaction, those items hit the speechSynthesis robot voice (conventions: robot voice = bad). Worse: the 4 seasonal speakOverride items (Christmas lights, Santa, rain boots, sunshine — app.js:224,242,244) are ALSO skipped by preloadAllAudio (app.js:1007) even though their recorded clips exist, so they are never proactively cached at all and rely on a 1200ms lazy-load (app.js:1121-1133) on first play — first play offline or on slow network = robot voice. The preload-skip comment "those use TTS" (app.js:1003) is now stale; speakItem routes every item through the recorded clip (app.js:300-303).
+    - **repro:** Bump/clear the SW cache (simulating an app update) and go offline before playing, then start a Christmas hunt: "Can you find Santa?" / "Can you find a pumpkin?" play in the device robot voice instead of the recorded coral voice.
+    - **fix:** Add the 29 seasonal find-*.mp3 to PRECACHE_URLS (grouped like the other categories) and bump CACHE_VERSION in sw.js + ?v in index.html together (cache atomicity). Also remove the stale `if (item.speakOverride) return;` skip in preloadAllAudio (app.js:1007) so the 4 override clips (and keys/bread/milk/yogurt/juice/pants) get warmed like every other item.
+
+- [ ] **[low · ?]** Dashboard "Items Discovered X/Y" total includes hidden out-of-season seasonal items — inconsistent with its own all-complete check and with the visible category list
+    - **where:** parent-dashboard.js 198-201
+    - **what:** _renderDashboard computes totalItems by summing `cat.items.length` over the full CATEGORY_ORDER unconditionally (parent-dashboard.js:198-201), so all 31 seasonal items are always in the denominator of the big "Items Discovered" number and the overall % bar (parent-dashboard.js:209-215). Yet the same file deliberately EXCLUDES out-of-season seasonal packs from _allCatsComplete (parent-dashboard.js:123-124) and from the visible category breakdown (parent-dashboard.js:224-231). The result is internally inconsistent: a parent in summer sees a category list that omits the seasonal packs but an overall total/percentage that is permanently depressed by ~31 items the child cannot currently reach (and a free child can never reach), so the overall bar can't hit 100% even when every accessible/visible pack is done.
+    - **repro:** In July, open 📊 dashboard: the Categories section hides Halloween/Christmas/Spring, but "Items Discovered" denominator still counts them, so the percentage stays below 100% even after completing every shown category.
+    - **fix:** Compute totalItems over the same visible set used for the breakdown (skip seasonal packs where `!SeasonalManager.isPackVisible(catId)`), mirroring _allCatsComplete (parent-dashboard.js:124), so the overall % matches the displayed categories and reaches 100% when all reachable packs are complete.
+
+- [ ] **[low · ?]** Free parents can set a seasonal pack to "Always" in the dashboard, but the pack stays premium-locked on the home grid and never appears in the setup picker — confusing "I turned it on but it's locked" state
+    - **where:** content/seasonal-manager.js 206-244
+    - **what:** renderSeasonalToggles is rendered for everyone (parent-dashboard.js:345 only checks `SeasonalManager !== undefined`, not premium). A free parent can tap "Always" for Halloween and the status flips to "Enabled year-round ✨". But seasonal packs are premium (paywall.js:22 FREE_CATEGORIES = household/animals/food), so on the home grid the tile renders with the `locked` class (app.js:788) and tapping it routes to the paywall, and in the setup picker seasonal tabs are filtered out for free users entirely (app.js:898-900). So the toggle promises year-round access the free tier can't deliver, with no in-toggle hint that Premium is required.
+    - **repro:** As a free user, open dashboard, set Halloween to "Always". Status reads "Enabled year-round ✨", but the Halloween tile on home is locked and tapping it opens the paywall; the Halloween tab is absent from the setup picker.
+    - **fix:** For non-premium users, either annotate the seasonal toggles with a small "Premium" lock hint, or have the "Always/In season" status reflect the lock (e.g. "Enabled (Premium) — tap tile to unlock"). This keeps the upsell honest instead of showing an enabled-but-locked contradiction.
+
+- [ ] **[low · ?]** A saved seasonal game becomes unreachable when the season ends overnight — no "Continue" entry once the tile is hidden
+    - **where:** app.js 770-799
+    - **what:** renderSplash reads PH_GAME_STATE and sets hasContinue only for tiles in the visible list (app.js:770-799), and visibleCategories excludes out-of-season seasonal packs (app.js:774-776). If a child is mid-Halloween-hunt late on Oct 31 and the game state persists, on Nov 1 the Halloween tile is hidden, so the "▶️ Continue!" affordance never appears and the saved hunt is orphaned until it's overwritten by starting another category. A default/free user with no knowledge of the parent override has no way to resume it.
+    - **repro:** Start a Halloween hunt, leave it mid-game, advance the device clock past Oct 31. On the home screen there is no Continue for Halloween and the tile is gone.
+    - **fix:** Minor edge — acceptable to leave, but ideally either clear PH_GAME_STATE for a seasonal category that is no longer visible, or surface a resume entry for a saved seasonal hunt even when its tile is otherwise hidden.
+
+- [ ] **[cosmetic · ?]** Christmas pack vanishes on Dec 27 (window ends Dec 26), the day after Christmas during peak holiday week
+    - **where:** content/seasonal-manager.js 44
+    - **what:** Boundary math is correct and NOT off-by-one — isDateInRange is inclusive on both ends and uses local clock (getMonth/getDate), so Oct 1, Dec 26, and Mar 20 all resolve correctly (seasonal-manager.js:55-70, 111-115). However the documented/configured Christmas window is Dec 1–26 (seasonal-manager.js:44), so the pack disappears on Dec 27 — right in the middle of the week many families are still in holiday mode (through New Year). This conforms to the documented range so it's not a bug, but flagging it as a product/UX choice worth revisiting (e.g. extend to Dec 31 or Jan 1).
+    - **repro:** Set device date to Dec 27: the Christmas pack is hidden on the home grid (auto mode).
+    - **fix:** If desired, change christmas endDay/endMonth to Dec 31 (or wrap to Jan 1) so the pack stays through the holiday week; otherwise leave as documented.
+
+- [ ] **[cosmetic · ?]** `window` local variable shadows the global window object in four seasonal-manager functions
+    - **where:** content/seasonal-manager.js 108
+    - **what:** isPackVisible (line 108), getPackStatus (line 182), getInSeasonBadge (line 278), and renderSeasonalToggles (line 220) all declare `var window = SEASONAL_WINDOWS[packId]`, shadowing the global `window`. It works today because none of those functions reference the real window, but it's a footgun: any future edit that tries to use the global window inside one of these functions would silently get the season config instead. Pure code-quality.
+    - **repro:** Static read of seasonal-manager.js.
+    - **fix:** Rename the local to `win` or `seasonWindow` in all four functions.
+
+- [ ] **[cosmetic · ?]** getPackStatus emits redundant month in the "Available" string and uses a fragile emoji-extraction; mismatches the documented example
+    - **where:** content/seasonal-manager.js 193
+    - **what:** For single-month packs the status reads "Available Oct 1–Oct 31" (seasonal-manager.js:197-198) — the month is repeated, and it doesn't match the documented example "Available Oct 1–31" in the JSDoc (seasonal-manager.js:178). Separately, the in-season label is built via `window.displayName.split(' ')[1]` (seasonal-manager.js:193) to grab the emoji; it works for the current single-word names ("Halloween 🎃" → "🎃") but breaks for any multi-word display name.
+    - **repro:** Out of season, open dashboard seasonal toggles: Halloween status shows "Available Oct 1–Oct 31".
+    - **fix:** Collapse same-month ranges to "Oct 1–31" (only append the end month when startMonth !== endMonth), and derive the emoji from the category config rather than splitting displayName by space.
+
+- [ ] **[cosmetic · ?]** Dead/redundant active-state condition in renderSeasonalToggles
+    - **where:** content/seasonal-manager.js 230
+    - **what:** `var active = override === o.val || (!override && o.val === 'auto');` — getOverride() always returns a non-empty string ('auto' by default, seasonal-manager.js:161-164), so `override` is never falsy and the second clause `(!override && o.val === 'auto')` is dead code. Harmless but misleading.
+    - **repro:** Static read of seasonal-manager.js:230.
+    - **fix:** Simplify to `var active = override === o.val;`.
+
+## Home / category select (`splash-category`)
+
+- [ ] **[medium · ?]** Per-category sticker badges vanish after a direct renderSplash() (difficulty / language / unlock / first-run)
+    - **where:** app.js 801, 807 (and callers 1794, 1842, 709; paywall.js:261)
+    - **what:** renderSplash() rebuilds the grid with `grid.innerHTML = html` (app.js:801), which destroys the `.sticker-cat-badge` elements that StickerBook appended as children of each `.category-card`. renderSplash then only re-adds the Daily card (DailyStreak.addCardToSplash, app.js:807) — it never calls StickerBook.addButtonToSplash()/updateCategoryCardBadges(). Those badges are only re-added by onSplashEnter() (app.js:615). Every code path that calls renderSplash() DIRECTLY therefore leaves the category tiles with no per-category sticker count until the next full home re-entry: setDifficulty (app.js:1794), language pick (app.js:1842), refreshSplashAfterUnlock (paywall.js:261), and showFirstRunSetup finish (app.js:709).
+    - **repro:** Earn ≥1 sticker so a tile shows '📕3'. On the home screen tap a difficulty button (Easy/Medium/Hard). The grid rebuilds and all per-category sticker badges disappear; the Daily card survives. They only return after leaving and re-entering home.
+    - **fix:** In renderSplash, immediately after the DailyStreak.addCardToSplash() call (app.js:807) add an idempotent `if (typeof StickerBook !== 'undefined' && StickerBook.addButtonToSplash) StickerBook.addButtonToSplash();` — mirroring exactly how the Daily card was made re-render-safe in v125. addButtonToSplash() is guard-deduped for the button and calls updateCategoryCardBadges() unconditionally, so this restores the badges for all four direct callers in one place.
+
+- [ ] **[low · ?]** updateCategoryCardBadges maps card index to CATEGORY_ORDER[idx], but cards render in visibleCategories order
+    - **where:** content/sticker-book.js 275-278
+    - **what:** updateCategoryCardBadges iterates `document.querySelectorAll('.category-card')` and looks up `catId = CATEGORY_ORDER[idx]`. But renderSplash builds the cards from `visibleCategories = SeasonalManager.filterVisibleCategories(CATEGORY_ORDER)` (app.js:774-781), a filtered subset. CATEGORY_ORDER is ['household','animals','food','shapes','colors','furniture','clothing','halloween','christmas','spring'] (app.js:250) — the three seasonal packs are last. Hiding ALL trailing seasonal packs keeps indices aligned, but the per-pack dashboard toggle (In season / Always / Off) lets a user turn OFF an earlier seasonal pack while a later one stays visible, shifting indices so every card after the gap shows the WRONG category's sticker count. This is the cosmetic offset already flagged in context_handoff; still present in code.
+    - **repro:** With premium, in the parent dashboard set Halloween = Off and Christmas = Always (so Christmas renders but Halloween is hidden). The Christmas card now displays Halloween's sticker count.
+    - **fix:** Stop relying on positional index. In renderSplash, stamp each card with its catId (e.g. data-cat-id on the button) and have updateCategoryCardBadges read `card.dataset.catId`; or pass the same visibleCategories array used to render.
+
+- [ ] **[low · ?]** Locked category cards expose no accessible lock/premium state
+    - **where:** app.js 788-799
+    - **what:** Locked tiles get only a visual treatment: the `.locked` class (desaturate filter, style.css:413) plus a CSS `::after` 🔒 badge (paywall.css:255). The button's accessible name is just the category name + progress (e.g. 'Furniture 0/12 ⭐'); CSS-generated ::after content is announced inconsistently across screen readers and there is no text alternative. A screen-reader / switch-access user cannot tell the tile is premium-locked and is dropped into the paywall on activation.
+    - **fix:** In the locked branch (app.js:788), add an accessible hint to the button, e.g. `aria-label='<name>, premium — tap to unlock'`, and/or a visually-hidden span. Keep it tappable (it opens the paywall by design).
+
+- [ ] **[low · ?]** Sound-toggle button has a static aria-label and no pressed state
+    - **where:** index.html 53 (toggleSound app.js:381-387)
+    - **what:** The sound toggle's aria-label is hardcoded 'Toggle sound' and toggleSound() only swaps the inline SVG icon (SVG_VOL_ON/OFF) — it never updates the accessible name or sets aria-pressed. A screen reader announces 'Toggle sound, button' identically whether sound is currently on or off, giving no feedback about the resulting/current state.
+    - **fix:** Add aria-pressed to #sound-toggle and update it (and/or the aria-label to 'Sound on'/'Sound off') in toggleSound() and in the renderSplash sync block (app.js:847-848).
+
+- [ ] **[low · ?]** Difficulty buttons lack aria-pressed; active state is visual-only
+    - **where:** app.js 727-731, 762-764
+    - **what:** The Easy/Medium/Hard selector conveys the chosen difficulty solely via the `.active` class (visual styling). The buttons carry no aria-pressed/role indication, so a screen-reader user cannot tell which difficulty is selected. The re-render path (app.js:762-764) also only toggles the class.
+    - **fix:** Render each diff-btn with `aria-pressed` reflecting currentDifficulty, and update aria-pressed alongside the className in the re-render branch.
+
+- [ ] **[low · ?]** Daily item is re-derived from a tier/season-dependent pool on every call (mid-day drift / miss-credit edge)
+    - **where:** content/daily-challenge-streak.js 185-225, 305-313
+    - **what:** getDailyItem() builds its pool from the CURRENT premium tier and CURRENT seasonal visibility, then date-seeds the pick. addCardToSplash (line 252), the card click (line 309 via onItemFound), and the forced launch each call it independently. If premium status flips (free→all categories) or a seasonal pack changes in/out of season between rendering the card and finding the item, getDailyItem returns a different item and onItemFound's `daily.catId===catId && daily.item.name===itemName` comparison can miss — so the find never credits the streak. Common path is safe (pool stable within a tier on the same day); this is a low-probability edge already noted as known.
+    - **fix:** Compute today's daily item once per day and persist it (e.g. store {date, catId, itemName} in PH_DAILY); read that single source in addCardToSplash, the launcher, and onItemFound instead of recomputing against a live pool.
+
+- [ ] **[low · ?]** switchSetupTab silently discards a partial (<3) item selection when changing tabs
+    - **where:** app.js 908-913
+    - **what:** switchSetupTab only persists the current tab's selection if `setupSelection.size >= 3` (app.js:909). If a parent selects 1 or 2 items in a category and switches tabs, those picks are dropped with no warning, and on return the tab reloads the prior saved/default selection. The guard avoids saving an invalid <3 set but loses the parent's in-progress work.
+    - **fix:** Either keep partial selections in an in-memory per-category map across tab switches, or surface a brief note that <3 selections aren't saved; restore them when the tab is revisited within the same setup session.
+
+- [ ] **[low · ?]** Splash language bar says 'Learning Spanish' / 'Learn a Language' after honest-claims pass softened that wording elsewhere
+    - **where:** app.js 741, 746
+    - **what:** The language selector renders 'Learning <Language>' (app.js:741) and 'Learn a Language' (app.js:746). The 2026-06-09 claims/positioning pass deliberately removed 'learns/teaches a language' framing from the landing in favor of 'introduces / first foreign words / a head start' (per context_handoff). The in-app splash still uses the stronger 'learning' verb, an internal consistency gap with the de-claimed marketing copy.
+    - **fix:** If the softened positioning is meant to apply app-wide, change to e.g. '🇪🇸 Hearing Spanish' / 'Add a second language' to match the landing's claims.
+
+- [ ] **[low · ?]** Setup card foreign-word translation lacks dir='rtl' for Arabic
+    - **where:** app.js 927-929
+    - **what:** When bilingual mode is active, renderSetupGrid renders the target-language word in `.setup-card-translation` with no dir attribute (app.js:928-929). For Arabic (RTL) the word is placed in an LTR context; single words usually render acceptably, but any trailing punctuation/diacritic combination or multi-token word can mis-order. The splash itself is unaffected (the lang bar shows the English name 'Arabic'), but the setup screen reached via openSetup is in scope.
+    - **fix:** Add `dir="rtl"` (or `dir="auto"`) and `lang="<code>"` to the `.setup-card-translation` span when the selected language is RTL (Arabic).
+
+- [ ] **[cosmetic · ?]** Daily-challenge streak badge shows '🔥 0' for brand-new users
+    - **where:** content/daily-challenge-streak.js 259-267
+    - **what:** On first run the streak is 0, so the card header renders the label emoji '📅 Daily Challenge' AND a '🔥 0' streak pill (line 267 always prints '🔥 ' + data.streak). A flame next to 0 reads oddly before any streak exists.
+    - **fix:** Hide the `.daily-streak` flame pill (or show a neutral state) when data.streak === 0.
+
+- [ ] **[cosmetic · ?]** In-app splash copy uses em dashes, inconsistent with the owner's no-em-dash house style
+    - **where:** app.js 841, 867
+    - **what:** The Story Quests hero sub ('Go on an adventure — first quest free!', app.js:867) and the free-tier play meter ('No free finds left today — come back tomorrow, or unlock premium ↑', app.js:841) use em dashes. The landing rewrite explicitly removed ALL em dashes as owner house style; the in-app surface still uses them. Low confidence the in-app kids' copy is held to the same rule.
+    - **fix:** If the no-em-dash style applies app-wide, replace with a comma/period or rephrase (e.g. 'Go on an adventure, first quest free!').
+
+- [ ] **[cosmetic · ?]** Locked tiles lose the decorative sparkle ::after because the lock badge overrides it
+    - **where:** paywall.css 255 (vs style.css:373)
+    - **what:** style.css:373 defines `.category-card::after` as the sparkle/dot texture overlay; paywall.css:255 defines `.category-card.locked::after` as the 🔒 badge. An element has only one ::after, and the more specific locked selector wins, so locked tiles silently lose the sparkle texture every other tile has. Purely cosmetic but it makes locked cards look subtly flatter beyond the intended desaturation.
+    - **fix:** Render the lock badge on a different pseudo-element or a real child node (e.g. an absolutely-positioned span injected in renderSplash) so the sparkle ::after is preserved on locked cards.
 
 
