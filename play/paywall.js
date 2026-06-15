@@ -139,7 +139,13 @@ var Paywall = (function() {
     var overlay = document.createElement('div');
     overlay.id = 'paywall-overlay';
     overlay.className = 'paywall-overlay';
-    overlay.onclick = function(e) { if (e.target === overlay) close(); };
+    overlay.onclick = function(e) {
+      if (e.target !== overlay) return;
+      // Don't discard a partially-typed unlock code on an accidental backdrop tap.
+      var inp = document.getElementById('paywall-code-input');
+      if (inp && (inp.value.trim() || document.activeElement === inp)) return;
+      close();
+    };
 
     // If the Stripe links haven't been swapped from placeholders yet, render a
     // "checkout coming soon" notice instead of buttons that 404. The codes flow

@@ -32,6 +32,7 @@ var StickerBook = (function() {
   // STORAGE
   // ═══════════════════════════════════════════════════════════════
   var STORAGE_KEY = 'PH_STICKERS';
+  var stickerOpener = null; // element focused before the sticker book opened (restored on close)
 
   function getAll() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
@@ -145,13 +146,18 @@ var StickerBook = (function() {
     var existing = document.getElementById('sticker-book-overlay');
     if (existing) existing.remove();
 
+    stickerOpener = document.activeElement;
     var overlay = document.createElement('div');
     overlay.id = 'sticker-book-overlay';
     overlay.className = 'sticker-book-overlay';
     overlay.onclick = function(e) { if (e.target === overlay) closeBook(); };
+    overlay.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBook(); });
 
     var modal = document.createElement('div');
     modal.className = 'sticker-book-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'My Sticker Book');
 
     // Header
     var totalCount = getTotalCount();
@@ -224,6 +230,7 @@ var StickerBook = (function() {
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    try { closeBtn.focus(); } catch(e) {} // move focus into the dialog
 
     // Voice announcement
     if (typeof speak === 'function') {
@@ -248,6 +255,7 @@ var StickerBook = (function() {
   function closeBook() {
     var el = document.getElementById('sticker-book-overlay');
     if (el) el.remove();
+    if (stickerOpener && stickerOpener.focus) { try { stickerOpener.focus(); } catch(e) {} stickerOpener = null; }
   }
 
   // ═══════════════════════════════════════════════════════════════

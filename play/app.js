@@ -1860,7 +1860,15 @@ async function identifyObject(base64Data, mimeType) {
     console.error('[PH] recognition service error ' + resp.status + ': ' + e);
     var svcErr = new Error('service'); svcErr.status = resp.status; throw svcErr;
   }
-  var data = await resp.json();
+  var data;
+  try {
+    data = await resp.json();
+  } catch (e) {
+    // 200 OK but a non-JSON / HTML body (proxy error page, truncated response) is a
+    // service fault, not a wrong photo — show "Camera Nap", never a false "Not quite!".
+    console.error('[PH] recognition 200 with a non-JSON body');
+    var parseErr = new Error('service'); parseErr.status = 200; throw parseErr;
+  }
   var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
     data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
     data.candidates[0].content.parts[0].text) || '';
@@ -1943,9 +1951,11 @@ function cycleLanguage() {
   openLangPicker();
 }
 
+var langPickerOpener = null; // element focused before the language picker opened
 function openLangPicker() {
   if (typeof SUPPORTED_LANGUAGES === 'undefined') return;
   playClick();
+  langPickerOpener = document.activeElement;
   // Spanish is the free bilingual hook; the other languages are Premium. Free
   // users can still open the picker (Off or Spanish); a locked language routes
   // to the paywall.
@@ -1957,9 +1967,13 @@ function openLangPicker() {
   var overlay = document.createElement('div');
   overlay.id = 'lang-picker-overlay';
   overlay.onclick = function(e) { if (e.target === overlay) closeLangPicker(); };
+  overlay.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLangPicker(); });
 
   var modal = document.createElement('div');
   modal.className = 'lang-picker-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', 'Choose a language');
   // The modal is the full-screen dim layer (it covers the overlay, so
   // overlay.onclick can never fire). Close when the tap lands on the dim area
   // itself rather than on an option.
@@ -1987,11 +2001,14 @@ function openLangPicker() {
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
+  var firstOpt = modal.querySelector('.lang-picker-option');
+  if (firstOpt) try { firstOpt.focus(); } catch(e) {}
 }
 
 function closeLangPicker() {
   var el = document.getElementById('lang-picker-overlay');
   if (el) el.remove();
+  if (langPickerOpener && langPickerOpener.focus) { try { langPickerOpener.focus(); } catch(e) {} langPickerOpener = null; }
 }
 
 // ═══════════════════════════════════════════════════════════════
