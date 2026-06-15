@@ -60,10 +60,42 @@ var StickerBook = (function() {
     return data[catId] ? Object.keys(data[catId]).length : 0;
   }
 
+  // The categories that count toward "my collection": everything currently
+  // accessible to this child (in-season AND not premium-locked) PLUS any category
+  // where they've already earned a sticker. Without this, getTotalPossible summed
+  // ALL 10 categories — including out-of-season and premium-locked packs the child
+  // cannot earn — so "You collected all the stickers!" was unreachable, and stale
+  // out-of-season stickers could push the progress bar past 100%.
+  function relevantCategories() {
+    var order = (typeof CATEGORY_ORDER !== 'undefined') ? CATEGORY_ORDER : Object.keys(CATEGORIES || {});
+    var premium = (typeof Paywall === 'undefined') || Paywall.isPremium();
+    var visible = (typeof SeasonalManager !== 'undefined' && SeasonalManager.filterVisibleCategories)
+      ? SeasonalManager.filterVisibleCategories(order) : order;
+    var set = {};
+    visible.forEach(function(c) {
+      if (typeof CATEGORIES === 'undefined' || !CATEGORIES[c]) return;
+      var accessible = premium
+        || (typeof Paywall === 'undefined')
+        || (typeof Paywall.isFreeCategory !== 'function')
+        || Paywall.isFreeCategory(c);
+      if (accessible) set[c] = true;
+    });
+    // Always include categories where the child already earned a sticker (so an
+    // earned pack still shows even out of season, and the total can't be exceeded).
+    var data = getAll();
+    Object.keys(data).forEach(function(c) {
+      if (typeof CATEGORIES !== 'undefined' && CATEGORIES[c] && Object.keys(data[c]).length) set[c] = true;
+    });
+    return order.filter(function(c) { return set[c]; });
+  }
+
   function getTotalCount() {
     var data = getAll();
     var total = 0;
     Object.keys(data).forEach(function(catId) {
+      // Ignore stickers stored under categories that no longer exist (stale data)
+      // so they can't inflate the count past the possible total.
+      if (typeof CATEGORIES !== 'undefined' && !CATEGORIES[catId]) return;
       total += Object.keys(data[catId]).length;
     });
     return total;
@@ -72,7 +104,7 @@ var StickerBook = (function() {
   function getTotalPossible() {
     var total = 0;
     if (typeof CATEGORIES !== 'undefined') {
-      Object.keys(CATEGORIES).forEach(function(catId) {
+      relevantCategories().forEach(function(catId) {
         total += CATEGORIES[catId].items.length;
       });
     }
@@ -125,9 +157,10 @@ var StickerBook = (function() {
       + (totalPossible > 0 ? Math.round((totalCount / totalPossible) * 100) : 0) + '%"></div></div>';
     modal.appendChild(header);
 
-    // Category sections
+    // Category sections — only the categories that count toward the collection
+    // (accessible + in-season + any with earned stickers), matching the total above.
     if (typeof CATEGORIES !== 'undefined' && typeof CATEGORY_ORDER !== 'undefined') {
-      CATEGORY_ORDER.forEach(function(catId) {
+      relevantCategories().forEach(function(catId) {
         var cat = CATEGORIES[catId];
         var catCount = getCategoryCount(catId);
         var catTotal = cat.items.length;
