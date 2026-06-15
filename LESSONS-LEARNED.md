@@ -106,3 +106,32 @@ stopped before each new clip. A clip cutting off mid-word = something started a
 second sound on top of it (an echo, a translation, an overlapping `speak`).
 Instrument `playBuffer` / `speak` / `speakFallback` with timestamped logs and look
 for the second start that lands inside the first clip's duration.
+
+## 5. Offline / service-worker caching — do NOT "fix" it with `ignoreSearch`
+
+The backlog has several findings like "X audio not precached → robot voice
+offline," and you'll notice `PRECACHE_URLS` lists JS/CSS at bare paths (`./app.js`)
+while `index.html` requests them versioned (`./app.js?v=N`). The tempting one-line
+fix is `caches.match(req, {ignoreSearch:true})`. **Never do this.** `ignoreSearch`
+makes a request for `app.js?v=138` match a cached `app.js?v=137` — serving STALE
+code after every deploy and defeating the entire `?v=` cache-busting model (#3).
+A user would be stuck on old code until caches were manually cleared.
+
+**Why offline mostly works anyway** (so the bare-precache mismatch isn't urgent):
+the runtime fetch handler caches the *versioned* URL on the first online load —
+which always happens, since you can't install the PWA without loading it once — so
+relaunches and offline work after that first view. The bare precache entries for
+versioned assets are effectively dead (never matched); images/audio are requested
+at bare paths, so those DO match the precache and are available offline.
+
+**If real offline-first is ever needed**, the correct fixes are: precache the
+*versioned* URLs (template `CACHE_VERSION`'s number into `PRECACHE_URLS`), or rely
+on runtime caching. Not `ignoreSearch` on versioned assets.
+
+**Bigger picture — the app is online by design.** The core feature (AI photo
+matching) needs the Gemini API, so the hunt **cannot be played offline** regardless
+of caching. Offline support only buys a fast cached shell + a graceful "No Internet!"
+card (`sw-register.js showOfflineMessage` — reviewed, reads well). Weigh any offline
+investment against that ceiling before building. (Decision 2026-06-14: keep offline
+shallow; we only fixed the `img/items/` precache path so the cached shell isn't
+visually broken.)
