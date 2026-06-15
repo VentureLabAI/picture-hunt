@@ -128,6 +128,51 @@ at bare paths, so those DO match the precache and are available offline.
 *versioned* URLs (template `CACHE_VERSION`'s number into `PRECACHE_URLS`), or rely
 on runtime caching. Not `ignoreSearch` on versioned assets.
 
+## 6. Single audio channel: `onEnd` must fire only on NATURAL completion
+
+There is ONE playback channel (`currentAudioSource`); `playBuffer`/`speak` stop it
+before starting the next clip. The trap (W10): a `source.onended` handler that runs
+`onEnd()` **unconditionally**. When a clip is `.stop()`'d to make way for a new one,
+the stopped source's `onended` STILL fires async — by then `currentAudioSource` is the
+NEW source, so the interrupted clip's `onEnd` runs its follow-on (foreign echo, camera
+pulse, inactivity timer) **on top of** the current clip. Fix pattern:
+`source.onended = function(){ if (currentAudioSource === source) { currentAudioSource = null; if (onEnd) onEnd(); } };`
+Corollary for cold-start (`playKeyWhenReady`): a superseded `speak()` whose buffer
+decodes late (or whose 1200ms TTS-fallback timer fires) will speak the OLD prompt over
+the current one — guard with a monotonic `_speakGen` token bumped in `speak()` and
+checked before the late fallback/playBuffer. And: a milestone/secondary spoken line
+triggered DURING a find (`streak-milestone`) must **wait for the channel to be free**
+(poll `currentAudioSource` until null, capped) rather than speak immediately — it'll be
+cut off by "You found it!" otherwise. When auditing any new `speak()`/`playBuffer`, ask
+"what else could be on the channel right now?"
+
+## 7. A fix that eagerly persists shared state defeats a later "did it change?" check
+
+Regression class (W13→W19): `switchSetupTab` eagerly wrote the edited selection to
+`PH_SELECTED`; later `setupDone` decided whether to invalidate the saved hunt by
+comparing the new selection to `getSelectedNames()` — which now already equalled the
+edit, so it saw "no change" and left a stale resume. **Rule:** when a later step gates
+on "did X change since the user opened this screen?", compare against a **pre-edit
+baseline captured at open time**, never against live storage that an intermediate step
+may have already overwritten. Capture baselines per-entity on first entry; compare the
+*affected* entity (here: the resumed game's category) against its baseline.
+
+## 8. Defer an overlay on a completion FLAG, not element-presence
+
+The install pill deferred while `#first-run-setup` existed — but `onSplashEnter` appends
+that card ~400ms AFTER splash becomes active, leaving a race where the pill slips in
+first (W15→W20). **Rule:** to defer "until a one-time gate is done," check the *durable
+completion flag* (`PH_FIRST_RUN_DONE`), not whether its DOM element happens to be mounted
+at the instant you poll. Element-presence checks miss the build-up/tear-down windows.
+
+## 9. Re-audit your own fixes before declaring done (and a visual pass on top)
+
+A multi-wave sweep WILL introduce regressions — budget for it. This session's adversarial
+re-audit of only the changed code found 3 self-inflicted regressions (all in the
+gating/branching changes — exactly where to look), and a live visual pass found a 4th
+(the pill/first-run race) that no code read surfaced. Never report "converged" off a wave
+you didn't re-audit, and always finish with eyes on the real running app.
+
 **Bigger picture — the app is online by design.** The core feature (AI photo
 matching) needs the Gemini API, so the hunt **cannot be played offline** regardless
 of caching. Offline support only buys a fast cached shell + a graceful "No Internet!"
