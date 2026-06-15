@@ -16,6 +16,8 @@ var InstallPrompt = (function() {
   var DISMISSED_KEY = 'PH_INSTALL_DISMISSED';
   var LAST_SHOWN_KEY = 'PH_INSTALL_LAST_SHOWN';
   var THROTTLE_DAYS = 7;
+  var DISMISS_DAYS = 45;       // explicit dismissal cools down, doesn't kill forever
+  var pillPollTimer = null;    // single tracked poll instead of stacking timers
 
   function isInstalled() {
     // Standalone display mode → already installed
@@ -25,7 +27,13 @@ var InstallPrompt = (function() {
   }
 
   function dismissed() {
-    return localStorage.getItem(DISMISSED_KEY) === '1';
+    var v = localStorage.getItem(DISMISSED_KEY);
+    if (!v) return false;
+    if (v === '1') return true; // permanent: set on actual install (appinstalled)
+    // Otherwise it's an ISO timestamp from an explicit dismiss — expire after a long
+    // cooldown so a one-off "×" doesn't kill the install path forever.
+    var age = Date.now() - new Date(v).getTime();
+    return age < DISMISS_DAYS * 24 * 3600 * 1000;
   }
 
   function recentlyShown() {
@@ -36,7 +44,11 @@ var InstallPrompt = (function() {
   }
 
   function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (window.MSStream) return false;
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return true;
+    // iPadOS 13+ reports a desktop 'Macintosh' UA but is touch-capable — without this
+    // iPad users never see the Share -> Add to Home Screen hint.
+    return navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent);
   }
 
   function captureBeforeInstall() {
@@ -57,18 +69,26 @@ var InstallPrompt = (function() {
   function maybeShowPill() {
     if (isInstalled() || dismissed() || recentlyShown()) return;
     if (!deferredPrompt && !isIOS()) return;
-    var splash = document.getElementById('splash');
-    if (!splash || !splash.classList.contains('active')) {
-      // Wait for splash to become active
-      setTimeout(maybeShowPill, 500);
+    // Don't pop the pill over a higher-priority first-run card / fox greeting — those
+    // are one-time and must not be obscured. Re-check shortly after they dismiss.
+    if (document.getElementById('first-run-setup') || document.getElementById('home-greeting')) {
+      if (pillPollTimer) clearTimeout(pillPollTimer);
+      pillPollTimer = setTimeout(maybeShowPill, 500);
       return;
     }
+    var splash = document.getElementById('splash');
+    if (!splash || !splash.classList.contains('active')) {
+      // Wait for splash to become active (single tracked timer, not a stacking loop).
+      if (pillPollTimer) clearTimeout(pillPollTimer);
+      pillPollTimer = setTimeout(maybeShowPill, 500);
+      return;
+    }
+    if (pillPollTimer) { clearTimeout(pillPollTimer); pillPollTimer = null; }
     showPill();
   }
 
   function showPill() {
     if (document.getElementById('install-pill')) return;
-    localStorage.setItem(LAST_SHOWN_KEY, new Date().toISOString());
 
     var pill = document.createElement('div');
     pill.id = 'install-pill';
@@ -86,6 +106,9 @@ var InstallPrompt = (function() {
     }
 
     document.body.appendChild(pill);
+    // Arm the 7-day throttle only now that the pill actually rendered (was set in
+    // maybeShowPill even on paths that returned without showing anything).
+    localStorage.setItem(LAST_SHOWN_KEY, new Date().toISOString());
     document.body.classList.add('ph-install-open');
     setTimeout(function() { pill.classList.add('install-pill-visible'); }, 50);
     // Reserve exactly the pill's real (text-wrapped) height on the splash scroll
@@ -100,8 +123,10 @@ var InstallPrompt = (function() {
   function fire() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function() {
-      removePill();
+    deferredPrompt.userChoice.then(function(choice) {
+      // On accept, appinstalled cleans up. On dismiss, KEEP the pill so the parent
+      // can retry instead of losing the install path for the throttle window.
+      if (choice && choice.outcome === 'accepted') removePill();
       deferredPrompt = null;
     });
   }

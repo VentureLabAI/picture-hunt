@@ -589,6 +589,10 @@ function showScreen(name) {
     focusTarget.setAttribute('tabindex', '-1');
     focusTarget.focus({ preventScroll: true });
   } catch (e) {}
+  // The install pill is a fixed bottom element only meant for the splash; hide it on
+  // every other screen so it can't cover the game / setup / victory controls.
+  var _pill = document.getElementById('install-pill');
+  if (_pill) _pill.style.display = (name === 'splash') ? '' : 'none';
   // Brief ghost-tap guard on ALL screen transitions
   el.style.pointerEvents = 'none';
   setTimeout(function() { el.style.pointerEvents = ''; }, 350);
