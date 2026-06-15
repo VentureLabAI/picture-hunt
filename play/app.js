@@ -1103,6 +1103,10 @@ function textToAudioKey(text) {
   // Champion messages
   if (text.indexOf('champion') >= 0) return 'champion';
   if (text.indexOf('You did it') >= 0) return 'you-did-it';
+  // The colour "orange" and the food "orange" both reduce to 'find-orange' below,
+  // but find-orange.mp3 is the FRUIT prompt ("Can you find an orange?"). Route the
+  // colour prompt to its own recorded clip so it doesn't speak the fruit line.
+  if (text === 'Can you find something orange?') return 'find-color-orange';
   // Find prompts: "Can you find a shoe?" → "find-shoe"
   var m = text.match(/^Can you find (?:a |an |some |something )?(.+)\?$/);
   if (m) return 'find-' + m[1].replace(/ /g, '-').toLowerCase();

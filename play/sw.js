@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v136';
+var CACHE_VERSION = 'ph-v137';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -246,6 +246,7 @@ var PRECACHE_URLS = [
   './audio/find-star.mp3',
   './audio/find-triangle.mp3',
   // Audio — item prompts (Colors)
+  './audio/find-color-orange.mp3',
   './audio/find-black.mp3',
   './audio/find-blue.mp3',
   './audio/find-brown.mp3',
