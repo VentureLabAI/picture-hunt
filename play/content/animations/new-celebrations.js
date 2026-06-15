@@ -36,6 +36,13 @@ var _celebrationAnimFrames = [];
 function _addTimer(id) { _celebrationTimers.push(id); }
 function _addFrame(id) { _celebrationAnimFrames.push(id); }
 
+// Respect the OS "reduce motion" setting (accessibility). When set, we skip the
+// continuous particle loops (rain/fireworks) — the brief sticker pop + the sound +
+// the trophy still give positive feedback, just without sustained motion.
+function _reduceMotion() {
+  try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+}
+
 function stopAllCelebrations() {
   _celebrationTimers.forEach(function(id) { clearTimeout(id); });
   _celebrationAnimFrames.forEach(function(id) { cancelAnimationFrame(id); });
@@ -60,6 +67,7 @@ function stopAllCelebrations() {
 
 function celebrateEmojiRain(durationMs) {
   durationMs = durationMs || 3000;
+  if (_reduceMotion()) return; // accessibility: no sustained falling motion
   var canvas = document.getElementById('confetti-canvas');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
@@ -180,6 +188,7 @@ function celebrateStickerPopRandom(durationMs) {
 
 function celebrateFireworks(durationMs) {
   durationMs = durationMs || 3000;
+  if (_reduceMotion()) return; // accessibility: no sustained burst motion
   var canvas = document.getElementById('confetti-canvas');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
@@ -279,6 +288,8 @@ function celebrateFireworks(durationMs) {
 
 function celebrateCombo(durationMs) {
   durationMs = durationMs || 4000;
+  // Under reduce-motion, just the single trophy pop — no rain/fireworks loops.
+  if (_reduceMotion()) { celebrateStickerPop('🏆', Math.min(durationMs, 1800)); return; }
   celebrateStickerPop('🏆', durationMs);
   var rainDelay = setTimeout(function() {
     celebrateEmojiRain(durationMs - 300);

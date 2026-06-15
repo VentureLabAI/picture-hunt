@@ -573,6 +573,12 @@ function showScreen(name) {
   stopAllPulses();
   resetInactivity();
   if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
+  // Stop any in-flight celebration so confetti/emoji-rain from a find or victory
+  // can't keep drawing over the next screen (e.g. tapping Home during the success
+  // rain). showVictory re-fires its own combo right after this call, so the victory
+  // celebration is unaffected.
+  if (typeof stopAllCelebrations === 'function') stopAllCelebrations();
+  if (typeof stopConfetti === 'function') stopConfetti();
   Object.values(screens).forEach(function(s) { s.classList.remove('active'); });
   var el = screens[name];
   el.classList.add('active');
@@ -1454,9 +1460,16 @@ function showVictory() {
   if (typeof storylineActive !== 'undefined' && storylineActive && typeof storylineHandleVictory === 'function' && storylineHandleVictory()) return;
   localStorage.removeItem('PH_GAME_STATE');
   var cat = CATEGORIES[currentCategory];
-  var found = getCategoryProgress(currentCategory);
-  var total = cat.items.length;
-  var complete = found >= total;
+  // Honest per-hunt tally: how many of THIS hunt's items have actually been found.
+  // shuffledItems already reflects the parent's item selection + the difficulty
+  // filter, so it is the right denominator. The old code used all-time category
+  // progress over the FULL category, so a skip-heavy run still read "You found
+  // everything!" and the count ignored a parent's selection.
+  var foundNames = (typeof getProgress === 'function') ? (getProgress()[currentCategory] || []) : [];
+  var gameNames = (shuffledItems || []).map(function(i) { return i.name; });
+  var found = gameNames.filter(function(n) { return foundNames.indexOf(n) >= 0; }).length;
+  var total = gameNames.length || cat.items.length;
+  var complete = total > 0 && found >= total;
 
   // End dashboard session
   if (typeof dashboardEndSession === 'function' && _currentSession) {
@@ -1466,9 +1479,9 @@ function showVictory() {
 
   var subEl = document.getElementById('victory-sub');
   var statsEl = document.getElementById('victory-stats');
-  subEl.textContent = complete ? 'You\'re a ' + cat.name + ' champion!' : 'You found everything!';
+  subEl.textContent = complete ? 'You\'re a ' + cat.name + ' champion!' : 'Great hunting!';
   statsEl.innerHTML = '<div class="victory-stat">' + cat.emoji + ' ' + found + '/' + total
-    + ' unique ' + cat.name.toLowerCase() + ' found!' + (complete ? ' 🏆' : '') + '</div>';
+    + ' ' + cat.name.toLowerCase() + ' found!' + (complete ? ' 🏆' : '') + '</div>';
   if (typeof StickerBook !== 'undefined') StickerBook.addStickersToVictory(currentCategory);
 
   showScreen('victory');
@@ -1491,12 +1504,15 @@ function showVictory() {
     christmas: 'You found all the holiday magic! Merry Christmas!',
     spring: 'You found all the signs of spring! Great job!'
   };
-  if (seasonalVictory[currentCategory]) {
+  // Only the recorded "you found all of X" lines when the hunt was actually
+  // completed; a partial/skip-heavy run gets the honest recorded "Great job!" clip
+  // (mapped to great-job) instead of a voice that contradicts the on-screen count.
+  if (complete && seasonalVictory[currentCategory]) {
     speak(seasonalVictory[currentCategory]);
+  } else if (complete) {
+    speak('Amazing! You found everything! You are a champion!');
   } else {
-    speak(complete
-      ? 'Amazing! You found everything! You are a champion!'
-      : 'You did it! You found everything! Great job!');
+    speak('Great job!');
   }
 }
 
