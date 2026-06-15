@@ -521,6 +521,9 @@ function migrateOldData() {
   }
   var gs = localStorage.getItem('PH_GAME_STATE');
   if (gs) { try { var s = JSON.parse(gs); if (s && !s.category) { s.category = 'household'; localStorage.setItem('PH_GAME_STATE', JSON.stringify(s)); } } catch(e) {} }
+  // An existing user who already chose a language pre-dates the first-run card —
+  // mark first-run done so the upgrade doesn't re-prompt and clobber their choice.
+  try { if (localStorage.getItem('PH_LANG') && !localStorage.getItem('PH_FIRST_RUN_DONE')) localStorage.setItem('PH_FIRST_RUN_DONE', '1'); } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -722,11 +725,18 @@ function showFirstRunSetup(onDone) {
     + '<button class="first-run-no" id="first-run-no" type="button">Maybe later</button>'
     + '</div>';
   document.body.appendChild(ov);
+  // Move focus into the card and hide the splash from assistive tech so AT users
+  // aren't reading the background behind this required first-run dialog.
+  var splashEl = document.getElementById('splash');
+  if (splashEl) splashEl.setAttribute('aria-hidden', 'true');
+  var firstBtn = document.getElementById('first-run-yes');
+  if (firstBtn) try { firstBtn.focus({ preventScroll: true }); } catch(e) {}
 
   var done = false;
   function finish(langCode) {
     if (done) return;
     done = true;
+    if (splashEl) splashEl.removeAttribute('aria-hidden');
     if (typeof setSelectedLanguage === 'function') setSelectedLanguage(langCode);
     try { localStorage.setItem('PH_FIRST_RUN_DONE', '1'); } catch(e) {}
     if (typeof renderSplash === 'function') renderSplash(); // refresh the lang bar to match the choice
@@ -760,7 +770,14 @@ function renderSplash() {
     var currentLang = typeof getSelectedLanguage === 'function' ? getSelectedLanguage() : { code: 'none', emoji: '🚫', name: 'Off' };
     // Spanish (the free hook) is always available; the other 9 are Premium.
     var langLabel, langSubLabel;
-    if (currentLang.code !== 'none') {
+    var langOn = (typeof bilingualActive === 'function') ? bilingualActive() : langPrem;
+    if (currentLang.code !== 'none' && !langOn) {
+      // Non-premium user holding a stale premium language (e.g. a lapsed 30-day
+      // offline unlock): in-game bilingual is OFF, so don't claim "Learning French"
+      // when no French is spoken. Show it locked, matching the in-game gating.
+      langLabel = currentLang.emoji + ' ' + currentLang.name + ' 🔒';
+      langSubLabel = 'Tap to unlock';
+    } else if (currentLang.code !== 'none') {
       langLabel = currentLang.emoji + ' Learning ' + currentLang.name;
       langSubLabel = (!langPrem && typeof Paywall !== 'undefined' && Paywall.isFreeLanguage(currentLang.code))
         ? 'Free · tap for 9 more'
@@ -966,7 +983,7 @@ function renderSetupGrid() {
       : '<span class="setup-card-emoji">' + item.emoji + '</span>';
     var setupTranslation = bilingualActive() ? getTranslationByName(phTranslationLookupName(item.name, setupCategory)) : null;
     var setupNameHtml = '<span class="setup-card-name">' + item.name
-      + (setupTranslation ? '<br><span class="setup-card-translation">' + setupTranslation.word + '</span>' : '')
+      + (setupTranslation ? '<br><span class="setup-card-translation" lang="' + setupTranslation.speechLang + '" dir="auto">' + setupTranslation.word + '</span>' : '')
       + '</span>';
     card.innerHTML = iconHtml + setupNameHtml;
     card.addEventListener('click', function() {
@@ -1337,7 +1354,7 @@ function showCurrentItem() {
   var langResult = bilingualActive() ? getTranslationByName(phTranslationLookupName(item.name, currentCategory)) : null;
   if (langResult) {
     targetText.innerHTML = displayPrompt
-      + '<span class="target-translation">' + langResult.emoji + ' ' + langResult.word + '</span>';
+      + '<span class="target-translation" lang="' + langResult.speechLang + '" dir="auto">' + langResult.emoji + ' ' + langResult.word + '</span>';
   } else {
     targetText.textContent = displayPrompt;
   }
@@ -1655,8 +1672,11 @@ async function submitPhoto() {
 
       speak('You found it! Great job!', function() {
         if (echoResult) {
-          feedbackArea.innerHTML = '<div class="result-msg success">🎉 You found it!</div>'
-            + '<div class="translation-echo">' + echoResult.emoji + ' ' + echoResult.word + '</div>';
+          // Append only the echo node (don't rewrite the whole assertive live region)
+          // so screen readers announce "You found it!" once, then just the new word.
+          // lang= aids pronunciation; dir="auto" orders RTL words (Arabic) vs the flag.
+          feedbackArea.insertAdjacentHTML('beforeend',
+            '<div class="translation-echo" lang="' + echoResult.speechLang + '" dir="auto">' + echoResult.emoji + ' ' + echoResult.word + '</div>');
           if (typeof speakForeignWordForItem === 'function') speakForeignWordForItem(foundItem, function(){});
         }
       });

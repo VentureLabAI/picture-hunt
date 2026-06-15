@@ -23,6 +23,7 @@ var Paywall = (function() {
   var FREE_LANGUAGE = 'es';            // Spanish is the free bilingual hook
   var FREE_STORY = 'bear-breakfast';   // one Story Quest free as a sample
   var FREE_DAILY_CAP = 5;
+  var paywallOpener = null; // element focused before the paywall opened (restored on close)
 
   // Worker endpoint. Same origin as the AI proxy — extends with /validate-code path.
   // Falls back to client-side acceptance of a small allowlist if the worker is
@@ -145,21 +146,24 @@ var Paywall = (function() {
     // still works, so users with a code can unlock.
     var stripeReady = STRIPE_LINK.indexOf('PLACEHOLDER') === -1;
 
+    // Buy + email use NON-navigable controls (a <button> / href="#") so a long-press
+    // or right-click "Open Link" can't bypass the parental gate. buyClicked/
+    // emailClicked open Stripe/mailto only AFTER the math gate passes.
     var plansBlock = stripeReady
       ? ''
-        + '<a class="paywall-buy" href="' + STRIPE_LINK + '" target="_blank" rel="noopener" aria-label="Unlock everything for $24.99, one time"'
-        +   ' onclick="event.preventDefault(); Paywall.buyClicked();">'
+        + '<button type="button" class="paywall-buy" aria-label="Unlock everything for $24.99, one time"'
+        +   ' onclick="Paywall.buyClicked();">'
         +   '<span class="paywall-buy-price">$24.99</span>'
         +   '<span class="paywall-buy-label">Unlock everything — one time</span>'
-        + '</a>'
+        + '</button>'
         + '<p class="paywall-buy-note">No subscription. Yours forever, on every device.</p>'
       : ''
         + '<div class="paywall-coming-soon">'
-        +   '<p><b>Checkout opens soon.</b> Email <a href="mailto:hello@picturehunt.app?subject=Picture+Hunt+early+access" onclick="event.preventDefault(); Paywall.emailClicked();">hello@picturehunt.app</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
+        +   '<p><b>Checkout opens soon.</b> Email <a href="#" role="button" oncontextmenu="return false;" onclick="event.preventDefault(); Paywall.emailClicked();">hello@picturehunt.app</a> to be first in line — we\'ll send you an unlock code as soon as we open up.</p>'
         + '</div>';
 
     overlay.innerHTML = ''
-      + '<div class="paywall-modal">'
+      + '<div class="paywall-modal" role="dialog" aria-modal="true" aria-label="Unlock Picture Hunt">'
       +   '<button class="paywall-close" onclick="Paywall.close()" aria-label="Close">×</button>'
       +   '<img class="paywall-fox" src="img/mascot/fox-key.png" alt="" aria-hidden="true">'
       +   '<h2 class="paywall-headline">' + headline + '</h2>'
@@ -187,16 +191,21 @@ var Paywall = (function() {
 
       + '</div>';
 
+    paywallOpener = document.activeElement; // restore focus here on close
+    overlay.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
     document.body.appendChild(overlay);
     setTimeout(function() {
       var input = document.getElementById('paywall-code-input');
-      if (input && reason === 'has-code') input.focus();
+      if (input && reason === 'has-code') { input.focus(); return; }
+      var cb = overlay.querySelector('.paywall-close');
+      if (cb) try { cb.focus(); } catch(e) {}
     }, 50);
   }
 
   function close() {
     var el = document.getElementById('paywall-overlay');
     if (el) el.remove();
+    if (paywallOpener && paywallOpener.focus) { try { paywallOpener.focus(); } catch(e) {} paywallOpener = null; }
   }
 
   function setMsg(text, kind) {
@@ -330,6 +339,7 @@ var Paywall = (function() {
       +   '<button class="parent-gate-cancel" id="parent-gate-cancel" type="button">Cancel</button>'
       + '</div>';
     ov.onclick = function(e) { if (e.target === ov) removeGate(); };
+    ov.addEventListener('keydown', function(e) { if (e.key === 'Escape') removeGate(); });
     document.body.appendChild(ov);
 
     var input = document.getElementById('parent-gate-input');
@@ -345,6 +355,7 @@ var Paywall = (function() {
         b = 3 + Math.floor(Math.random() * 7);
         answer = a * b;
         document.getElementById('parent-gate-q').textContent = 'What is ' + a + ' × ' + b + '?';
+        input.setAttribute('aria-label', 'What is ' + a + ' times ' + b + '?'); // keep AT label in sync
         input.value = '';
         input.focus();
       }

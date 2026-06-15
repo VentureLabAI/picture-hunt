@@ -560,7 +560,7 @@ function showStoryItem() {
     ? getTranslationByName((typeof phTranslationLookupName === 'function') ? phTranslationLookupName(item.name, step.category) : item.name)
     : null;
   targetText.innerHTML = promptText
-    + (storyTrans ? '<span class="target-translation">' + storyTrans.emoji + ' ' + storyTrans.word + '</span>' : '');
+    + (storyTrans ? '<span class="target-translation" lang="' + storyTrans.speechLang + '" dir="auto">' + storyTrans.emoji + ' ' + storyTrans.word + '</span>' : '');
   feedbackArea.innerHTML = '';
   progressFill.style.width = ((storyStepIndex / currentStory.steps.length) * 100) + '%';
 
@@ -731,7 +731,7 @@ function storylineHandlePhotoSuccess() {
   speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-found', step.foundText, function() {
     if (echo && typeof speakForeignWordForItem === 'function') {
       var bubble = document.querySelector('#quest-chrome .quest-bubble');
-      if (bubble) bubble.innerHTML = step.foundText + ' <span class="translation-echo">' + echo.emoji + ' ' + echo.word + '</span>';
+      if (bubble) bubble.innerHTML = step.foundText + ' <span class="translation-echo" lang="' + echo.speechLang + '" dir="auto">' + echo.emoji + ' ' + echo.word + '</span>';
       speakForeignWordForItem(echoItem, function(){});
     }
   });
