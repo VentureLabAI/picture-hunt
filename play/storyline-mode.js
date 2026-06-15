@@ -383,13 +383,14 @@ function renderStorySelector() {
   STORIES.forEach(function(story) {
     var completed = isStoryCompleted(story.id);
     var count = getStoryCompletedCount(story.id);
-    var ageLabel = story.ageRange === '2-3' ? '⭐' : (story.ageRange === '3-5' ? '⭐⭐' : '⭐⭐⭐');
+    var ageStars = story.ageRange === '2-3' ? '⭐' : (story.ageRange === '3-5' ? '⭐⭐' : '⭐⭐⭐');
+    var ageLabel = ageStars + ' Ages ' + story.ageRange; // stars alone read as difficulty/quality; label it
     var locked = !premium && !(typeof Paywall !== 'undefined' && Paywall.isFreeStory(story.id));
     var dots = '';
     for (var d = 0; d < story.steps.length; d++) dots += '<span class="book-dot"></span>';
 
     html += '<button class="story-book' + (completed ? ' story-completed' : '') + (locked ? ' locked' : '') + '" '
-      + 'onclick="playStory(\'' + story.id + '\')" aria-label="' + story.title + (locked ? ' (locked)' : '') + '">'
+      + 'onclick="playStory(\'' + story.id + '\')" aria-label="' + story.title + ' (Ages ' + story.ageRange + ')' + (locked ? ' (locked)' : '') + '">'
       + '<span class="book-spine" style="background:' + story.gradient + '"></span>'
       + '<span class="book-cover" style="background:' + story.gradient + '"><span class="book-emoji">' + story.emoji + '</span></span>'
       + '<span class="book-info">'
@@ -446,6 +447,11 @@ function playStory(storyId) {
   storyItemsFound = 0;
   storylineActive = true;
 
+  // Open a parent-dashboard session so story play time + per-session finds show up
+  // in Recent Activity (normal hunts do this in playCategory; story mode didn't, so
+  // the dashboard timeline was blank for stories). _currentSession is an app.js global.
+  if (typeof dashboardStartSession === 'function') _currentSession = dashboardStartSession(story.steps[0].category);
+
   // Warm this story's narration clips so the first line isn't a TTS-then-buffer
   // stutter (story-* keys aren't in the global preload list).
   if (typeof preloadAudio === 'function') {
@@ -488,7 +494,10 @@ function playStory(storyId) {
   // recorded fox voice — not a lag or the robot-TTS fallback that wins the cold
   // 1200ms race when story clips aren't precached/warmed yet (owner-reported).
   var advanced = false;
-  var goFirstItem = function() { if (advanced) return; advanced = true; showStoryItem(); };
+  // Guard against firing after the child left the story (goHome nulls currentStory
+  // + clears storylineActive). This single guard neutralizes BOTH advance paths:
+  // the intro clip's onEnd AND the 12s safety timer below.
+  var goFirstItem = function() { if (advanced || !storylineActive || !currentStory) return; advanced = true; showStoryItem(); };
   var speakIntro = function() {
     speakStoryAudio(story.id + '-intro', story.intro, goFirstItem);
   };
@@ -499,10 +508,13 @@ function playStory(storyId) {
   }
   // Safety: never strand the child on the cover page if the intro narration's
   // onEnd never fires (rare TTS edge) — advance to the first item after 12s.
-  setTimeout(goFirstItem, 12000);
+  // Assign to autoAdvanceTimer so showScreen/goHome's cleanup cancels it on exit
+  // (otherwise this orphaned timer fires goFirstItem after the child left).
+  autoAdvanceTimer = setTimeout(goFirstItem, 12000);
 }
 
 function showStoryItem() {
+  if (!currentStory) return; // belt-and-suspenders: child exited before this fired
   if (typeof stopAllPulses === 'function') stopAllPulses();
   if (typeof resetInactivity === 'function') resetInactivity();
   // Per-step hint reset. The hint system monkey-patches showCurrentItem (regular
@@ -625,6 +637,13 @@ function skipStoryItem() {
 function finishStory() {
   storylineActive = false;
   clearQuestChrome();
+  // End the dashboard session here too — the victory "Home" button routes through
+  // resetGame (not goHome), so without this the story session would dangle and
+  // never be recorded.
+  if (typeof dashboardEndSession === 'function' && typeof _currentSession !== 'undefined' && _currentSession) {
+    dashboardEndSession(_currentSession, storyItemsFound);
+    _currentSession = null;
+  }
   recordStoryComplete(currentStory.id);
 
   // Progress is already recorded per-find in storylineHandlePhotoSuccess with the
@@ -654,15 +673,22 @@ function finishStory() {
   if (againBtn) { againBtn.innerHTML = '🔄 Play Again!'; againBtn.onclick = function() { playStory(sid); }; }
   if (homeBtn) { homeBtn.onclick = function() { if (typeof resetGame === 'function') resetGame(); }; }
 
-  // Enhanced celebration
-  if (typeof celebrateCombo === 'function') {
-    celebrateCombo(5000);
-  } else if (typeof fireConfetti === 'function') {
-    fireConfetti(5000);
+  // Only celebrate "you found everything" when they actually did. A skipped/partial
+  // run shows the honest "N/total" stat with no trophy (above), so the spoken outro
+  // ("You found everything!") must not contradict it. On a partial run, play just
+  // the victory chime — no full confetti, no celebratory outro (and no new spoken
+  // line, which would fall to the robot voice per the audio convention).
+  if (found >= total) {
+    if (typeof celebrateCombo === 'function') {
+      celebrateCombo(5000);
+    } else if (typeof fireConfetti === 'function') {
+      fireConfetti(5000);
+    }
+    if (typeof playVictorySound === 'function') playVictorySound();
+    speakStoryAudio(currentStory.id + '-outro', currentStory.outro);
+  } else {
+    if (typeof playVictorySound === 'function') playVictorySound();
   }
-  if (typeof playVictorySound === 'function') playVictorySound();
-
-  speakStoryAudio(currentStory.id + '-outro', currentStory.outro);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -673,8 +699,13 @@ function finishStory() {
 
 function storylineHandlePhotoSuccess() {
   if (!storylineActive) return false; // Not a story — let normal flow handle it
+  // Clear the hint 💡 immediately on a find. Normal hunts do this (app.js
+  // hideHintButton — "don't let the 💡 linger through the celebration"); the story
+  // branch returns before that call, so the button hung through the celebration.
+  if (typeof hideHintButton === 'function') hideHintButton();
 
   storyItemsFound++;
+  if (typeof _currentSession !== 'undefined' && _currentSession) _currentSession.found++;
   var step = currentStory.steps[storyStepIndex];
 
   // Storybook: fox celebrates, bubble shows the found line, trail stone checks off
@@ -688,19 +719,33 @@ function storylineHandlePhotoSuccess() {
   // Story finds count toward the Daily Challenge streak too.
   if (typeof DailyStreak !== 'undefined' && DailyStreak.onItemFound) DailyStreak.onItemFound(step.category, step.item);
 
-  // Speak the found text (recorded story voice), then auto-advance
-  speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-found', step.foundText);
+  // Bilingual echo on success — parity with normal hunts (app.js): after the found
+  // line, replay the foreign word in the recorded coral voice + show the badge, so
+  // the free Spanish hook is reinforced inside the story too. Chained on the found
+  // clip's onEnd so it never overlaps (single audio channel); the auto-advance is
+  // extended by the echo duration so the word isn't cut off.
+  var echoItem = shuffledItems[storyStepIndex];
+  var echo = (typeof bilingualActive === 'function' && bilingualActive() && typeof getTranslationByName === 'function')
+    ? getTranslationByName(phTranslationLookupName(step.item, step.category)) : null;
+  var echoMs = echo ? 4000 : 0;
+  speakStoryAudio(currentStory.id + '-step' + (storyStepIndex + 1) + '-found', step.foundText, function() {
+    if (echo && typeof speakForeignWordForItem === 'function') {
+      var bubble = document.querySelector('#quest-chrome .quest-bubble');
+      if (bubble) bubble.innerHTML = step.foundText + ' <span class="translation-echo">' + echo.emoji + ' ' + echo.word + '</span>';
+      speakForeignWordForItem(echoItem, function(){});
+    }
+  });
   if (typeof playSuccess === 'function') setTimeout(function() { playSuccess(); }, 300);
 
   // Auto-advance after delay. Assign to autoAdvanceTimer (NOT an anonymous timer)
   // so showScreen/goHome's existing cleanup cancels it — otherwise tapping Home
-  // within 4.5s of a find fires advanceStoryItem after currentStory is nulled
+  // within the window of a find fires advanceStoryItem after currentStory is nulled
   // (uncaught TypeError). The advanceStoryItem null-guard backs this up.
   if (typeof autoAdvanceTimer !== 'undefined' && autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
   autoAdvanceTimer = setTimeout(function() {
     if (typeof resetCameraUI === 'function') resetCameraUI();
     advanceStoryItem();
-  }, 4500);
+  }, 4500 + echoMs);
 
   return true; // Handled by storyline
 }

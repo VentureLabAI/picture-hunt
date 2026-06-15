@@ -1372,7 +1372,21 @@ function goHome() {
   // (and can include placeholder items), so saving them as a normal "Continue"
   // record yields a scrambled resume — skip the save when leaving a story.
   var wasStory = (typeof storylineActive !== 'undefined' && storylineActive);
-  if (wasStory) { storylineActive = false; currentStory = null; }
+  if (wasStory) {
+    storylineActive = false; currentStory = null;
+    // Clear the story chrome (fox/bubble/trail + the story-mode/quest-cover classes
+    // on #game). Without this the NEXT normal hunt renders with its playable area
+    // hidden by the `.quest-cover` CSS — no target, no camera, no skip — so the game
+    // looks bricked until an app relaunch, with no in-app recovery a child/parent
+    // would find. (storylineHandleGoHome did this but was never wired into goHome.)
+    if (typeof clearQuestChrome === 'function') clearQuestChrome();
+    // Stop any still-playing intro/bridge narration so it doesn't bleed onto the
+    // splash after leaving a story mid-line (single audio channel).
+    if (typeof currentAudioSource !== 'undefined' && currentAudioSource) {
+      try { currentAudioSource.stop(); } catch (e) {}
+      currentAudioSource = null;
+    }
+  }
   // End dashboard session if mid-game
   if (typeof dashboardEndSession === 'function' && _currentSession) {
     dashboardEndSession(_currentSession, _currentSession.found);
