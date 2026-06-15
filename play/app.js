@@ -380,9 +380,14 @@ var SVG_VOL_OFF = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" s
 
 function toggleSound() {
   soundEnabled = !soundEnabled;
-  localStorage.setItem('PH_SOUND', soundEnabled ? 'on' : 'off');
+  lsSet('PH_SOUND', soundEnabled ? 'on' : 'off');
   var btn = document.getElementById('sound-toggle');
-  if (btn) btn.innerHTML = soundEnabled ? SVG_VOL_ON : SVG_VOL_OFF;
+  if (btn) {
+    btn.innerHTML = soundEnabled ? SVG_VOL_ON : SVG_VOL_OFF;
+    // Expose state to assistive tech — the icon swap alone is invisible to screen readers.
+    btn.setAttribute('aria-pressed', soundEnabled);
+    btn.setAttribute('aria-label', soundEnabled ? 'Sound on' : 'Sound off');
+  }
   if (soundEnabled) playClick();
 }
 
@@ -732,10 +737,10 @@ function renderSplash() {
   if (!grid) return;
 
   // Difficulty selector HTML (above categories)
-  var diffHtml = '<div class="difficulty-selector">'
-    + '<button class="diff-btn' + (currentDifficulty === 'easy' ? ' active' : '') + '" onclick="setDifficulty(\'easy\')">⭐ Easy</button>'
-    + '<button class="diff-btn' + (currentDifficulty === 'medium' ? ' active' : '') + '" onclick="setDifficulty(\'medium\')">⭐⭐ Medium</button>'
-    + '<button class="diff-btn' + (currentDifficulty === 'hard' ? ' active' : '') + '" onclick="setDifficulty(\'hard\')">⭐⭐⭐ Hard</button>'
+  var diffHtml = '<div class="difficulty-selector" role="group" aria-label="Difficulty">'
+    + '<button class="diff-btn' + (currentDifficulty === 'easy' ? ' active' : '') + '" aria-pressed="' + (currentDifficulty === 'easy') + '" onclick="setDifficulty(\'easy\')">⭐ Easy</button>'
+    + '<button class="diff-btn' + (currentDifficulty === 'medium' ? ' active' : '') + '" aria-pressed="' + (currentDifficulty === 'medium') + '" onclick="setDifficulty(\'medium\')">⭐⭐ Medium</button>'
+    + '<button class="diff-btn' + (currentDifficulty === 'hard' ? ' active' : '') + '" aria-pressed="' + (currentDifficulty === 'hard') + '" onclick="setDifficulty(\'hard\')">⭐⭐⭐ Hard</button>'
     + '</div>';
 
   // Language selector — bilingual mode is a core feature, copy reflects that
@@ -768,7 +773,9 @@ function renderSplash() {
     title.insertAdjacentHTML('afterend', diffHtml + langHtml);
   } else if (title) {
     document.querySelectorAll('.diff-btn').forEach(function(btn, idx) {
-      btn.className = 'diff-btn' + (['easy','medium','hard'][idx] === currentDifficulty ? ' active' : '');
+      var isActive = ['easy','medium','hard'][idx] === currentDifficulty;
+      btn.className = 'diff-btn' + (isActive ? ' active' : '');
+      btn.setAttribute('aria-pressed', isActive);
     });
     var existingLang = document.querySelector('.lang-selector');
     if (existingLang) { existingLang.outerHTML = langHtml; }
@@ -798,6 +805,7 @@ function renderSplash() {
 
     html += '<button class="' + classes + '" '
       + 'style="background:' + cat.gradient + '" '
+      + (locked ? 'aria-label="' + cat.name + ', premium — tap to unlock" ' : '')
       + 'onclick="playCategory(\'' + catId + '\')">'
       + '<div class="cat-emoji"><img class="cat-tile-img" src="img/tiles/' + catId + '.png" alt="" loading="lazy"></div>'
       + '<div class="cat-info">'

@@ -16,12 +16,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=134">
-  <link rel="stylesheet" href="parent-dashboard.css?v=134">
-  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=134">
-  <link rel="stylesheet" href="content/sticker-book.css?v=134">
-  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=134">
-  <link rel="stylesheet" href="paywall.css?v=134">
+  <link rel="stylesheet" href="style.css?v=135">
+  <link rel="stylesheet" href="parent-dashboard.css?v=135">
+  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=135">
+  <link rel="stylesheet" href="content/sticker-book.css?v=135">
+  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=135">
+  <link rel="stylesheet" href="paywall.css?v=135">
 </head>
 <body>
   <!-- Rotate-to-portrait lock (phones in landscape — the game is portrait-only) -->
@@ -50,7 +50,7 @@
       <div id="category-grid" class="category-grid"></div>
       <div class="splash-bottom">
         <button id="setup-btn" class="setup-icon-btn" onclick="openSetup()" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
-        <button id="sound-toggle" class="setup-icon-btn" onclick="toggleSound()" aria-label="Toggle sound"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg></button>
+        <button id="sound-toggle" class="setup-icon-btn" onclick="toggleSound()" aria-pressed="true" aria-label="Sound on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg></button>
       </div>
     </div>
   </div>
@@ -87,7 +87,7 @@
     <div id="camera-area" class="camera-area">
       <label id="camera-label" class="big-btn camera-btn" role="button" aria-label="Take a photo">
         <span aria-hidden="true">📷</span>
-        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)">
+        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)" aria-label="Take a photo">
       </label>
     </div>
     <div class="skip-area">
@@ -121,21 +121,21 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="content/translations/languages-config.js?v=134"></script>
-  <script src="content/translations/all-translations.js?v=134"></script>
-  <script src="content/translations/foreign-audio-manifest.js?v=134"></script>
-  <script src="app.js?v=134"></script>
-  <script src="paywall.js?v=134"></script>
-  <script src="progress-sync.js?v=134"></script>
-  <script src="install-prompt.js?v=134"></script>
-  <script src="content/rich-sound-fx.js?v=134"></script>
-  <script src="hint-system.js?v=134"></script>
-  <script src="content/animations/new-celebrations.js?v=134"></script>
-  <script src="content/sticker-book.js?v=134"></script>
-  <script src="content/daily-challenge-streak.js?v=134"></script>
-  <script src="parent-dashboard.js?v=134"></script>
-  <script src="storyline-mode.js?v=134"></script>
-  <script src="content/seasonal-manager.js?v=134"></script>
-  <script src="sw-register.js?v=134"></script>
+  <script src="content/translations/languages-config.js?v=135"></script>
+  <script src="content/translations/all-translations.js?v=135"></script>
+  <script src="content/translations/foreign-audio-manifest.js?v=135"></script>
+  <script src="app.js?v=135"></script>
+  <script src="paywall.js?v=135"></script>
+  <script src="progress-sync.js?v=135"></script>
+  <script src="install-prompt.js?v=135"></script>
+  <script src="content/rich-sound-fx.js?v=135"></script>
+  <script src="hint-system.js?v=135"></script>
+  <script src="content/animations/new-celebrations.js?v=135"></script>
+  <script src="content/sticker-book.js?v=135"></script>
+  <script src="content/daily-challenge-streak.js?v=135"></script>
+  <script src="parent-dashboard.js?v=135"></script>
+  <script src="storyline-mode.js?v=135"></script>
+  <script src="content/seasonal-manager.js?v=135"></script>
+  <script src="sw-register.js?v=135"></script>
 </body>
 </html>
