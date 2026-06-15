@@ -70,8 +70,12 @@ var InstallPrompt = (function() {
     if (isInstalled() || dismissed() || recentlyShown()) return;
     if (!deferredPrompt && !isIOS()) return;
     // Don't pop the pill over a higher-priority first-run card / fox greeting — those
-    // are one-time and must not be obscured. Re-check shortly after they dismiss.
-    if (document.getElementById('first-run-setup') || document.getElementById('home-greeting')) {
+    // are one-time and must not be obscured. The first-run card is appended ~400ms
+    // after splash becomes active, so checking for the ELEMENT alone leaves a race;
+    // defer until first-run is actually COMPLETE (a dismiss sets PH_FIRST_RUN_DONE).
+    var firstRunPending = false;
+    try { firstRunPending = !localStorage.getItem('PH_FIRST_RUN_DONE'); } catch (e) {}
+    if (firstRunPending || document.getElementById('first-run-setup') || document.getElementById('home-greeting')) {
       if (pillPollTimer) clearTimeout(pillPollTimer);
       pillPollTimer = setTimeout(maybeShowPill, 500);
       return;
