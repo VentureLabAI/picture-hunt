@@ -378,7 +378,7 @@ function _confirmReset() {
   overlay.id = 'dashboard-confirm-reset';
   overlay.className = 'dashboard-confirm-overlay';
   overlay.innerHTML = '<div class="dashboard-confirm-box">'
-    + '<div class="dashboard-confirm-text">Reset all category progress?<br>Your stickers and streak are kept. This cannot be undone.</div>'
+    + '<div class="dashboard-confirm-text">Reset all category progress?<br>Your stickers and streak are kept.</div>'
     + '<button class="dashboard-confirm-yes" onclick="_doReset()">Yes, Reset</button>'
     + '<button class="dashboard-confirm-no" onclick="document.getElementById(\'dashboard-confirm-reset\').remove()">Cancel</button>'
     + '</div>';
@@ -386,9 +386,15 @@ function _confirmReset() {
 }
 
 function _doReset() {
-  localStorage.removeItem('PH_PROGRESS');
+  // Write an EMPTY object rather than removeItem: for premium (synced) accounts the
+  // ProgressSync hook patches setItem only, so removeItem fires no upload and the
+  // server's prior union snapshot re-adds everything on the next download
+  // (resurrecting the "reset" progress). setItem('{}') goes through the hook AND
+  // makes the server snapshot empty, so the union has nothing to re-add.
+  localStorage.setItem('PH_PROGRESS', '{}');
   localStorage.removeItem('PH_STATS');
   localStorage.removeItem('PH_GAME_STATE');
+  if (typeof ProgressSync !== 'undefined' && ProgressSync.upload) ProgressSync.upload(); // flush cleared state now
   var overlay = document.getElementById('dashboard-confirm-reset');
   if (overlay) overlay.remove();
   _renderDashboard(); // re-render with empty state

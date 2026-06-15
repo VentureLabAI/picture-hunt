@@ -25,6 +25,9 @@ var ProgressSync = (function() {
   var DEBOUNCE_MS = 3000;
   var uploadTimer = null;
   var initialized = false;
+  var syncReady = false;     // becomes true once the initial download+merge reconciles
+  var pendingUpload = false;  // a local change was made before ready, or an upload failed
+  var hookInstalled = false;  // setItem hook + online listener installed exactly once
 
   function getCode() {
     if (typeof Paywall === 'undefined' || !Paywall.isPremium()) return null;
@@ -52,14 +55,19 @@ var ProgressSync = (function() {
       body: JSON.stringify({ code: code, action: 'upload', data: snapshot() })
     }).then(function(r) { return r.json(); })
       .then(function(j) {
-        if (!j.ok) console.log('[Sync] upload failed:', j.error);
+        if (j && j.ok) { pendingUpload = false; }
+        else { pendingUpload = true; if (window.PH_DEBUG) console.log('[Sync] upload failed:', j && j.error); }
       })
-      .catch(function() { /* network failure — try again next change */ });
+      .catch(function() { pendingUpload = true; /* offline — flushed on next change or 'online' */ });
   }
 
   // Debounced upload — schedule on next change
   function scheduleUpload() {
     if (!getCode()) return;
+    // Defer ALL uploads until the initial download+merge has reconciled, or a write
+    // made during boot would upload local-only data and clobber newer remote KV we
+    // hadn't pulled yet. The deferred change is flushed when syncReady flips true.
+    if (!syncReady) { pendingUpload = true; return; }
     if (uploadTimer) clearTimeout(uploadTimer);
     uploadTimer = setTimeout(upload, DEBOUNCE_MS);
   }
@@ -121,13 +129,19 @@ var ProgressSync = (function() {
       }
     }
 
-    // PH_DAILY: pick the higher streak
+    // PH_DAILY: adopt whichever record is MORE RECENT (its streak is the true
+    // current one), not whichever streak is bigger. Picking the higher streak could
+    // install a stale older record (higher streak, week-old lastDate); the next
+    // checkAndUpdateStreak then sees a huge gap and resets to 0 — so syncing would
+    // DESTROY an active streak instead of preserving it. lastDate is YYYY-MM-DD, so
+    // string compare is chronological; on a same-date tie keep the higher streak.
     if (remote.PH_DAILY) {
       var localDaily = {};
       try { localDaily = JSON.parse(localStorage.getItem('PH_DAILY') || '{}'); } catch(e) {}
-      var rStreak = remote.PH_DAILY.streak || 0;
-      var lStreak = localDaily.streak || 0;
-      if (rStreak > lStreak) {
+      var rDate = remote.PH_DAILY.lastDate || '';
+      var lDate = localDaily.lastDate || '';
+      var takeRemote = (rDate > lDate) || (rDate === lDate && (remote.PH_DAILY.streak || 0) > (localDaily.streak || 0));
+      if (takeRemote) {
         localStorage.setItem('PH_DAILY', JSON.stringify(remote.PH_DAILY));
         changed = true;
       }
@@ -150,20 +164,28 @@ var ProgressSync = (function() {
   // This is the only way to catch every write site without modifying every
   // module that touches progress.
   function installSetItemHook() {
+    if (hookInstalled) return; // idempotent — onUnlock re-runs init(); don't nest wrappers
+    hookInstalled = true;
     var orig = localStorage.setItem.bind(localStorage);
     localStorage.setItem = function(key, value) {
       var rv = orig(key, value);
       if (SYNCED_KEYS.indexOf(key) !== -1) scheduleUpload();
       return rv;
     };
+    // Flush deferred/failed uploads when connectivity returns (added once).
+    window.addEventListener('online', function() { if (getCode() && pendingUpload) scheduleUpload(); });
   }
 
   function init() {
     if (initialized) return;
     initialized = true;
     if (!getCode()) return;  // Free user — no sync.
+    syncReady = false;       // re-gate uploads until this run's merge reconciles
     installSetItemHook();
     downloadAndMerge().then(function(merged) {
+      // Initial reconcile done — uploads are now safe (won't clobber unpulled KV).
+      syncReady = true;
+      if (pendingUpload) scheduleUpload(); // flush any change deferred during boot
       if (merged && typeof renderSplash === 'function') {
         // Refresh splash so newly-synced progress + stickers reflect immediately
         renderSplash();
