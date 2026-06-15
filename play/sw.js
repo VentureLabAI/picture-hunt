@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v138';
+var CACHE_VERSION = 'ph-v139';
 var CACHE_NAME = CACHE_VERSION + '-static';
 
 // All files to pre-cache on install
@@ -281,15 +281,9 @@ var PRECACHE_URLS = [
   './audio/sticker-book-empty.mp3',
   './audio/sticker-book-some.mp3',
   './audio/streak-milestone.mp3',
-  './audio/sort-need-more.mp3',
-  './audio/sorting-victory.mp3',
-  './audio/sorting-safari-intro.mp3',
-  './audio/phonics-hunt-intro.mp3',
-  './audio/practice-need-more.mp3',
-  './audio/practice-complete.mp3',
-  './audio/round-complete.mp3',
-  './audio/stickers-amazing.mp3',
-  './audio/memory-amazing.mp3'
+  './audio/stickers-amazing.mp3'
+  // Removed dead cut-mode clips (sorting-safari / phonics-hunt / memory / practice /
+  // round-complete) — those modules aren't loaded by index.html. Wave 10.
   // Note: find-chair, find-lamp, find-hat, find-sock already listed above (shared with Things)
 ];
 

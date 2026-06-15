@@ -455,7 +455,7 @@ function startInactivity() {
 
     // At 12s: stop camera pulse, say "tap to hear again", pulse repeat button
     if (inactivitySeconds === 12) {
-      console.log('[PH] Inactivity 12s: nudge hear-again');
+      if (window.PH_DEBUG) console.log('[PH] Inactivity 12s: nudge hear-again');
       stopPulse('camera');
       speak('Tap here to hear it again!');
       var repeatBtn = document.querySelector('.repeat-btn');
@@ -464,7 +464,7 @@ function startInactivity() {
 
     // At 25s: stop repeat pulse, say "try again or skip"
     if (inactivitySeconds === 25) {
-      console.log('[PH] Inactivity 25s: nudge try/skip');
+      if (window.PH_DEBUG) console.log('[PH] Inactivity 25s: nudge try/skip');
       stopPulse('repeat');
       speak('Try again, or skip to the next one!');
       var skipBtn = document.querySelector('.skip-btn');
@@ -473,7 +473,7 @@ function startInactivity() {
 
     // At 40s: go quiet, stop everything
     if (inactivitySeconds >= 40) {
-      console.log('[PH] Inactivity 40s: going quiet');
+      if (window.PH_DEBUG) console.log('[PH] Inactivity 40s: going quiet');
       stopAllPulses();
       stopInactivity();
     }
@@ -982,6 +982,10 @@ function setupDone() {
 // ═══════════════════════════════════════════════════════════════
 var audioBufferCache = {};
 var currentAudioSource = null;
+// Bumped on every speak(); a pending playKeyWhenReady (cold-start) checks it so a
+// superseded call can't fall back to TTS or play its late-decoded buffer over the
+// clip that replaced it.
+var _speakGen = 0;
 
 // Preload audio files into Web Audio API buffers (bypasses iOS autoplay restrictions).
 // Returns a promise that resolves when the clip is decoded, and de-dupes in-flight
@@ -1014,14 +1018,18 @@ function preloadAllAudio() {
     'tap-to-hear','you-did-it','champion','cat-things','cat-shapes','cat-colors',
     'cat-animals','cat-food','cat-furniture','cat-clothing',
     'cat-halloween','cat-christmas','cat-spring',
-    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sticker-book-some','streak-milestone','sort-need-more','sorting-victory','sorting-safari-intro','phonics-hunt-intro','practice-need-more','practice-complete','round-complete','stickers-amazing','memory-amazing'
+    'halloween-victory','christmas-victory','spring-victory','hint-tap-lightbulb','keep-looking','lets-try-next','pick-category-first','ready-next-level','found-now-next','not-quite','sticker-book-empty','sticker-book-some','streak-milestone','stickers-amazing'
   ];
-  // Preload all find prompts (skip items with speakOverride — those use TTS)
+  // Preload every find prompt, INCLUDING speakOverride items (keys/bread/milk/Santa…).
+  // speakItem now routes overrides through recorded clips too, so warm the prompt's
+  // ACTUAL spoken text (promptFor honors the override) — otherwise the first
+  // encounter of an override item loses the 1200ms playKeyWhenReady race and stutters
+  // to the robot voice. (The colour "orange" prompt maps to find-color-orange here.)
   Object.keys(CATEGORIES).forEach(function(catId) {
     var cat = CATEGORIES[catId];
     cat.items.forEach(function(item) {
-      if (item.speakOverride) return;
-      var k = textToAudioKey(cat.speakPrompt(item.name));
+      var spoken = (typeof promptFor === 'function') ? promptFor(item, cat) : cat.speakPrompt(item.name);
+      var k = textToAudioKey(spoken);
       if (k) keys.push(k);
     });
   });
@@ -1039,7 +1047,14 @@ function playBuffer(key, onEnd) {
     var source = ctx.createBufferSource();
     source.buffer = buf;
     source.connect(ctx.destination);
-    source.onended = function() { if (currentAudioSource === source) currentAudioSource = null; if (onEnd) onEnd(); };
+    source.onended = function() {
+      // Fire onEnd ONLY on natural completion. When startIt() stops the prior source
+      // to make way for a new clip, that stopped source's onended still fires async —
+      // by then currentAudioSource is the NEW source, so this guard skips the stale
+      // clip's onEnd, which would otherwise run the interrupted prompt's follow-on
+      // (foreign echo, camera pulse, inactivity timer) on top of the current clip.
+      if (currentAudioSource === source) { currentAudioSource = null; if (onEnd) onEnd(); }
+    };
     try { source.start(0); } catch(e) { currentAudioSource = null; if (onEnd) onEnd(); return; }
     currentAudioSource = source;
   }
@@ -1114,8 +1129,12 @@ function textToAudioKey(text) {
 }
 
 function speak(text, onEnd) {
-  console.log('[PH] speak("' + text.substring(0, 30) + '...")');
+  if (window.PH_DEBUG) console.log('[PH] speak("' + text.substring(0, 30) + '...")');
   if (!soundEnabled) { if (onEnd) onEnd(); return; }
+
+  // Supersede any in-flight cold-start speak (its playKeyWhenReady will bail).
+  _speakGen++;
+  var myGen = _speakGen;
 
   // Stop any current audio
   if (currentAudioSource) { try { currentAudioSource.stop(); } catch(e) {} currentAudioSource = null; }
@@ -1129,7 +1148,7 @@ function speak(text, onEnd) {
     // Buffer not decoded yet (cold start). Wait briefly for THIS clip rather than
     // racing straight to (often-silent) speechSynthesis — this is the root-cause
     // fix for "the voice plays sometimes, sometimes it doesn't."
-    playKeyWhenReady(key, text, onEnd);
+    playKeyWhenReady(key, text, onEnd, myGen);
     return;
   }
 
@@ -1138,17 +1157,23 @@ function speak(text, onEnd) {
 
 // Load one clip's buffer, then play it; if it isn't ready within a short window
 // (or fails to load), fall back to speechSynthesis so we never hang silently.
-function playKeyWhenReady(key, text, onEnd) {
+function playKeyWhenReady(key, text, onEnd, gen) {
   var settled = false;
+  // If a newer speak() has superseded this one, bail silently (no fallback, no late
+  // buffer) so we never speak a stale prompt over the current clip.
+  var superseded = function() { return typeof gen !== 'undefined' && gen !== _speakGen; };
   var to = setTimeout(function() {
     if (settled) return; settled = true;
+    if (superseded()) return;
     speakFallback(text, onEnd);
   }, 1200);
   preloadAudio(key).then(function() {
     if (settled) return; settled = true; clearTimeout(to);
+    if (superseded()) return;
     if (!playBuffer(key, onEnd)) speakFallback(text, onEnd);
   }).catch(function() {
     if (settled) return; settled = true; clearTimeout(to);
+    if (superseded()) return;
     speakFallback(text, onEnd);
   });
 }
@@ -1298,7 +1323,7 @@ function showCurrentItem() {
   // Speak the prompt, then (in bilingual mode) speak the foreign word, then
   // start pulsing camera + inactivity.
   speakItem(item, cat, function() {
-    console.log('[PH] Prompt spoken, starting camera pulse + inactivity');
+    if (window.PH_DEBUG) console.log('[PH] Prompt spoken, starting camera pulse + inactivity');
     speakForeignWordForItem(item, function() {
       startPulse(cameraLabel, 'camera');
       startInactivity();
@@ -1341,6 +1366,11 @@ function playForeignClip(key, word, speechLang, onEnd) {
   if (!soundEnabled) { if (onEnd) onEnd(); return; }
   var done = false;
   var finish = function() { if (done) return; done = true; if (onEnd) onEnd(); };
+  // Time-boxed safety: preloadAudio is a bare fetch with no internal timeout, so a
+  // stalled network would otherwise leave the prompt chain (camera pulse +
+  // inactivity) never armed. finish is idempotent (done flag), so a clip that
+  // completes first still wins; this only fires if the fetch/decode hangs.
+  setTimeout(finish, 1800);
   if (foreignClipAvailable(key)) {
     preloadAudio(key).then(function() {
       playBuffer(key, function() { setTimeout(finish, 150); });
@@ -1465,7 +1495,7 @@ function showVictory() {
     speak(seasonalVictory[currentCategory]);
   } else {
     speak(complete
-      ? 'Amazing! You found every single ' + cat.name.toLowerCase().replace(/s$/, '') + '! You are a champion!'
+      ? 'Amazing! You found everything! You are a champion!'
       : 'You did it! You found everything! Great job!');
   }
 }
