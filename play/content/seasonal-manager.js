@@ -252,6 +252,11 @@ var SeasonalManager = (function() {
     if (typeof renderSplash === 'function') {
       renderSplash();
     }
+    // The seasonal toggles live IN the parent dashboard, so if it's open re-render it
+    // too — otherwise tapping a toggle only updated the hidden splash behind it and
+    // the control gave no visual feedback.
+    var d = document.getElementById('dashboard-screen');
+    if (d && d.style.display !== 'none' && typeof _renderDashboard === 'function') _renderDashboard();
   }
 
   /**

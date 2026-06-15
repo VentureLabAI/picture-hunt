@@ -486,7 +486,7 @@ function startInactivity() {
 function getProgress() {
   try { return JSON.parse(localStorage.getItem('PH_PROGRESS') || '{}'); } catch(e) { return {}; }
 }
-function saveProgress(p) { localStorage.setItem('PH_PROGRESS', JSON.stringify(p)); }
+function saveProgress(p) { lsSet('PH_PROGRESS', JSON.stringify(p)); } // storage-safe: a thrown setItem (Private mode / quota) must not brick a find mid-game
 function recordProgress(catId, itemName) {
   var p = getProgress();
   if (!p[catId]) p[catId] = [];
@@ -1785,6 +1785,10 @@ function forceAccept() {
   }
   recordProgress(currentCategory, shuffledItems[currentIndex].name);
   if (_currentSession) _currentSession.found++; // parent-override find also counts in the session log
+  // A parent-confirmed find should also advance the daily challenge + streak, exactly
+  // like a normal find — otherwise overriding today's daily item leaves the card on
+  // "Find this today!" and the streak stalls. (Cap is left lenient: no recordPlay.)
+  if (typeof DailyStreak !== 'undefined' && DailyStreak.onItemFound) DailyStreak.onItemFound(currentCategory, shuffledItems[currentIndex].name);
   // Use sticker pop for parent override
   if (typeof celebrateStickerPop === 'function') {
     celebrateStickerPop('👏', 1500);
@@ -1860,7 +1864,14 @@ async function identifyObject(base64Data, mimeType) {
   var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
     data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
     data.candidates[0].content.parts[0].text) || '';
-  console.log('Gemini:', text, '| Looking for:', item.name, '(' + currentCategory + ')');
+  if (window.PH_DEBUG) console.log('Gemini:', text, '| Looking for:', item.name, '(' + currentCategory + ')');
+  if (!text.trim()) {
+    // 200 OK but no usable answer (safety-blocked or empty candidates). This is NOT
+    // the AI saying "no" — treat it as a service hiccup so the child sees the
+    // friendly "Camera Nap" card and the streak isn't reset, never a false "Not quite!".
+    console.error('[PH] recognition returned an empty/blocked 200 response');
+    var emptyErr = new Error('service'); emptyErr.status = 200; throw emptyErr;
+  }
   return text.trim().toLowerCase();
 }
 

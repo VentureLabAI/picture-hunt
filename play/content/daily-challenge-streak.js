@@ -182,8 +182,11 @@ var DailyStreak = (function() {
     if (data.lastDate === yesterdayStr() || !data.lastDate) {
       // Continuing streak or first ever
       data.streak++;
-    } else if (daysBetween(data.lastDate, today) === 2 && data.freezes >= 0) {
-      // Used a freeze (already decremented in checkAndUpdateStreak)
+    } else if (daysBetween(data.lastDate, today) === 2) {
+      // Gap of one day: either a freeze preserved the streak (already decremented in
+      // checkAndUpdateStreak) or it was reset to 0 there; either way we advance/seed
+      // here. (Dropped the always-true `data.freezes >= 0` guard — freezes never goes
+      // negative, so it was dead/misleading.)
       data.streak++;
     }
     // else: streak was already reset to 0 in checkAndUpdateStreak, start fresh
@@ -264,7 +267,18 @@ var DailyStreak = (function() {
     setTimeout(function() { el.remove(); }, 3000);
 
     if (typeof speak === 'function') {
-      speak('Amazing! What a streak! Keep it up!');
+      // The milestone is reached DURING a find, so "You found it!" + the bilingual
+      // echo are about to play on the single audio channel and would cut this off
+      // (it fired immediately before). Wait until the channel is actually free, then
+      // speak — robust across bilingual (longer) and non-bilingual (shorter) timing.
+      var tries = 0;
+      var sayMilestone = function() {
+        if (typeof currentAudioSource !== 'undefined' && currentAudioSource && tries < 24) {
+          tries++; setTimeout(sayMilestone, 500); return;
+        }
+        speak('Amazing! What a streak! Keep it up!');
+      };
+      setTimeout(sayMilestone, 1500); // let "You found it!" start first, then poll for silence
     }
   }
 
@@ -346,6 +360,16 @@ var DailyStreak = (function() {
         if (statusEl) {
           statusEl.className = 'daily-status done';
           statusEl.textContent = '✅ Done!';
+        }
+        // Also refresh the streak count + header emoji — completeToday() just bumped
+        // the streak, but only the status text was updated, so the card showed a
+        // stale "🔥 N" until the next full re-render.
+        var streakEl = card.querySelector('.daily-streak');
+        if (streakEl) streakEl.textContent = '🔥 ' + updatedData.streak;
+        var labelEl = card.querySelector('.daily-label');
+        if (labelEl) {
+          var em = updatedData.streak >= 14 ? '🔥🔥' : updatedData.streak >= 7 ? '🔥' : updatedData.streak >= 3 ? '🌟' : '📅';
+          labelEl.textContent = em + ' Daily Challenge';
         }
         card.onclick = null;
         card.style.cursor = 'default';

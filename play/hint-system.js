@@ -311,6 +311,9 @@ function onHintTap() {
       updateHintButton();
     }
   };
+  // Respect the mute toggle: the bubble is enough when sound is off. playBuffer()
+  // (unlike speak()) doesn't check soundEnabled, so hints used to talk while muted.
+  if (typeof soundEnabled !== 'undefined' && !soundEnabled) { afterHint(); return; }
   if (typeof playBuffer === 'function' && playBuffer(hintKey, afterHint)) {
     // Recorded clip already decoded in memory — play it.
   } else if (typeof preloadAudio === 'function') {
