@@ -133,7 +133,9 @@
   gap: 8px;
   padding: 8px 4px 4px;
   transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-  max-height: 600px;
+  /* Above the tallest category so the largest pack isn't clipped on narrow phones;
+     the modal's own overflow-y:auto handles scrolling. Collapsed rule still wins. */
+  max-height: 2000px;
   opacity: 1;
 }
 
@@ -183,10 +185,8 @@
   border: 2px dashed rgba(27,17,64,0.18);
   opacity: 0.7;
 }
-
-.sticker-slot:active {
-  transform: scale(0.92);
-}
+/* (Removed the .sticker-slot:active press animation — slots have no tap handler,
+   so the press affordance was a dead/misleading cue.) */
 
 .sticker-emoji {
   font-size: 2.2rem;

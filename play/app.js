@@ -811,6 +811,7 @@ function renderSplash() {
 
     html += '<button class="' + classes + '" '
       + 'style="background:' + cat.gradient + '" '
+      + 'data-cat-id="' + catId + '" '
       + (locked ? 'aria-label="' + cat.name + ', premium — tap to unlock" ' : '')
       + 'onclick="playCategory(\'' + catId + '\')">'
       + '<div class="cat-emoji"><img class="cat-tile-img" src="img/tiles/' + catId + '.png" alt="" loading="lazy"></div>'
@@ -827,6 +828,13 @@ function renderSplash() {
   // so it survives unlock / difficulty / language / seasonal-toggle re-renders
   // instead of vanishing until the next home re-entry.
   if (typeof DailyStreak !== 'undefined' && DailyStreak.addCardToSplash) DailyStreak.addCardToSplash();
+
+  // The innerHTML rebuild also dropped the per-category 📕 sticker badges. Re-apply
+  // them here (addButtonToSplash is dedupe-guarded for the button and re-runs
+  // updateCategoryCardBadges) so they survive EVERY direct renderSplash caller
+  // (difficulty / language / unlock / first-run / seasonal toggle), not just the
+  // onSplashEnter path that already calls addButtonToSplash afterward.
+  if (typeof StickerBook !== 'undefined' && StickerBook.addButtonToSplash) StickerBook.addButtonToSplash();
 
   // Free-tier play meter + upgrade CTA. Re-render-safe (uses fixed IDs).
   var meter = document.getElementById('play-meter');

@@ -57,7 +57,14 @@ var StickerBook = (function() {
 
   function getCategoryCount(catId) {
     var data = getAll();
-    return data[catId] ? Object.keys(data[catId]).length : 0;
+    var stored = data[catId];
+    if (!stored || typeof CATEGORIES === 'undefined' || !CATEGORIES[catId]) return 0;
+    // Count only stickers that still match a LIVE item in this category, so a
+    // renamed/removed item's stale key can't inflate the count past the real total
+    // (which would show "13/12" and overshoot the progress bar).
+    var live = 0;
+    CATEGORIES[catId].items.forEach(function(it) { if (stored[it.name]) live++; });
+    return live;
   }
 
   // The categories that count toward "my collection": everything currently
@@ -93,10 +100,10 @@ var StickerBook = (function() {
     var data = getAll();
     var total = 0;
     Object.keys(data).forEach(function(catId) {
-      // Ignore stickers stored under categories that no longer exist (stale data)
-      // so they can't inflate the count past the possible total.
+      // Ignore stickers under removed categories AND (via getCategoryCount) stale
+      // item keys within a live category, so the total can't exceed the possible.
       if (typeof CATEGORIES !== 'undefined' && !CATEGORIES[catId]) return;
-      total += Object.keys(data[catId]).length;
+      total += getCategoryCount(catId);
     });
     return total;
   }
@@ -154,7 +161,7 @@ var StickerBook = (function() {
     header.innerHTML = '<div class="sticker-book-title">📕 My Stickers</div>'
       + '<div class="sticker-book-count">' + totalCount + '/' + totalPossible + '</div>'
       + '<div class="sticker-book-progress-bar"><div class="sticker-book-progress-fill" style="width:'
-      + (totalPossible > 0 ? Math.round((totalCount / totalPossible) * 100) : 0) + '%"></div></div>';
+      + Math.min(100, totalPossible > 0 ? Math.round((totalCount / totalPossible) * 100) : 0) + '%"></div></div>';
     modal.appendChild(header);
 
     // Category sections — only the categories that count toward the collection
@@ -303,11 +310,15 @@ var StickerBook = (function() {
   }
 
   function updateCategoryCardBadges() {
-    if (typeof CATEGORIES === 'undefined' || typeof CATEGORY_ORDER === 'undefined') return;
+    if (typeof CATEGORIES === 'undefined') return;
     var cards = document.querySelectorAll('.category-card');
-    cards.forEach(function(card, idx) {
-      if (idx >= CATEGORY_ORDER.length) return;
-      var catId = CATEGORY_ORDER[idx];
+    cards.forEach(function(card) {
+      // Read the card's OWN category id, not its positional index into CATEGORY_ORDER:
+      // renderSplash drops out-of-season seasonal packs, so a positional map assigned
+      // the wrong category's count once a non-first seasonal pack was the only one
+      // visible (e.g. spring card showed halloween's count in June).
+      var catId = card.getAttribute('data-cat-id');
+      if (!catId || !CATEGORIES[catId]) return;
       var catCount = getCategoryCount(catId);
       var existing = card.querySelector('.sticker-cat-badge');
       if (catCount > 0) {
@@ -329,16 +340,17 @@ var StickerBook = (function() {
   function addStickersToVictory(catId) {
     var statsEl = document.getElementById('victory-stats');
     if (!statsEl) return;
+    if (typeof CATEGORIES === 'undefined' || !CATEGORIES[catId]) return; // unknown/empty category — no false "0/0 Complete!"
 
     var catCount = getCategoryCount(catId);
-    var catTotal = (typeof CATEGORIES !== 'undefined' && CATEGORIES[catId]) ? CATEGORIES[catId].items.length : 0;
+    var catTotal = CATEGORIES[catId].items.length;
 
     var stickerDiv = document.createElement('div');
     stickerDiv.className = 'victory-sticker-row';
     stickerDiv.innerHTML = '<span class="victory-sticker-icon">📕</span> '
       + catCount + '/' + catTotal + ' stickers collected';
 
-    if (catCount >= catTotal) {
+    if (catTotal > 0 && catCount >= catTotal) {
       stickerDiv.innerHTML += ' 🏆 Complete!';
       stickerDiv.classList.add('complete');
     }
