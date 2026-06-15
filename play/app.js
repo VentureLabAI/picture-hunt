@@ -903,9 +903,11 @@ function renderStorylineFeature(premium) {
 // ═══════════════════════════════════════════════════════════════
 var setupCategory = 'household';
 var setupSelection = new Set();
+var setupSelByCat = {}; // in-memory per-tab edits during a setup session (held even if <3)
 
 function openSetup() {
   setupCategory = 'household';  // always a free category, safe under paywall
+  setupSelByCat = {};           // fresh session — no carried-over transient edits
   setupSelection = new Set(getSelectedNames(setupCategory));
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
 }
@@ -928,9 +930,13 @@ function renderSetupTabs() {
   tabsEl.innerHTML = html;
 }
 function switchSetupTab(catId) {
+  // Hold the current tab's edit in memory (even if <3) so returning to it restores
+  // the in-progress selection instead of silently discarding it. Only PERSIST valid
+  // (>=3) sets — an under-3 set lives in memory only, never saved.
+  setupSelByCat[setupCategory] = Array.from(setupSelection);
   if (setupSelection.size >= 3) saveSelectedNames(setupCategory, Array.from(setupSelection));
   setupCategory = catId;
-  setupSelection = new Set(getSelectedNames(catId));
+  setupSelection = new Set(setupSelByCat[catId] || getSelectedNames(catId));
   renderSetupTabs(); renderSetupGrid();
 }
 function renderSetupGrid() {
@@ -977,9 +983,18 @@ function setupSelectAll() { playClick(); setupSelection = new Set(CATEGORIES[set
 function setupClearAll() { playClick(); setupSelection = new Set(); renderSetupGrid(); }
 function setupDone() {
   if (setupSelection.size < 3) return;
-  playClick(); saveSelectedNames(setupCategory, Array.from(setupSelection));
-  var gs = null; try { gs = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
-  if (gs && gs.category === setupCategory) localStorage.removeItem('PH_GAME_STATE');
+  playClick();
+  var newNames = Array.from(setupSelection);
+  var oldNames = getSelectedNames(setupCategory); // capture BEFORE save
+  saveSelectedNames(setupCategory, newNames);
+  // Only invalidate a saved resume when THIS category's selection actually CHANGED.
+  // Previously every Done wiped the in-progress hunt even if nothing was edited.
+  var same = oldNames.length === newNames.length
+    && oldNames.slice().sort().join('|') === newNames.slice().sort().join('|');
+  if (!same) {
+    var gs = null; try { gs = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+    if (gs && gs.category === setupCategory) localStorage.removeItem('PH_GAME_STATE');
+  }
   showScreen('splash');
 }
 

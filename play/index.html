@@ -16,28 +16,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=141">
-  <link rel="stylesheet" href="parent-dashboard.css?v=141">
-  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=141">
-  <link rel="stylesheet" href="content/sticker-book.css?v=141">
-  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=141">
-  <link rel="stylesheet" href="paywall.css?v=141">
+  <link rel="stylesheet" href="style.css?v=142">
+  <link rel="stylesheet" href="parent-dashboard.css?v=142">
+  <link rel="stylesheet" href="content/animations/new-celebrations.css?v=142">
+  <link rel="stylesheet" href="content/sticker-book.css?v=142">
+  <link rel="stylesheet" href="content/daily-challenge-streak.css?v=142">
+  <link rel="stylesheet" href="paywall.css?v=142">
 </head>
 <body>
   <!-- Rotate-to-portrait lock (phones in landscape — the game is portrait-only) -->
-  <div id="rotate-lock" aria-hidden="true">
-    <img src="img/mascot/fox-think.png" alt="">
-    <p>Turn your device upright<br>to play! 🔄</p>
+  <div id="rotate-lock" role="status" aria-live="polite">
+    <img src="img/mascot/fox-think.png" alt="" aria-hidden="true">
+    <p>Turn your device upright to play! 🔄</p>
   </div>
 
   <!-- Landing Screen -->
   <div id="landing" class="screen active">
     <div class="landing-content">
       <img class="landing-fox" src="img/mascot/fox-hero.png" alt="" aria-hidden="true">
-      <h1 class="title-bounce">📸 Picture Hunt!</h1>
+      <h1 class="title-bounce"><span aria-hidden="true">📸</span> Picture Hunt!</h1>
       <p class="landing-sub">A photo adventure awaits!</p>
       <button class="landing-play-btn pulse" onclick="startFromLanding()">
-        📷 Let's Play!
+        <span aria-hidden="true">📷</span> Let's Play!
       </button>
     </div>
   </div>
@@ -64,9 +64,10 @@
         <button id="select-all-btn" class="setup-tool-btn">✅ All</button>
         <button id="clear-all-btn" class="setup-tool-btn">❌ Clear</button>
       </div>
-      <p id="setup-msg" class="setup-msg">0 items selected</p>
+      <p id="setup-msg" class="setup-msg" role="status" aria-live="polite">0 items selected</p>
       <div id="setup-grid" class="setup-grid"></div>
       <button id="setup-done-btn" class="big-btn play-btn setup-done-btn">Done ✅</button>
+      <button class="big-btn setup-home-btn" onclick="showScreen('splash')" aria-label="Home">🏠 Home</button>
     </div>
   </div>
 
@@ -80,20 +81,20 @@
     </div>
     <div id="target-area" class="target-area">
       <div id="target-emoji" class="target-emoji"></div>
-      <div id="target-text" class="target-text"></div>
+      <div id="target-text" class="target-text" role="status" aria-live="polite" aria-atomic="true"></div>
       <button class="repeat-btn" onclick="repeatPrompt()" aria-label="Hear it again"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg></button>
     </div>
     <div id="feedback-area" class="feedback-area" aria-live="assertive"></div>
     <div id="camera-area" class="camera-area">
-      <label id="camera-label" class="big-btn camera-btn" role="button" aria-label="Take a photo">
+      <label id="camera-label" class="big-btn camera-btn" role="button" aria-label="Take a photo" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.querySelector('input').click();}">
         <span aria-hidden="true">📷</span>
-        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)" aria-label="Take a photo">
+        <input type="file" accept="image/*" capture="environment" id="camera-input" onchange="handlePhoto(this)" tabindex="-1" aria-hidden="true">
       </label>
     </div>
     <div class="skip-area">
       <button class="skip-btn" onclick="skipItem()" aria-label="Skip"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg><span class="skip-label">Skip</span></button>
     </div>
-    <div id="loading" class="loading hidden">
+    <div id="loading" class="loading hidden" role="status" aria-live="polite">
       <img class="loading-fox" src="img/mascot/fox-search.png" alt="" aria-hidden="true">
       <div class="spinner"></div>
       <p>Looking at your photo...</p>
@@ -106,7 +107,7 @@
       <h1 class="victory-title">🎉 You Did It! 🎉</h1>
       <img class="victory-fox" src="img/mascot/fox-celebrate.png" alt="" aria-hidden="true">
       <p id="victory-sub" class="victory-sub">You found everything!</p>
-      <div id="victory-stats" class="victory-stats"></div>
+      <div id="victory-stats" class="victory-stats" role="status" aria-live="polite" aria-atomic="true"></div>
       <div class="victory-buttons">
         <button class="big-btn play-btn" onclick="startNewGame()">
           🔄 Play Again!
@@ -121,21 +122,21 @@
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
-  <script src="content/translations/languages-config.js?v=141"></script>
-  <script src="content/translations/all-translations.js?v=141"></script>
-  <script src="content/translations/foreign-audio-manifest.js?v=141"></script>
-  <script src="app.js?v=141"></script>
-  <script src="paywall.js?v=141"></script>
-  <script src="progress-sync.js?v=141"></script>
-  <script src="install-prompt.js?v=141"></script>
-  <script src="content/rich-sound-fx.js?v=141"></script>
-  <script src="hint-system.js?v=141"></script>
-  <script src="content/animations/new-celebrations.js?v=141"></script>
-  <script src="content/sticker-book.js?v=141"></script>
-  <script src="content/daily-challenge-streak.js?v=141"></script>
-  <script src="parent-dashboard.js?v=141"></script>
-  <script src="storyline-mode.js?v=141"></script>
-  <script src="content/seasonal-manager.js?v=141"></script>
-  <script src="sw-register.js?v=141"></script>
+  <script src="content/translations/languages-config.js?v=142"></script>
+  <script src="content/translations/all-translations.js?v=142"></script>
+  <script src="content/translations/foreign-audio-manifest.js?v=142"></script>
+  <script src="app.js?v=142"></script>
+  <script src="paywall.js?v=142"></script>
+  <script src="progress-sync.js?v=142"></script>
+  <script src="install-prompt.js?v=142"></script>
+  <script src="content/rich-sound-fx.js?v=142"></script>
+  <script src="hint-system.js?v=142"></script>
+  <script src="content/animations/new-celebrations.js?v=142"></script>
+  <script src="content/sticker-book.js?v=142"></script>
+  <script src="content/daily-challenge-streak.js?v=142"></script>
+  <script src="parent-dashboard.js?v=142"></script>
+  <script src="storyline-mode.js?v=142"></script>
+  <script src="content/seasonal-manager.js?v=142"></script>
+  <script src="sw-register.js?v=142"></script>
 </body>
 </html>
