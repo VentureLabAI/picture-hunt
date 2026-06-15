@@ -123,16 +123,19 @@ var InstallPrompt = (function() {
   function fire() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(choice) {
-      // On accept, appinstalled cleans up. On dismiss, KEEP the pill so the parent
-      // can retry instead of losing the install path for the throttle window.
-      if (choice && choice.outcome === 'accepted') removePill();
+    deferredPrompt.userChoice.then(function() {
+      // Remove the pill either way: a beforeinstallprompt event can't be prompt()'d
+      // twice, so keeping the pill after a dismiss would just leave a dead "Add"
+      // button. The 7-day throttle (armed at show) prevents re-nagging.
+      removePill();
       deferredPrompt = null;
     });
   }
 
   function dismiss() {
-    localStorage.setItem(DISMISSED_KEY, '1');
+    // Store a timestamp (not '1') so dismissed() applies the 45-day cooldown rather
+    // than suppressing the pill permanently. Actual install still writes '1' forever.
+    localStorage.setItem(DISMISSED_KEY, new Date().toISOString());
     removePill();
   }
 

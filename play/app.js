@@ -933,11 +933,14 @@ function renderStorylineFeature(premium) {
 var setupCategory = 'household';
 var setupSelection = new Set();
 var setupSelByCat = {}; // in-memory per-tab edits during a setup session (held even if <3)
+var setupBaselineByCat = {}; // each tab's pre-edit selection this session (for the resume-wipe check)
 
 function openSetup() {
   setupCategory = 'household';  // always a free category, safe under paywall
   setupSelByCat = {};           // fresh session — no carried-over transient edits
+  setupBaselineByCat = {};
   setupSelection = new Set(getSelectedNames(setupCategory));
+  setupBaselineByCat[setupCategory] = getSelectedNames(setupCategory).slice(); // pre-edit baseline
   renderSetupTabs(); renderSetupGrid(); showScreen('setup');
 }
 function renderSetupTabs() {
@@ -965,6 +968,9 @@ function switchSetupTab(catId) {
   setupSelByCat[setupCategory] = Array.from(setupSelection);
   if (setupSelection.size >= 3) saveSelectedNames(setupCategory, Array.from(setupSelection));
   setupCategory = catId;
+  // Record this tab's pre-edit baseline the FIRST time it's entered (before any edit
+  // here could persist over it) so setupDone can tell whether it really changed.
+  if (!setupBaselineByCat[catId]) setupBaselineByCat[catId] = getSelectedNames(catId).slice();
   setupSelection = new Set(setupSelByCat[catId] || getSelectedNames(catId));
   renderSetupTabs(); renderSetupGrid();
 }
@@ -1013,16 +1019,20 @@ function setupClearAll() { playClick(); setupSelection = new Set(); renderSetupG
 function setupDone() {
   if (setupSelection.size < 3) return;
   playClick();
-  var newNames = Array.from(setupSelection);
-  var oldNames = getSelectedNames(setupCategory); // capture BEFORE save
-  saveSelectedNames(setupCategory, newNames);
-  // Only invalidate a saved resume when THIS category's selection actually CHANGED.
-  // Previously every Done wiped the in-progress hunt even if nothing was edited.
-  var same = oldNames.length === newNames.length
-    && oldNames.slice().sort().join('|') === newNames.slice().sort().join('|');
-  if (!same) {
-    var gs = null; try { gs = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
-    if (gs && gs.category === setupCategory) localStorage.removeItem('PH_GAME_STATE');
+  setupSelByCat[setupCategory] = Array.from(setupSelection);
+  saveSelectedNames(setupCategory, Array.from(setupSelection));
+  // Invalidate a saved resume only if the RESUMED game's category actually changed
+  // from its pre-edit baseline this session. Comparing to getSelectedNames here is
+  // wrong — switchSetupTab may have already persisted the edit, hiding the change and
+  // leaving a stale hunt (the wave-13 round-trip regression). Baselines cover both the
+  // active tab AND any tab edited then switched away.
+  var gs = null; try { gs = JSON.parse(localStorage.getItem('PH_GAME_STATE')); } catch(e) {}
+  if (gs && gs.category && setupBaselineByCat[gs.category]) {
+    var base = setupBaselineByCat[gs.category];
+    var cur = getSelectedNames(gs.category);
+    var changed = base.length !== cur.length
+      || base.slice().sort().join('|') !== cur.slice().sort().join('|');
+    if (changed) localStorage.removeItem('PH_GAME_STATE');
   }
   showScreen('splash');
 }
