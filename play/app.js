@@ -885,13 +885,18 @@ function renderSplash() {
       btn.onclick = function() { if (typeof Paywall !== 'undefined') Paywall.show('upgrade'); };
       grid.parentNode.insertBefore(btn, grid);
 
-      var pm = document.createElement('div');
-      pm.id = 'play-meter';
-      pm.className = 'play-meter' + (remaining <= 1 ? ' warn' : '');
-      pm.textContent = remaining === 0
-        ? 'No free finds left today — come back tomorrow, or unlock premium ↑'
-        : remaining + ' free find' + (remaining === 1 ? '' : 's') + ' left today';
-      grid.parentNode.insertBefore(pm, grid);
+      // Free-tier daily-finds meter — only when a FINITE cap is in force. The 5/day
+      // volume cap is removed pre-IAP (FREE_DAILY_CAP = Infinity), so there is no
+      // number to show; the category + story gate is the only free/paid line now.
+      if (isFinite(remaining)) {
+        var pm = document.createElement('div');
+        pm.id = 'play-meter';
+        pm.className = 'play-meter' + (remaining <= 1 ? ' warn' : '');
+        pm.textContent = remaining === 0
+          ? 'No free finds left today — come back tomorrow, or unlock premium ↑'
+          : remaining + ' free find' + (remaining === 1 ? '' : 's') + ' left today';
+        grid.parentNode.insertBefore(pm, grid);
+      }
     }
   }
 
@@ -1306,6 +1311,10 @@ function playCategory(catId, opts) {
 
 function startNewGame(catId, opts) {
   localStorage.removeItem('PH_GAME_STATE');
+  // Daily Challenge launches with opts.forceItem; track it so the run ENDS after
+  // today's item is found (celebrate → home) instead of rolling into the full
+  // category. Null for every normal hunt.
+  window._forcedDailyItem = (opts && opts.forceItem) ? opts.forceItem : null;
   currentCategory = catId || currentCategory;
   shuffledItems = shuffle(getSelectedItems(currentCategory));
 
@@ -1458,6 +1467,7 @@ function repeatPrompt() {
 
 function goHome() {
   playClick();
+  window._forcedDailyItem = null; // leaving any in-progress Daily Challenge run
   // Exit storyline mode if active. A story's shuffledItems are cross-category
   // (and can include placeholder items), so saving them as a normal "Continue"
   // record yields a scrambled resume — skip the save when leaving a story.
@@ -1694,6 +1704,15 @@ async function submitPhoto() {
 
       autoAdvanceTimer = setTimeout(function() {
         resetCameraUI();
+        // Daily Challenge is a single-item run: once today's item is found (streak
+        // already bumped + celebration shown), end the challenge and return home
+        // rather than auto-advancing into the rest of the category.
+        if (window._forcedDailyItem && foundItemName === window._forcedDailyItem) {
+          window._forcedDailyItem = null;
+          localStorage.removeItem('PH_GAME_STATE');
+          showScreen('splash');
+          return;
+        }
         advanceItem();
       }, 4500 + echoDuration);
     } else {
@@ -1810,7 +1829,18 @@ function forceAccept() {
   // Track the timer (reuse autoAdvanceTimer) so navigating Home during the 800ms
   // window clears it — showScreen() clears autoAdvanceTimer — instead of firing
   // advanceItem against a screen the child already left.
-  autoAdvanceTimer = setTimeout(advanceItem, 800);
+  var _ovName = shuffledItems[currentIndex] && shuffledItems[currentIndex].name;
+  autoAdvanceTimer = setTimeout(function() {
+    // Parent-overriding today's Daily Challenge item ends the run too (parity with
+    // a normal find) — return home instead of continuing the category.
+    if (window._forcedDailyItem && _ovName === window._forcedDailyItem) {
+      window._forcedDailyItem = null;
+      localStorage.removeItem('PH_GAME_STATE');
+      showScreen('splash');
+      return;
+    }
+    advanceItem();
+  }, 800);
 }
 
 function resetCameraUI() {

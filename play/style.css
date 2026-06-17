@@ -593,8 +593,8 @@ body.ph-install-open .splash-content {
   justify-content: center;
   gap: var(--sp-3);
   font-size: 4rem !important;
-  padding: var(--sp-8) var(--sp-16) !important;
-  min-height: 130px !important;
+  padding: var(--sp-4) var(--sp-16) !important;
+  min-height: 112px !important;
   border-radius: var(--r-full);
   position: relative;
 }
@@ -825,8 +825,8 @@ body.ph-install-open .splash-content {
     radial-gradient(ellipse 55% 45% at 85% 5%,  rgba(255,201,60,0.40) 0%, transparent 55%),
     radial-gradient(ellipse 55% 45% at 5% 95%,  rgba(76,201,255,0.35) 0%, transparent 55%),
     linear-gradient(180deg, #FFF6EE 0%, #FFE9D6 70%, #FFD9BB 100%);
-  padding: var(--sp-5);
-  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  gap: var(--sp-2);
   /* Override .screen's `justify-content:center`: on a short iOS viewport the
      centered hunt (camera + target + controls) is taller than the screen, so
      the Home button (top) and Skip button (bottom) get pushed off-screen and
@@ -881,11 +881,11 @@ body.ph-install-open .splash-content {
   -webkit-backdrop-filter: blur(12px);
   border: 3px solid var(--paper);
   border-radius: var(--r-xl);
-  padding: var(--sp-6) var(--sp-5) var(--sp-4);
+  padding: var(--sp-4) var(--sp-5) var(--sp-3);
   box-shadow:
     0 4px 0 var(--shade-deep),
     0 14px 36px rgba(27,17,64,0.18);
-  margin-top: var(--sp-2);
+  margin-top: 0;
   position: relative;
   width: 92%;
   max-width: 520px;
@@ -907,7 +907,7 @@ body.ph-install-open .splash-content {
 }
 
 .target-emoji {
-  font-size: clamp(5.5rem, 22vw, 11rem);
+  font-size: clamp(4.5rem, 19vw, 9rem);
   animation: targetFloat 3.2s ease-in-out infinite;
   filter: drop-shadow(0 12px 20px rgba(27,17,64,0.22));
   line-height: 1;
@@ -926,7 +926,7 @@ body.ph-install-open .splash-content {
 
 /* Feedback */
 .feedback-area {
-  min-height: 60px;
+  min-height: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -956,7 +956,7 @@ body.ph-install-open .splash-content {
 /* Camera Area */
 .camera-area {
   margin-top: auto;
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-4);
 }
 
 /* Loading */
@@ -2211,10 +2211,14 @@ body.ph-install-open .splash-content {
    ════════════════════════════════════════════════════════════ */
 @supports (padding: env(safe-area-inset-top)) {
   #game {
-    padding-top: calc(var(--sp-5) + env(safe-area-inset-top));
-    padding-bottom: calc(var(--sp-5) + env(safe-area-inset-bottom));
+    padding-top: calc(var(--sp-4) + env(safe-area-inset-top));
+    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
   }
-  .camera-area { margin-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom)); }
+  /* NOTE: do NOT add env(safe-area-inset-bottom) here. #game's padding-bottom (above)
+     already reserves the home-indicator space, and .camera-area is NOT the bottom
+     element — the Skip button sits below it. Adding the inset here double-counted it,
+     pushing ~34px of dead space between camera and Skip and clipping the bottom half
+     of the Skip button on notched iPhones (the "plenty of room but half cut" symptom). */
   .setup-container {
     padding-top: calc(var(--sp-10) + env(safe-area-inset-top));
     padding-bottom: calc(var(--sp-10) + env(safe-area-inset-bottom));

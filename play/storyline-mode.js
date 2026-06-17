@@ -711,6 +711,16 @@ function storylineHandlePhotoSuccess() {
   // Storybook: fox celebrates, bubble shows the found line, trail stone checks off
   renderQuestFound();
 
+  // Per-item celebration parity with normal hunts: each story find gets the same
+  // emoji rain + sticker pop (the big victory combo is still saved for finishing
+  // the whole quest in finishStory).
+  if (typeof celebrateEmojiRain === 'function') {
+    celebrateEmojiRain(3500);
+    if (typeof celebrateStickerPopRandom === 'function') celebrateStickerPopRandom(2500);
+  } else if (typeof fireConfetti === 'function') {
+    fireConfetti(3500);
+  }
+
   // Record progress in the item's category
   if (typeof recordProgress === 'function') {
     recordProgress(step.category, step.item);

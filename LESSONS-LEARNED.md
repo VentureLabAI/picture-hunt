@@ -50,6 +50,18 @@ screens (these need a successful photo to trigger — easy to skip, don't).
 - `env(safe-area-inset-*)` can't be reproduced in desktop Chromium (insets = 0).
   Verify those additions on a real notched iPhone; in the browser, only confirm
   the rule is present and the non-notch geometry is correct.
+- **Never add `env(safe-area-inset-bottom)` to a NON-bottom element.** v108 added it
+  to `.camera-area`'s `margin-bottom`, but the camera area isn't the bottom of `#game`
+  — the Skip button is below it, and `#game`'s `padding-bottom` already reserves the
+  home-indicator inset. So the inset was double-counted (~34px of dead space between
+  camera and Skip), clipping the bottom half of the Skip button on notched iPhones
+  while desktop Chromium (insets = 0) looked fine. Only the truly bottom-most element
+  (or the scroll container's own padding) should carry `inset-bottom`. And measure
+  before blaming the inset: the base `#game` layout was independently too tall (756px
+  content at 390×660, overflowing 96px with ZERO insets) — read `scrollHeight` vs the
+  viewport and trim oversized blocks (the camera button was a 130px min-height PLUS a
+  redundant 32px padding = 149px) and whitespace, not only the inset. (Both fixed
+  v150 → 667px content, Skip fully visible at 390×660.)
 
 ## 2. Service-worker cache lag during live verification
 

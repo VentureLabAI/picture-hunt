@@ -2,7 +2,7 @@
 //
 // Freemium (2026-06-04): the free tier deliberately INCLUDES the bilingual hook.
 // Free tier: 3 real-object categories (household, animals, food), Spanish
-//   bilingual ON, Daily Challenge, 1 sample Story Quest, 5 finds/day.
+//   bilingual ON, Daily Challenge, 1 sample Story Quest, unlimited finds (pre-IAP).
 // Full Access: one-time $24.99 unlock — all 10 categories, all 10 languages,
 //   all Story Quests, unlimited finds, every device, forever.
 //
@@ -22,7 +22,7 @@ var Paywall = (function() {
   var FREE_CATEGORIES = ['household', 'animals', 'food'];
   var FREE_LANGUAGE = 'es';            // Spanish is the free bilingual hook
   var FREE_STORY = 'bear-breakfast';   // one Story Quest free as a sample
-  var FREE_DAILY_CAP = 5;
+  var FREE_DAILY_CAP = Infinity;   // 5/day cap removed pre-IAP (2026-06-16) — reinstate a finite cap when paid IAP ships. Category + story gates remain the free/paid line.
   var paywallOpener = null; // element focused before the paywall opened (restored on close)
 
   // Worker endpoint. Same origin as the AI proxy — extends with /validate-code path.

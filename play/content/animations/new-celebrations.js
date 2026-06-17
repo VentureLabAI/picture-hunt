@@ -174,7 +174,7 @@ function celebrateStickerPop(emoji, durationMs) {
 
 // Convenience: random celebration emoji
 function celebrateStickerPopRandom(durationMs) {
-  var pool = ['⭐', '🌟', '🏆', '🎉', '👏', '💪', '🦁', '🐸', '🎈', '🌈'];
+  var pool = ['⭐', '🌟', '🏆', '🎉', '👏', '💪', '🦁', '🐸', '🎈'];
   celebrateStickerPop(pool[Math.floor(Math.random() * pool.length)], durationMs);
 }
 
