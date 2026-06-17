@@ -62,6 +62,19 @@ screens (these need a successful photo to trigger — easy to skip, don't).
   viewport and trim oversized blocks (the camera button was a 130px min-height PLUS a
   redundant 32px padding = 149px) and whitespace, not only the inset. (Both fixed
   v150 → 667px content, Skip fully visible at 390×660.)
+- **667px STILL didn't fit a real iPhone (v151).** 390×660 in Chromium ≠ the device's
+  visible area once Safari's bar + the notch eat in (~560–620). Trimming fixed px sizes
+  only gets you so far — the robust fix is **fit-to-viewport: size the big blocks by
+  viewport HEIGHT, not width**, e.g. `clamp(min, min(<N>vw, <M>svh), max)` (svh = the
+  stable iOS small-viewport unit) on the target emoji, the camera button, the speaker
+  (repeat) button, and the feedback min-height. **Gotcha that cost a round:** a hunt
+  target renders as EITHER emoji text (`.target-emoji` font-size) OR an image
+  (`.target-img` width/height) depending on the item — a height-aware clamp on only one
+  leaves the other full-size on short screens (the dog/`img/items/*.png` items stayed
+  big while emoji items shrank). Scale BOTH. With `.camera-area { margin-top: auto }`
+  the column then tracks the viewport: content == viewport with ~16px headroom at
+  390×560 / 620 / 660 / 844 — all in one frame, no scroll. Verify at a CONSERVATIVE
+  short height (390×560) AND a tall one so it isn't over-shrunk on big phones.
 
 ## 2. Service-worker cache lag during live verification
 

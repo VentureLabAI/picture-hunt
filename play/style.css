@@ -592,9 +592,9 @@ body.ph-install-open .splash-content {
   align-items: center;
   justify-content: center;
   gap: var(--sp-3);
-  font-size: 4rem !important;
-  padding: var(--sp-4) var(--sp-16) !important;
-  min-height: 112px !important;
+  font-size: clamp(2.5rem, 9svh, 4rem) !important;
+  padding: clamp(8px, 2.2svh, 16px) var(--sp-16) !important;
+  min-height: clamp(78px, 13svh, 112px) !important;
   border-radius: var(--r-full);
   position: relative;
 }
@@ -793,8 +793,11 @@ body.ph-install-open .splash-content {
 }
 
 .target-img {
-  width: clamp(120px, 35vw, 200px);
-  height: clamp(120px, 35vw, 200px);
+  /* Match .target-emoji: cap by viewport HEIGHT (svh) too so image targets shrink
+     on short phones and the hunt fits in one frame; width (35vw) keeps them big on
+     tall screens. */
+  width: clamp(96px, min(35vw, 17svh), 200px);
+  height: clamp(96px, min(35vw, 17svh), 200px);
   object-fit: contain;
   filter: drop-shadow(0 10px 20px rgba(27,17,64,0.18));
 }
@@ -875,7 +878,7 @@ body.ph-install-open .splash-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   background: var(--paper-dim);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -907,7 +910,10 @@ body.ph-install-open .splash-content {
 }
 
 .target-emoji {
-  font-size: clamp(4.5rem, 19vw, 9rem);
+  /* Scale with viewport HEIGHT too (svh = stable iOS small-viewport unit) so the
+     emoji shrinks on short phones and the whole hunt fits in one frame; capped by
+     width (19vw) so tall screens keep it big. */
+  font-size: clamp(2.5rem, min(17vw, 7svh), 8rem);
   animation: targetFloat 3.2s ease-in-out infinite;
   filter: drop-shadow(0 12px 20px rgba(27,17,64,0.22));
   line-height: 1;
@@ -926,7 +932,7 @@ body.ph-install-open .splash-content {
 
 /* Feedback */
 .feedback-area {
-  min-height: 32px;
+  min-height: clamp(24px, 5svh, 44px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -956,7 +962,7 @@ body.ph-install-open .splash-content {
 /* Camera Area */
 .camera-area {
   margin-top: auto;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-2);
 }
 
 /* Loading */
@@ -1206,7 +1212,7 @@ body.ph-install-open .splash-content {
   margin-top: var(--sp-2);
   box-shadow: 0 4px 0 var(--sun-deep), 0 8px 16px rgba(255,201,60,0.45);
   transition: transform var(--dur-fast) var(--ease-bounce);
-  min-height: 72px;
+  min-height: clamp(48px, 9svh, 72px);
 }
 .repeat-btn:active {
   transform: translateY(4px);
