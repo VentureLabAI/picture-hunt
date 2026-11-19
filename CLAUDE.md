@@ -20,8 +20,9 @@ is the retention engine.** See STRATEGY.md.
 
 - Vanilla HTML/CSS/JS, no framework, no build step
 - Gemini 2.5 Flash via Cloudflare Worker proxy (`picture-hunt-api.aidevlab3.workers.dev`)
-- Pre-generated ElevenLabs "Jessica" MP3s (voice id `cgSgspJ2msm6clMCkdW9`, speed 0.70)
-  played via Web Audio API buffers + `speechSynthesis` fallback
+- Pre-generated MP3s in OpenAI `gpt-4o-mini-tts` voice "coral" (levelled to -16 LUFS),
+  played via Web Audio API buffers + `speechSynthesis` fallback. Generation tooling
+  lives outside this repo in `C:\dev\ph-tools\`.
 - localStorage for state; Cloudflare KV for cross-device sync + unlock codes
 - GitHub Pages hosting, served from `main`
 
