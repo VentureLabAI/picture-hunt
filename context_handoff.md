@@ -1,5 +1,9 @@
 # Active Project Context — Picture Hunt
 
+**Last updated:** 2026-11-26
+
+> **2026-11-26 audit (read-only, no code changed): `docs/AUDIT-2026-11-26.md`.** Deadline Dec 1, 2026: Google reroutes `gemini-2.5-flash` to `gemini-3.5-flash-lite` (same price, `temperature` ignored, untested on our 109 items). The 6-hour health probe has been OFF since 2026-08-16 (GitHub `disabled_inactivity`). The Worker is an open proxy to the paid key (any prompt works). "Enforce HTTPS" is still off although the cert is approved. Recommended fix order is section 5 of the audit. Awaiting owner go-ahead; nothing deployed.
+
 > **FIRST ACTION for the next session here (planted 2026-09-01 from the kaivox process audit):** this file has grown
 > into a log (96 KB). Before the user's request, give it the one-page treatment. Read it whole, then write a new one
 > under 24 KB with this shape: `Last updated`; START HERE (next steps in order, the first with its concrete action;
