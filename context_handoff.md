@@ -33,7 +33,9 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 - **Art:** WebP only in the repo. PNG masters are in `C:/assets/ventures/picture-hunt/art-masters/`; convert with `C:/dev/ph-tools/convert_art_webp.py`. Style anchor and prompt pattern for new illustrations are in the archive (section "Phase 10").
 - **Voice:** OpenAI `gpt-4o-mini-tts`, voice "coral", levelled to -16 LUFS from `ph-tools/audio_coral_raw/` (never re-level an already levelled clip). ElevenLabs blocks child-sounding voice prompts.
 - **ph-tools gotchas:** `eval_generated.js`, `eval_recognition.js` and `false_positive_eval.js` still point at the old path `C:/dev/picture-hunt-deploy`; fix that line before re-running them. `model_compare.js` and `convert_art_webp.py` use the right path. Printing non-Latin words on the Windows console needs `sys.stdout.reconfigure(encoding='utf-8')`.
-- **On this Windows machine, write scripts to a file and run them.** Shell heredocs with quotes failed twice on 2026-11-26, and a backslash path inside one turned into control characters. Use forward slashes in paths.
+- **Testing the counters:** `landing.js` and `play/counts.js` only send on the real hostname, so a local preview counts nothing. Test logic with `C:/dev/ph-tools/test_play_counts.py` (real hostname, local files, fake Worker: nothing reaches production). For a live check, preset `PH_CH` to `selftest`, then delete those rows: `DELETE FROM counts WHERE channel = 'selftest'`. The counters started from zero on 2026-11-26; there is no earlier data.
+- **Landing page checks:** `C:/dev/ph-tools/view_landing.py` (four screen sizes, overflow and console errors) and `capture_hero_shots.py --install` (re-captures the two hero screens from the live game).
+- **On this Windows machine, write scripts to a file and run them.** A SQL string containing `>=` passed through a shell also created a junk file named after the text following the `>` (it was committed to this public repo for a minute; it held only tool help text). Shell heredocs with quotes failed twice on 2026-11-26, and a backslash path inside one turned into control characters. Use forward slashes in paths.
 
 ### Open decisions (default applies unless the owner says otherwise)
 
@@ -41,6 +43,7 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 |---|---|
 | Shrink the voice clips (10 MB of the 13.4 MB offline cache; about 4 MB to save) | Leave. Needs the owner's ear |
 | Lower the Gemini spend cap from $100 to $25 | Owner's call. Real use is about $1 a month |
+| An unexplained Gemini charge of about $0.57 on one day around 2026-11-22 or 23, seen in the owner's billing screenshot. Nothing in this project ran then (the health probe was off). | Owner checks the "All API Keys" dropdown in Google AI Studio. If another project shares the key, it is explained. If not, rotate the key |
 | Paywall bullet "Unlimited finds" while the free daily cap is off | Leave until payments |
 | Hardware Back button closing dialogs instead of leaving the app | Leave. Standard PWA behaviour |
 | Native-speaker check of the short Mandarin, Japanese, Korean, Hindi and Arabic words | Ship as is. Automated check found no systematic problem |
@@ -72,6 +75,9 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 | No free daily cap for now | Maximise play to prove retention before charging | Payments go live |
 | Hybrid launch: fix product and legal, skip web checkout, validate free as a PWA, then App Store with in-app purchase | Only checkout work is throwaway; the App Store is a trust layer, not an acquisition channel; Kids-category review is 3 to 6 weeks | Demand is proven, or new information |
 | Stay on GitHub Pages; Vercel rejected | Zero migration risk, PWA healthy, backend is on Cloudflare anyway | We need real response headers or a same-origin API |
+| Counting runs on our own Worker, not Cloudflare Web Analytics or Plausible | Their script is a third party on a kids' brand, cannot count button taps, and cannot see play at all. Ours sends single words with no ID | Never add a third-party tracker. Extend `play/counts.js` instead |
+| Counts are stored in D1, not KV or Analytics Engine | D1 increments atomically and is readable with the saved `wrangler` login, so no read endpoint and no new secret exist. KV has a small daily write quota; Analytics Engine needs an API token to query | Volume passes D1's free tier (100k writes a day) |
+| "Came back" is computed on the device, never on the server | A server-side return rate needs an ID that follows a child across days. A date in the browser's own storage gives the same number with nothing to link visits | Never. Do not add an ID to make cohorts "more exact" |
 | Worker owns prompts, model and fallback | Closed an open proxy to the paid key; model changes need no app update | Not expected |
 | Health probe stays on GitHub, re-enabling itself | GitHub already emails on failure; a Cloudflare job needs a new alert channel | It gets disabled again |
 | Client-side premium flag is bypassable, accepted | Gated content is static and public; the only metered cost is server-gated | Payments go live. Do not build DRM |
