@@ -123,8 +123,7 @@ on every static `speak('…')` literal **plus** every `CATEGORIES[c].speakPrompt
 and `CATEGORIES[c].speakName`. Any that return null/empty = a robot-voice line.
 (As of v129: zero fall through; TTS now only fires as the genuine
 clip-load-FAILURE fallback for hints/prompts, which is the intended safety net.)
-When grepping `speak\(`, ignore `memory-hunt` / `review-mode` / `sorting-safari` /
-`phonics-hunt` — those modules are dead code, not loaded by `index.html`.
+(The cut modes `memory-hunt` / `review-mode` / `sorting-safari` / `phonics-hunt` were deleted in v155. They are in git history only.)
 
 **Debugging an audio cutoff:** there is ONE playback channel (`currentAudioSource`),
 stopped before each new clip. A clip cutting off mid-word = something started a

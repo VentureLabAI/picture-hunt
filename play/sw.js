@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v154';
+var CACHE_VERSION = 'ph-v155';
 var CACHE_NAME = CACHE_VERSION + '-static';
 // How many files the install step downloads at once (see the install handler).
 var PRECACHE_CONCURRENCY = 6;
@@ -350,9 +350,8 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   var url = new URL(event.request.url);
 
-  // Network-only for API calls (Gemini proxy, direct Gemini API)
-  if (url.hostname === 'picture-hunt-api.aidevlab3.workers.dev' ||
-      url.hostname === 'generativelanguage.googleapis.com') {
+  // Network-only for API calls (our Worker)
+  if (url.hostname === 'picture-hunt-api.aidevlab3.workers.dev') {
     event.respondWith(
       fetch(event.request).catch(function() {
         // Return a JSON error so the app can show a friendly message

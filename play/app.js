@@ -5,20 +5,14 @@
 // ═══════════════════════════════════════════════════════════════
 // API CONFIGURATION
 // ═══════════════════════════════════════════════════════════════
-// Proxy URL — set this to your Cloudflare Worker URL to skip API key setup
-// Leave empty string to use direct Gemini API with localStorage key
+// All photo checks go through our Cloudflare Worker (worker/worker.js). The app
+// never talks to Gemini directly and never holds an API key. (An old "paste your
+// own Gemini key" setup screen and its localStorage key were removed in v155.)
 var PROXY_URL = 'https://picture-hunt-api.aidevlab3.workers.dev/';
 // Shared client token sent with proxy requests. NOTE: this ships in public JS, so
-// it is a speed-bump, not a true secret — the real abuse protections are the
-// Worker's Origin allow-list, per-IP rate limit, and payload size cap.
+// it is a speed-bump, not a true secret. The real abuse protections are in the
+// Worker: it only answers for real game items, checks the Origin, and rate-limits.
 var PH_PROXY_TOKEN = 'ph_pub_2k9Qx7mZr4Tn8Wv5';
-
-// ═══════════════════════════════════════════════════════════════
-// API KEY MANAGEMENT (only needed when no proxy)
-// ═══════════════════════════════════════════════════════════════
-// (Removed: a #key= URL-hash handler that persisted an arbitrary Gemini key from
-// the address bar into localStorage. The app always uses the Worker proxy, so
-// reading a network credential off an untrusted URL was a needless abuse vector.)
 
 // Storage-safe accessors: localStorage getters/setters throw a SecurityError in
 // some environments (Safari "Block All Cookies", locked-down in-app webviews,
@@ -27,35 +21,6 @@ var PH_PROXY_TOKEN = 'ph_pub_2k9Qx7mZr4Tn8Wv5';
 // launch). Always go through these.
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
-
-let GEMINI_API_KEY = lsGet('PH_KEY') || '';
-
-function hasApiAccess() {
-  return PROXY_URL || GEMINI_API_KEY;
-}
-
-function showKeySetup() {
-  document.getElementById('splash').querySelector('.splash-content').innerHTML =
-    '<h1 style="font-size:2.5rem;margin-bottom:1rem;">🔧 Parent Setup</h1>'
-    + '<p style="font-size:1.1rem;margin-bottom:1rem;color:rgba(255,255,255,0.7);">Paste your Gemini API key</p>'
-    + '<input type="text" id="key-input" placeholder="API key"'
-    + ' style="width:80%;padding:14px;font-size:1rem;border-radius:12px;border:2px solid #555;background:#2a2a4a;color:white;margin-bottom:1rem;">'
-    + '<br>'
-    + '<button onclick="saveKey()" class="big-btn play-btn">Save & Play! 🎮</button>';
-}
-
-function saveKey() {
-  var k = document.getElementById('key-input').value.trim();
-  if (k) {
-    localStorage.setItem('PH_KEY', k);
-    GEMINI_API_KEY = k;
-    location.reload();
-  }
-}
-
-if (!hasApiAccess()) {
-  window.addEventListener('DOMContentLoaded', showKeySetup);
-}
 
 // ═══════════════════════════════════════════════════════════════
 // CATEGORIES & ITEMS
@@ -1169,15 +1134,7 @@ function textToAudioKey(text) {
     'Your sticker book is empty! Find items to earn stickers!': 'sticker-book-empty',
     'Here are your stickers! Keep hunting!': 'sticker-book-some',
     'Amazing! What a streak! Keep it up!': 'streak-milestone',
-    'Find more things first, then come sort them!': 'sort-need-more',
-    'Great sorting! You put everything in the right group!': 'sorting-victory',
-    'Sorting Safari! Put things in the right group!': 'sorting-safari-intro',
-    'Phonics Hunt! Find things that start with each letter!': 'phonics-hunt-intro',
-    'Find more things first, then come practice!': 'practice-need-more',
-    'Practice complete! You did great!': 'practice-complete',
-    'Round complete! Great practice!': 'round-complete',
     'You collected all the stickers! Amazing!': 'stickers-amazing',
-    'You remembered them all! Amazing!': 'memory-amazing'
   };
   if (map[text]) return map[text];
   // Champion messages
@@ -1587,37 +1544,49 @@ var pendingBase64 = null;
 var pendingMimeType = null;
 
 // Cap the photo at 1024px on the long edge and re-encode as JPEG before it ever
-// leaves the device. This (a) cuts Gemini image-token cost ~6-12x, (b) strips the
+// leaves the device. This (a) keeps Gemini image cost low, (b) strips the
 // EXIF/GPS metadata the camera embeds (privacy), (c) shrinks the upload on
-// cellular, and (d) keeps big iPhone JPEGs under the worker's 8MB cap. 1024px is
-// well above Gemini's 768px tiling, so recognition is unaffected. Falls back to
-// the raw file if the image can't be decoded (e.g. an unexpected format).
+// cellular. Re-drawing onto a canvas is what removes the metadata, so a photo that
+// cannot be re-drawn is NEVER sent: the original file can carry the GPS location
+// of a child's home. Two decoders are tried (an <img>, then createImageBitmap);
+// if both fail the child is asked to take another photo.
 var PHOTO_MAX_EDGE = 1024;
-function downscalePhoto(file, done) {
+function downscalePhoto(file, done, fail) {
+  var finished = false;
+  function giveUp(why) {
+    if (finished) return; finished = true;
+    console.warn('[PH] photo could not be prepared, not sending it:', why);
+    fail();
+  }
+  function draw(source, w, h) {
+    if (finished) return;
+    try {
+      if (!w || !h) throw new Error('empty image');
+      var scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h));
+      var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+      var canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      canvas.getContext('2d').drawImage(source, 0, 0, cw, ch);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      if (dataUrl.indexOf('data:image/jpeg') !== 0) throw new Error('re-encode failed');
+      finished = true;
+      done(dataUrl, 'image/jpeg');
+    } catch (e) { giveUp(e && e.message); }
+  }
+  function tryBitmap(why) {
+    if (finished) return;
+    if (typeof createImageBitmap !== 'function') { giveUp(why); return; }
+    createImageBitmap(file).then(function(bmp) { draw(bmp, bmp.width, bmp.height); })
+      .catch(function() { giveUp(why); });
+  }
   var reader = new FileReader();
   reader.onload = function() {
-    var rawDataUrl = reader.result;
     var img = new Image();
-    img.onload = function() {
-      try {
-        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
-        var scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(w, h));
-        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
-        var canvas = document.createElement('canvas');
-        canvas.width = cw; canvas.height = ch;
-        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
-        done(canvas.toDataURL('image/jpeg', 0.8), 'image/jpeg');
-      } catch (e) {
-        console.warn('[PH] photo downscale failed, sending original', e);
-        done(rawDataUrl, file.type || 'image/jpeg');
-      }
-    };
-    img.onerror = function() {
-      console.warn('[PH] photo decode failed, sending original');
-      done(rawDataUrl, file.type || 'image/jpeg');
-    };
-    img.src = rawDataUrl;
+    img.onload = function() { draw(img, img.naturalWidth || img.width, img.naturalHeight || img.height); };
+    img.onerror = function() { tryBitmap('decode failed'); };
+    img.src = reader.result;
   };
+  reader.onerror = function() { tryBitmap('read failed'); };
   reader.readAsDataURL(file);
 }
 
@@ -1636,6 +1605,16 @@ function handlePhoto(input) {
     feedbackArea.innerHTML = '<div class="photo-preview">'
       + '<img src="' + dataUrl + '" class="preview-img" alt="Your photo"></div>';
     submitPhoto();
+  }, function() {
+    // The photo could not be read on this device. Not a wrong answer and not a
+    // service fault: bring the camera back and ask for another photo. The spoken
+    // line is an existing recorded clip (try-again), so no robot voice.
+    pendingBase64 = null; pendingMimeType = null;
+    resetCameraUI();
+    if (typeof showOfflineMessage === 'function') {
+      showOfflineMessage({ emoji: '📷', title: 'Oops!', body: "That photo didn't work.<br>Let's take another one!" });
+    }
+    speak('Tap the camera to try again, or the arrow to skip!');
   });
 }
 
@@ -2054,7 +2033,6 @@ function closeLangPicker() {
 // INITIALIZATION
 // ═══════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function() {
-  if (!hasApiAccess()) return;
   initDomRefs(); migrateOldData(); resizeCanvas();
   // Start preloading audio buffers (will fully work after first tap on iOS)
   try { preloadAllAudio(); } catch(e) {}
