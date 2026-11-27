@@ -1,6 +1,18 @@
 name = "picture-hunt-api"
 main = "worker.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-11-01"
+
+# Which Gemini models answer "is <item> in this photo?". The Worker asks PRIMARY
+# first and FALLBACK once if PRIMARY fails. Changing a model is a one-line edit
+# here plus `npx wrangler deploy`. No app update or cache bump is needed.
+# Before switching, run the model comparison (C:\dev\ph-tools\model_compare.js).
+[vars]
+PRIMARY_MODEL = "gemini-3.5-flash-lite"
+FALLBACK_MODEL = "gemini-3.6-flash"
+
+# Keep request logs so a failing model shows up in the Cloudflare dashboard.
+[observability]
+enabled = true
 
 # KV namespace for unlock codes — populated by Stripe webhook (see docs/PAYWALL-DEPLOY.md)
 # Create with: npx wrangler kv:namespace create UNLOCK_CODES
@@ -8,3 +20,22 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "UNLOCK_CODES"
 id = "3984b5b16694406590dca6f5c6238a8b"
+
+# Built-in rate limits, counted per visitor IP. period is seconds (10 or 60).
+# RL_AI guards photo checks (the calls that cost money); RL_API guards code
+# validation and progress sync.
+[[ratelimits]]
+name = "RL_AI"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60
+
+[[ratelimits]]
+name = "RL_API"
+namespace_id = "1002"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60

@@ -1,30 +1,58 @@
 // Picture Hunt — Cloudflare Worker
 //
-// Two responsibilities:
-//   1. POST /              → proxy image-recognition requests to Gemini
-//   2. POST /validate-code → check an unlock code against KV, return validity
+// Responsibilities:
+//   1. POST /recognize     → "is <item> in this photo?" The Worker owns the prompt,
+//                            the model choice and the fallback. The app sends only
+//                            { category, item, image, mimeType }.
+//   2. POST /              → the same check for older cached app versions that still
+//                            send a full Gemini request. Only our own prompts are
+//                            accepted; anything else is refused.
+//   3. POST /validate-code → check an unlock code against KV, return validity
+//   4. POST /sync-progress → cross-device progress for premium codes
+//   5. POST /stripe-webhook
+//
+// This is NOT a general Gemini proxy. It answers one question about one photo for
+// items the game actually has (worker/prompts.js, generated from play/app.js by
+// `node worker/build-prompts.mjs`).
 //
 // Deploy: npx wrangler deploy
 // Secrets: npx wrangler secret put GEMINI_API_KEY
+// Models: PRIMARY_MODEL / FALLBACK_MODEL in wrangler.toml [vars]
 // KV binding: see wrangler.toml — namespace `UNLOCK_CODES`
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+import { TEMPLATES, OVERRIDES, ITEMS } from './prompts.js';
 
-const ALLOWED_ORIGINS = [
-  'https://venturelabai.github.io',
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+const DEFAULT_PRIMARY = 'gemini-3.5-flash-lite';
+const DEFAULT_FALLBACK = 'gemini-3.6-flash';
+// Each model gets this long before we move on. Two attempts must fit inside the
+// app's own 15-second limit.
+const MODEL_TIMEOUT_MS = 7000;
+// A 1024px JPEG from the app is well under 1 MB as base64. Older app versions can
+// send an unshrunk photo if shrinking failed, so leave headroom.
+const MAX_BODY_CHARS = 6 * 1024 * 1024;
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+// Exact matches only. A prefix match would also accept look-alike hosts such as
+// https://picturehunt.app.example.com.
+const ALLOWED_ORIGINS = new Set([
   'https://picturehunt.app',
   'https://www.picturehunt.app',
-  'http://localhost',
-  'http://127.0.0.1'
-];
+  'https://venturelabai.github.io'
+]);
+const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+function originAllowed(origin) {
+  return !!origin && (ALLOWED_ORIGINS.has(origin) || LOCAL_ORIGIN.test(origin));
+}
 
 function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.find(o => origin && origin.startsWith(o));
   return {
-    'Access-Control-Allow-Origin': allowed || ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Origin': originAllowed(origin) ? origin : 'https://picturehunt.app',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-PH-Token',
-    'Access-Control-Max-Age': '86400'
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin'
   };
 }
 
@@ -59,7 +87,7 @@ export default {
     // Browser endpoints below: require a known Origin (deny missing/unknown — a
     // no-Origin POST is curl/server-to-server, not our app) plus the shared
     // client token. This is what stops anonymous abuse of the paid AI proxy.
-    if (!origin || !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+    if (!originAllowed(origin)) {
       return jsonResponse({ error: 'Origin not allowed' }, 403, headers);
     }
     // Token is fail-open when the secret isn't configured, so deploying this
@@ -72,65 +100,212 @@ export default {
     }
 
     if (url.pathname === '/validate-code') {
+      if (!(await rateLimitOk(env.RL_API, request))) return tooMany(headers);
       return validateCode(request, env, headers);
     }
 
     if (url.pathname === '/sync-progress') {
+      if (!(await rateLimitOk(env.RL_API, request))) return tooMany(headers);
       return syncProgress(request, env, headers);
     }
 
-    // Default: AI proxy (rate-limited + size-capped in proxyGemini)
-    return proxyGemini(request, env, headers);
+    if (url.pathname === '/recognize' || url.pathname === '/') {
+      return recognizeEndpoint(request, env, headers, url.pathname === '/');
+    }
+
+    return jsonResponse({ error: 'Not found' }, 404, headers);
   }
 };
 
-// ── Gemini proxy ──
+// ── Rate limiting ──
+//
+// Cloudflare's built-in per-location counters (wrangler.toml [[ratelimits]]). No KV
+// reads or writes, so a busy day can't use up the KV quota that unlock codes and
+// progress sync depend on. Fails open if the binding is missing or errors, so real
+// play never breaks. Limits are generous: a child can't take 60 photos a minute.
+// The count is approximate by design (Cloudflare syncs it in the background): in a
+// live test on 2026-11-26 a 60/minute limit started refusing at request 114. That
+// is fine for a cost guard; do not rely on it for exact quotas.
 
-async function proxyGemini(request, env, headers) {
+async function rateLimitOk(limiter, request) {
   try {
-    const body = await request.text();
-    // Size cap — a toddler photo as base64 JSON is a few MB; reject anything
-    // clearly oversized to blunt payload-abuse of the paid endpoint.
-    if (body.length > 8 * 1024 * 1024) {
-      return jsonResponse({ error: 'Payload too large' }, 413, headers);
-    }
-    // Per-IP rate limit so a leaked URL can't drain the Gemini quota. Best-effort
-    // (KV is eventually consistent); fails open on any error so real play never
-    // breaks. For production-grade limits, add a Cloudflare WAF rate-limit rule.
-    if (!(await rateLimitOk(request, env))) {
-      return jsonResponse({ error: 'Too many requests — slow down a moment.' }, 429, headers);
-    }
-    const apiUrl = `${GEMINI_URL}?key=${env.GEMINI_API_KEY}`;
-    const resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body
-    });
-    const data = await resp.text();
-    return new Response(data, {
-      status: resp.status,
-      headers: { ...headers, 'Content-Type': 'application/json' }
-    });
-  } catch (err) {
-    return jsonResponse({ error: 'Proxy error: ' + err.message }, 500, headers);
-  }
-}
-
-// Best-effort per-IP rate limit using KV minute-buckets. Generous (60/min) so a
-// real child is never throttled; fails open if KV is unbound or errors.
-async function rateLimitOk(request, env) {
-  try {
-    if (!env.UNLOCK_CODES) return true;
+    if (!limiter) return true;
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const minute = Math.floor(Date.now() / 60000);
-    const key = 'rl:' + ip + ':' + minute;
-    const count = parseInt((await env.UNLOCK_CODES.get(key)) || '0', 10) || 0;
-    if (count >= 60) return false;
-    await env.UNLOCK_CODES.put(key, String(count + 1), { expirationTtl: 120 });
-    return true;
+    const { success } = await limiter.limit({ key: ip });
+    return success;
   } catch (e) {
     return true;
   }
+}
+
+function tooMany(headers) {
+  return jsonResponse({ error: 'Too many requests. Slow down a moment.' }, 429, headers);
+}
+
+// ── Photo recognition ──
+
+const DESCRIBE_TAIL = / On the second line, describe what you see[^.]*\.$/;
+const ITEM_SET = new Set(ITEMS);
+
+// The question exactly as the game was tuned and evaluated with it.
+function fullPrompt(category, item) {
+  const override = OVERRIDES[category] && OVERRIDES[category][item];
+  return override || TEMPLATES[category].split('{n}').join(item);
+}
+
+// Same question without "describe what you see". The app only ever reads the
+// Yes/No, so the description was paid for and thrown away.
+function leanPrompt(category, item) {
+  return fullPrompt(category, item).replace(DESCRIBE_TAIL, '');
+}
+
+// Older cached app versions send the whole prompt as text. Map each known prompt
+// back to its (category, item) so they keep working without being able to ask
+// anything else. Built once per Worker instance.
+let legacyIndex = null;
+function lookupLegacyPrompt(text) {
+  if (!legacyIndex) {
+    legacyIndex = new Map();
+    for (const category of Object.keys(TEMPLATES)) {
+      for (const item of ITEMS) legacyIndex.set(fullPrompt(category, item), [category, item]);
+    }
+  }
+  return legacyIndex.get(text) || null;
+}
+
+function generationConfig(model) {
+  // The Yes/No needs one token. The cap leaves room for the little "thinking" a
+  // model does even at its lowest setting, which counts against the same limit.
+  if (model.startsWith('gemini-2.5')) {
+    return { temperature: 0, maxOutputTokens: 256, thinkingConfig: { thinkingBudget: 0 } };
+  }
+  // Gemini 3 ignores temperature and sets thinking by level, not by budget.
+  // 3.5 Flash-Lite and 3.6 Flash accept "minimal". 3.8 Flash and newer reject it
+  // (HTTP 400, checked 2026-11-26), so they get "low", their lowest setting.
+  const minimalOk = /^gemini-3\.[0-7]\b/.test(model);
+  return { maxOutputTokens: 256, thinkingConfig: { thinkingLevel: minimalOk ? 'minimal' : 'low' } };
+}
+
+async function askModel(env, model, prompt, image, mimeType) {
+  const started = Date.now();
+  let resp;
+  try {
+    resp = await fetch(GEMINI_BASE + model + ':generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType, data: image } }] }],
+        generationConfig: generationConfig(model)
+      }),
+      signal: AbortSignal.timeout(MODEL_TIMEOUT_MS)
+    });
+  } catch (err) {
+    return { ok: false, status: 504, detail: String(err && err.name || err), ms: Date.now() - started };
+  }
+  if (!resp.ok) {
+    let detail = '';
+    try { detail = (await resp.text()).slice(0, 300); } catch (e) {}
+    return { ok: false, status: resp.status, detail, ms: Date.now() - started };
+  }
+  let data;
+  try { data = await resp.json(); } catch (e) {
+    return { ok: false, status: 502, detail: 'non-JSON reply', ms: Date.now() - started };
+  }
+  const parts = data.candidates && data.candidates[0] && data.candidates[0].content
+    && data.candidates[0].content.parts || [];
+  const text = parts.map(p => (p && !p.thought && p.text) || '').join('').trim();
+  if (!text) {
+    // Safety-blocked or cut off: not a "no". Let the caller try the other model.
+    const why = (data.candidates && data.candidates[0] && data.candidates[0].finishReason)
+      || (data.promptFeedback && data.promptFeedback.blockReason) || 'empty';
+    return { ok: false, status: 502, detail: 'no answer (' + why + ')', ms: Date.now() - started };
+  }
+  return { ok: true, text, usage: data.usageMetadata || null, ms: Date.now() - started };
+}
+
+// Ask the primary model; if it fails for any reason (retired, overloaded, slow,
+// blocked), ask the fallback once. A child should only ever see "Camera Nap" when
+// both are down.
+async function recognize(env, category, item, image, mimeType, opts) {
+  const models = opts && opts.model
+    ? [opts.model]
+    : [env.PRIMARY_MODEL || DEFAULT_PRIMARY, env.FALLBACK_MODEL || DEFAULT_FALLBACK];
+  const prompt = opts && opts.fullPrompt ? fullPrompt(category, item) : leanPrompt(category, item);
+  let last = null;
+  for (const model of models) {
+    const r = await askModel(env, model, prompt, image, mimeType);
+    if (r.ok) {
+      const firstLine = r.text.split('\n')[0].trim().toLowerCase();
+      const answer = /^yes\b/.test(firstLine) ? 'yes' : /^no\b/.test(firstLine) ? 'no' : 'unclear';
+      if (last) console.log('[recognize] fallback answered', JSON.stringify({ model, failed: last.model, status: last.status }));
+      return { ok: true, answer, model, text: r.text, usage: r.usage, ms: r.ms };
+    }
+    console.error('[recognize] model failed', JSON.stringify({ model, status: r.status, detail: r.detail, ms: r.ms }));
+    last = { model, status: r.status, detail: r.detail };
+  }
+  return { ok: false, status: last && last.status === 429 ? 429 : 502 };
+}
+
+async function recognizeEndpoint(request, env, headers, legacy) {
+  // Local model testing only: `wrangler dev --remote --var EVAL_MODE:1`. Never set
+  // in wrangler.toml, so production ignores these headers.
+  const evalMode = env.EVAL_MODE === '1';
+  if (!evalMode && !(await rateLimitOk(env.RL_AI, request))) return tooMany(headers);
+
+  let raw, payload;
+  try {
+    raw = await request.text();
+    if (raw.length > MAX_BODY_CHARS) return jsonResponse({ error: 'Payload too large' }, 413, headers);
+    payload = JSON.parse(raw);
+  } catch (e) {
+    return jsonResponse({ error: 'Invalid JSON' }, 400, headers);
+  }
+
+  let category, item, image, mimeType;
+  if (legacy) {
+    const parts = payload && payload.contents && payload.contents[0] && payload.contents[0].parts || [];
+    const textPart = parts.find(p => p && typeof p.text === 'string');
+    const imagePart = parts.find(p => p && p.inlineData);
+    const known = textPart && lookupLegacyPrompt(textPart.text);
+    if (!known || !imagePart) return jsonResponse({ error: 'Unsupported request' }, 400, headers);
+    [category, item] = known;
+    image = imagePart.inlineData.data;
+    mimeType = imagePart.inlineData.mimeType;
+  } else {
+    ({ category, item, image, mimeType } = payload || {});
+  }
+
+  if (typeof category !== 'string' || !Object.prototype.hasOwnProperty.call(TEMPLATES, category)
+      || typeof item !== 'string' || !ITEM_SET.has(item)) {
+    return jsonResponse({ error: 'Unknown item' }, 400, headers);
+  }
+  if (typeof image !== 'string' || image.length < 100) {
+    return jsonResponse({ error: 'Photo missing' }, 400, headers);
+  }
+  if (!IMAGE_TYPES.includes(mimeType)) mimeType = 'image/jpeg';
+
+  const opts = {};
+  if (evalMode) {
+    const m = request.headers.get('X-PH-Eval-Model');
+    if (m && /^gemini-[a-z0-9.\-]+$/.test(m)) opts.model = m;
+    if (request.headers.get('X-PH-Eval-Prompt') === 'full') opts.fullPrompt = true;
+  }
+
+  const result = await recognize(env, category, item, image, mimeType, opts);
+  if (!result.ok) {
+    return jsonResponse({ error: 'Recognition unavailable' }, result.status, headers);
+  }
+
+  if (legacy) {
+    // Older app versions read a Gemini-shaped reply and look at the first line.
+    return jsonResponse({
+      candidates: [{ content: { parts: [{ text: result.answer === 'yes' ? 'Yes' : 'No' }], role: 'model' }, finishReason: 'STOP', index: 0 }],
+      modelVersion: result.model
+    }, 200, headers);
+  }
+  const body = { answer: result.answer, model: result.model };
+  if (evalMode) { body.text = result.text; body.usage = result.usage; body.ms = result.ms; }
+  return jsonResponse(body, 200, headers);
 }
 
 // ── Code validation ──

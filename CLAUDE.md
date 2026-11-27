@@ -19,7 +19,10 @@ is the retention engine.** See STRATEGY.md.
 ## Stack (don't change without a strong reason)
 
 - Vanilla HTML/CSS/JS, no framework, no build step
-- Gemini 2.5 Flash via Cloudflare Worker proxy (`picture-hunt-api.aidevlab3.workers.dev`)
+- Photo recognition by Gemini through the Cloudflare Worker (`picture-hunt-api.aidevlab3.workers.dev`).
+  Primary `gemini-3.5-flash-lite`, fallback `gemini-3.6-flash`, both set in `worker/wrangler.toml`.
+  The Worker owns the prompts, the model choice and the fallback; the app sends only
+  category, item and photo to `/recognize`. It is not a general Gemini proxy.
 - Pre-generated MP3s in OpenAI `gpt-4o-mini-tts` voice "coral" (levelled to -16 LUFS),
   played via Web Audio API buffers + `speechSynthesis` fallback. Generation tooling
   lives outside this repo in `C:\dev\ph-tools\`.
@@ -40,7 +43,17 @@ is the retention engine.** See STRATEGY.md.
 - **iOS audio:** Web Audio buffers only. NEVER `new Audio().play()` — fails
   outside user gesture on iOS Safari. Fall back to `speechSynthesis`.
 - **AI prompts permissive:** accept toys, plushies, pictures, drawings.
-- **Recognition prompts yes/no**, temperature 0.
+- **Recognition prompts yes/no.** (`temperature 0` is retired: Gemini 3 ignores it.
+  Consistency comes from the prompt plus the lowest thinking setting, in `worker.js`.)
+- **Items and prompts live in two places that must match:** `play/app.js` (the
+  `aiPrompt` functions and item lists, the source) and `worker/prompts.js` (generated).
+  After changing either an item or a prompt: `node worker/build-prompts.mjs`, then
+  redeploy the Worker. The Worker answers "Unknown item" for anything not in its table,
+  which the child sees as "Camera Nap".
+- **Never change the model without the comparison.** `C:\dev\ph-tools\model_compare.js`
+  runs all 109 items plus 218 look-alike rejections on a candidate model (how-to is in
+  that file's header). Then edit `PRIMARY_MODEL` / `FALLBACK_MODEL` and deploy. Watch
+  ai.google.dev/gemini-api/docs/deprecations: Google retired 2.5 Flash with four weeks' notice.
 - **Big tap targets** (100px+), photo preview before submit, parent override button.
 - **Cache busting is atomic:** bump `?v=N` in `play/index.html` AND `CACHE_VERSION`
   in `play/sw.js` AND any new file into `PRECACHE_URLS`. All together or none.
@@ -75,9 +88,17 @@ installs cache aggressively; the cache bump forces re-fetch on next launch.
 ## Worker deploy
 
 ```bash
+node worker/build-prompts.mjs --check   # fails if prompts.js is behind app.js
 cd worker
 npx wrangler deploy        # needs `npx wrangler login` once
 ```
+
+The health probe (`.github/workflows/recognition-health.yml`) sends a real apple
+photo every 6 hours and requires "yes" for apple and "no" for banana. It re-enables
+itself on every run, because GitHub switches off schedules in repos that go 60 days
+without activity (that silently killed monitoring from 2026-08-16 to 2026-11-26).
+Rate limits are Cloudflare's built-in `[[ratelimits]]` (approximate, per visitor IP),
+not KV.
 
 KV namespace `UNLOCK_CODES` is bound (id in `wrangler.toml`). Secrets:
 `GEMINI_API_KEY` (set), `STRIPE_WEBHOOK_SECRET` + `STRIPE_API_KEY` (pending).

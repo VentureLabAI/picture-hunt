@@ -1857,24 +1857,24 @@ function resetCameraUI() {
 // GEMINI API
 // ═══════════════════════════════════════════════════════════════
 async function identifyObject(base64Data, mimeType) {
-  var cat = CATEGORIES[currentCategory];
   var item = shuffledItems[currentIndex];
-  var url = PROXY_URL
-    ? PROXY_URL
-    : 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+  // The Worker owns the question, the model and the fallback (worker/worker.js).
+  // The app only says WHICH item it is looking for and hands over the photo, so a
+  // model or prompt change never needs an app update. The Worker builds its prompt
+  // table from the aiPrompt functions above: after editing an item or an aiPrompt,
+  // run `node worker/build-prompts.mjs` and redeploy the Worker.
+  var url = PROXY_URL + 'recognize';
   var body = {
-    contents: [{ parts: [
-      { text: cat.aiPrompt(item.name) },
-      { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Data } }
-    ]}],
-    generationConfig: { temperature: 0 }
+    category: currentCategory,
+    item: item.name,
+    image: base64Data,
+    mimeType: mimeType || 'image/jpeg'
   };
   // Bound the round-trip so a stalled Worker can't leave "Looking at your
   // photo…" on screen forever (worst case for a 2-year-old).
   var ctrl = new AbortController();
   var timeoutId = setTimeout(function() { ctrl.abort(); }, 15000);
-  var reqHeaders = { 'Content-Type': 'application/json' };
-  if (PROXY_URL) reqHeaders['X-PH-Token'] = PH_PROXY_TOKEN;
+  var reqHeaders = { 'Content-Type': 'application/json', 'X-PH-Token': PH_PROXY_TOKEN };
   var resp;
   try {
     resp = await fetch(url, { method: 'POST', headers: reqHeaders, body: JSON.stringify(body), signal: ctrl.signal });
@@ -1909,15 +1909,14 @@ async function identifyObject(base64Data, mimeType) {
     console.error('[PH] recognition 200 with a non-JSON body');
     var parseErr = new Error('service'); parseErr.status = 200; throw parseErr;
   }
-  var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
-    data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
-    data.candidates[0].content.parts[0].text) || '';
-  if (window.PH_DEBUG) console.log('Gemini:', text, '| Looking for:', item.name, '(' + currentCategory + ')');
+  // The Worker replies { answer: 'yes' | 'no' | 'unclear', model }.
+  var text = (data && typeof data.answer === 'string') ? data.answer : '';
+  if (window.PH_DEBUG) console.log('Recognition:', text, '(' + (data && data.model) + ') | Looking for:', item.name, '(' + currentCategory + ')');
   if (!text.trim()) {
-    // 200 OK but no usable answer (safety-blocked or empty candidates). This is NOT
-    // the AI saying "no" — treat it as a service hiccup so the child sees the
-    // friendly "Camera Nap" card and the streak isn't reset, never a false "Not quite!".
-    console.error('[PH] recognition returned an empty/blocked 200 response');
+    // 200 OK but no usable answer. This is NOT the AI saying "no" — treat it as a
+    // service hiccup so the child sees the friendly "Camera Nap" card and the
+    // streak isn't reset, never a false "Not quite!".
+    console.error('[PH] recognition returned a 200 with no answer');
     var emptyErr = new Error('service'); emptyErr.status = 200; throw emptyErr;
   }
   return text.trim().toLowerCase();

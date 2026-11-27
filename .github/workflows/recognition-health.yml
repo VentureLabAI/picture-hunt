@@ -1,22 +1,24 @@
 # Recognition health probe
 # =========================
-# Every 6 hours, send one tiny image through the REAL path the app uses
-# (Cloudflare Worker -> Gemini) and fail the workflow unless a well-formed
-# yes/no comes back. If the GEMINI_API_KEY is ever revoked/unbilled again
-# (the 2026-06-09 outage returned API_KEY_INVALID for every photo, which the
-# app rendered to kids as "Not quite!" on every shot), this run goes red and
-# GitHub emails the repo owner — instead of the outage being silent.
+# Every 6 hours, send a real photo through the REAL path the app uses
+# (Cloudflare Worker /recognize -> Gemini) and require the RIGHT answers:
+#   - the apple photo, asked "apple?"  -> must answer yes
+#   - the apple photo, asked "banana?" -> must answer no
+# A model that is down, retired, or answering wrongly turns this run red and
+# GitHub emails the repo owner, instead of kids silently getting "Camera Nap" or
+# wrong results. (The 2026-06-09 outage: a dead GEMINI_API_KEY failed every photo.)
 #
 # Owner note: make sure GitHub Actions failure notifications are on for your
 # account (github.com/settings/notifications -> Actions) so the email arrives.
 #
-# The image below is a hardcoded 64x64 PNG that Gemini is known to accept
-# (verified returning a clean "No"). It's embedded rather than generated at
-# runtime so the probe has zero tool dependencies beyond curl + jq (both
-# preinstalled on ubuntu-latest). Nothing here is secret: the X-PH-Token is the
-# SAME public token already shipped in play/app.js (the worker's real cost guard
-# is its per-IP rate limit). The Origin + browser User-Agent are required or
-# Cloudflare returns error 1010.
+# KEEPALIVE: GitHub switches off scheduled workflows after 60 days without repo
+# activity. That happened here on 2026-08-16 and nobody noticed until 2026-11-26.
+# The last step re-enables this workflow through the API on every run, which
+# resets that 60-day clock, so a quiet repo no longer loses its monitoring.
+#
+# The photo lives in .github/probe/ (made from the game's own apple art). Nothing
+# here is secret: the X-PH-Token is the SAME public token shipped in play/app.js.
+# The Origin + browser User-Agent are required or Cloudflare returns error 1010.
 
 name: Recognition health probe
 
@@ -25,31 +27,58 @@ on:
     - cron: '0 */6 * * *'   # every 6 hours
   workflow_dispatch: {}       # allow a manual run from the Actions tab
 
+permissions:
+  contents: read
+  actions: write              # only for the keepalive step below
+
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/probe
+          sparse-checkout-cone-mode: false
+
       - name: Probe worker -> Gemini
         run: |
-          IMG="iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACLSURBVHhe7dAxAQAgEIDAb287i3wI3akAwy2MzLn7zIbBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYNIDBpgEMNg1gsGkAg00DGGwawGDTAAabBjDYfOCd8v4rHWC4AAAAAElFTkSuQmCC"
-          BODY=$(jq -nc --arg img "$IMG" '{contents:[{parts:[{text:"Does this image contain an apple? Answer yes or no."},{inlineData:{mimeType:"image/png",data:$img}}]}],generationConfig:{temperature:0}}')
-          RESP=$(curl -sS -m 30 -w $'\n%{http_code}' \
-            -X POST "https://picture-hunt-api.aidevlab3.workers.dev/" \
-            -H "Content-Type: application/json" \
-            -H "Origin: http://localhost" \
-            -H "X-PH-Token: ph_pub_2k9Qx7mZr4Tn8Wv5" \
-            -H "User-Agent: Mozilla/5.0 (PictureHunt-HealthProbe)" \
-            --data "$BODY")
-          CODE=$(printf '%s' "$RESP" | tail -n1)
-          JSON=$(printf '%s' "$RESP" | sed '$d')
-          echo "HTTP $CODE"
-          printf '%s' "$JSON" | head -c 800; echo
-          if [ "$CODE" != "200" ]; then
-            echo "::error::Recognition DOWN — worker returned HTTP $CODE (expected 200). Check the worker + GEMINI_API_KEY."
-            exit 1
-          fi
-          if ! printf '%s' "$JSON" | jq -e '.candidates[0].content.parts[0].text' >/dev/null 2>&1; then
-            echo "::error::Recognition DOWN/degraded — no candidate text in the response. A revoked/unbilled GEMINI_API_KEY looks like this (API_KEY_INVALID). Re-set the key per docs."
-            exit 1
-          fi
-          echo "Recognition healthy. Model said: $(printf '%s' "$JSON" | jq -r '.candidates[0].content.parts[0].text' | tr -d '\n' | head -c 80)"
+          IMG=$(base64 -w0 .github/probe/apple.jpg)
+          ask() {
+            # $1 = item to ask about, $2 = expected answer
+            BODY=$(jq -nc --arg img "$IMG" --arg item "$1" '{category:"food",item:$item,image:$img,mimeType:"image/jpeg"}')
+            RESP=$(printf '%s' "$BODY" | curl -sS -m 30 -w $'\n%{http_code}' \
+              -X POST "https://picture-hunt-api.aidevlab3.workers.dev/recognize" \
+              -H "Content-Type: application/json" \
+              -H "Origin: http://localhost" \
+              -H "X-PH-Token: ph_pub_2k9Qx7mZr4Tn8Wv5" \
+              -H "User-Agent: Mozilla/5.0 (PictureHunt-HealthProbe)" \
+              --data-binary @-)
+            CODE=$(printf '%s' "$RESP" | tail -n1)
+            JSON=$(printf '%s' "$RESP" | sed '$d')
+            echo "asked '$1' -> HTTP $CODE $(printf '%s' "$JSON" | head -c 300)"
+            if [ "$CODE" != "200" ]; then
+              echo "::error::Recognition DOWN. Worker returned HTTP $CODE for '$1' (expected 200). Both the primary and fallback model failed, or the GEMINI_API_KEY is dead. See worker/wrangler.toml and CLAUDE.md."
+              exit 1
+            fi
+            ANSWER=$(printf '%s' "$JSON" | jq -r '.answer // empty')
+            if [ "$ANSWER" != "$2" ]; then
+              echo "::error::Recognition WRONG. Apple photo asked as '$1' answered '$ANSWER' (expected '$2'). The model may have changed behaviour. Re-run the model comparison in ph-tools."
+              exit 1
+            fi
+            MODEL=$(printf '%s' "$JSON" | jq -r '.model // empty')
+            case "$MODEL" in
+              "$PRIMARY_HINT"*) ;;
+              *) echo "::warning::Answered by '$MODEL', not the primary model. The primary may be failing and the fallback is carrying the load." ;;
+            esac
+          }
+          ask apple yes
+          ask banana no
+          echo "Recognition healthy."
+        env:
+          PRIMARY_HINT: gemini-3.5-flash-lite
+
+      - name: Keep this schedule alive
+        if: always()
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/recognition-health.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
