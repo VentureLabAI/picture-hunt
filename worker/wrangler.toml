@@ -21,6 +21,14 @@ enabled = true
 binding = "UNLOCK_CODES"
 id = "3984b5b16694406590dca6f5c6238a8b"
 
+# Anonymous daily totals (landing visits, Try Free taps, photo checks, code use).
+# One table of counters, no personal data. Schema: worker/schema.sql.
+# Read with: node worker/stats.mjs
+[[d1_databases]]
+binding = "STATS"
+database_name = "picture-hunt-stats"
+database_id = "87c20b5b-e916-430b-b819-44e8748a2f95"
+
 # Built-in rate limits, counted per visitor IP. period is seconds (10 or 60).
 # RL_AI guards photo checks (the calls that cost money); RL_API guards code
 # validation and progress sync.

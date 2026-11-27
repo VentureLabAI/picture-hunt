@@ -64,7 +64,7 @@ function jsonResponse(body, status, headers) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin') || '';
     const headers = corsHeaders(origin);
     const url = new URL(request.url);
@@ -101,7 +101,12 @@ export default {
 
     if (url.pathname === '/validate-code') {
       if (!(await rateLimitOk(env.RL_API, request))) return tooMany(headers);
-      return validateCode(request, env, headers);
+      return validateCode(request, env, headers, ctx);
+    }
+
+    if (url.pathname === '/event') {
+      if (!(await rateLimitOk(env.RL_API, request))) return tooMany(headers);
+      return eventEndpoint(request, env, headers, ctx);
     }
 
     if (url.pathname === '/sync-progress') {
@@ -110,12 +115,83 @@ export default {
     }
 
     if (url.pathname === '/recognize' || url.pathname === '/') {
-      return recognizeEndpoint(request, env, headers, url.pathname === '/');
+      return recognizeEndpoint(request, env, headers, url.pathname === '/', ctx);
     }
 
     return jsonResponse({ error: 'Not found' }, 404, headers);
   }
 };
+
+// ── Anonymous daily totals ──
+//
+// The only "analytics" Picture Hunt has. One D1 table of counters:
+//   (day, event, channel) -> n
+// No IP address, no device or user ID, no user agent, nothing about a person is
+// stored, so nothing here can follow an individual or a child. It answers "how many
+// people opened the landing page from the TikTok link and tapped Try Free" and "how
+// many photos were checked today", which is what the launch decision gate needs.
+//
+// Two sources:
+//   - the landing page posts 'visit' and 'try_free' to /event (landing.js),
+//     optionally with the campaign label from a ?c=<label> link;
+//   - the Worker counts its own work: photo checks by outcome, code redemptions.
+// The game itself (/play/) sends no events.
+//
+// Read the totals with: node worker/stats.mjs
+// Disclosed in privacy.html ("Anonymous totals").
+
+const CLIENT_EVENTS = new Set(['visit', 'try_free']);
+const CHANNEL_RE = /^[a-z0-9][a-z0-9-]{0,23}$/;
+// A flood of made-up channel labels could otherwise grow the table without limit.
+const MAX_ROWS_PER_DAY = 1000;
+
+function statDay() {
+  // The owner's day (US Central), so "today" in a report matches his calendar.
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+}
+
+async function bump(env, event, channel) {
+  if (!env.STATS) return;
+  try {
+    const day = statDay();
+    const ch = channel && CHANNEL_RE.test(channel) ? channel : '';
+    const upd = await env.STATS
+      .prepare('UPDATE counts SET n = n + 1 WHERE day = ?1 AND event = ?2 AND channel = ?3')
+      .bind(day, event, ch).run();
+    if (upd.meta && upd.meta.changes > 0) return;
+    const size = await env.STATS.prepare('SELECT COUNT(*) AS c FROM counts WHERE day = ?1').bind(day).first();
+    if (size && size.c >= MAX_ROWS_PER_DAY) return;
+    await env.STATS
+      .prepare('INSERT INTO counts (day, event, channel, n) VALUES (?1, ?2, ?3, 1) '
+        + 'ON CONFLICT(day, event, channel) DO UPDATE SET n = n + 1')
+      .bind(day, event, ch).run();
+  } catch (e) {
+    console.error('[stats] ' + (e && e.message));
+  }
+}
+
+// Count without making the caller wait for the database.
+function count(ctx, env, event, channel) {
+  const p = bump(env, event, channel);
+  if (ctx && ctx.waitUntil) ctx.waitUntil(p);
+}
+
+async function eventEndpoint(request, env, headers, ctx) {
+  let payload;
+  try {
+    // Sent as text/plain so the browser needs no CORS preflight.
+    payload = JSON.parse(await request.text());
+  } catch (e) {
+    return jsonResponse({ ok: false }, 400, headers);
+  }
+  const event = payload && payload.e;
+  if (typeof event !== 'string' || !CLIENT_EVENTS.has(event)) {
+    return jsonResponse({ ok: false }, 400, headers);
+  }
+  const channel = payload && typeof payload.c === 'string' ? payload.c.toLowerCase() : '';
+  count(ctx, env, event, channel);
+  return new Response(null, { status: 204, headers });
+}
 
 // ── Rate limiting ──
 //
@@ -246,7 +322,7 @@ async function recognize(env, category, item, image, mimeType, opts) {
   return { ok: false, status: last && last.status === 429 ? 429 : 502 };
 }
 
-async function recognizeEndpoint(request, env, headers, legacy) {
+async function recognizeEndpoint(request, env, headers, legacy, ctx) {
   // Local model testing only: `wrangler dev --remote --var EVAL_MODE:1`. Never set
   // in wrangler.toml, so production ignores these headers.
   const evalMode = env.EVAL_MODE === '1';
@@ -292,6 +368,18 @@ async function recognizeEndpoint(request, env, headers, legacy) {
   }
 
   const result = await recognize(env, category, item, image, mimeType, opts);
+  const isProbe = (request.headers.get('User-Agent') || '').includes('PictureHunt-HealthProbe');
+  if (isProbe) {
+    // The 6-hourly health check is not a child playing; keep it out of the totals.
+    count(ctx, env, result.ok ? 'probe_ok' : 'probe_fail');
+  } else if (!evalMode) {
+    // Totals only: how many photos were checked and how they came out.
+    count(ctx, env, result.ok ? 'check_' + result.answer : 'check_fail');
+    if (result.ok && result.model !== (env.PRIMARY_MODEL || DEFAULT_PRIMARY)) count(ctx, env, 'check_fallback');
+    // Still seeing old-format requests means older app versions are in use and the
+    // legacy path at "/" must stay.
+    if (legacy) count(ctx, env, 'check_old_app');
+  }
   if (!result.ok) {
     return jsonResponse({ error: 'Recognition unavailable' }, result.status, headers);
   }
@@ -324,7 +412,7 @@ async function recognizeEndpoint(request, env, headers, legacy) {
 const PROMO_CODES = ['LAUNCH2026', 'FOUNDERSPECIAL'];
 const PROMO_DAYS = 365;
 
-async function validateCode(request, env, headers) {
+async function validateCode(request, env, headers, ctx) {
   let payload;
   try {
     payload = await request.json();
@@ -339,6 +427,7 @@ async function validateCode(request, env, headers) {
 
   // Promo codes are always valid here — authoritative, regardless of KV binding.
   if (PROMO_CODES.includes(code)) {
+    count(ctx, env, 'code_ok', code.toLowerCase());
     return jsonResponse({
       valid: true,
       validUntil: new Date(Date.now() + PROMO_DAYS * 24 * 3600 * 1000).toISOString(),
@@ -353,6 +442,7 @@ async function validateCode(request, env, headers) {
 
   const raw = await env.UNLOCK_CODES.get(code);
   if (!raw) {
+    count(ctx, env, 'code_bad');
     return jsonResponse({ valid: false }, 200, headers);
   }
 
@@ -366,6 +456,11 @@ async function validateCode(request, env, headers) {
   if (entry.validUntil && new Date(entry.validUntil) < new Date()) {
     return jsonResponse({ valid: false, expired: true }, 200, headers);
   }
+
+  // Which free pass or channel a redemption came from: the label given when the
+  // code was minted (worker/mint-code.mjs), e.g. "sunny-days-preschool". Purchased
+  // codes have no label and count as "paid".
+  count(ctx, env, 'code_ok', entry.label || 'paid');
 
   return jsonResponse({
     valid: true,
@@ -419,6 +514,12 @@ async function syncProgress(request, env, headers) {
   try { codeEntry = JSON.parse(codeRaw); } catch (e) { codeEntry = null; }
   if (codeEntry && codeEntry.validUntil && new Date(codeEntry.validUntil) < new Date()) {
     return jsonResponse({ ok: false, error: 'Code expired' }, 401, headers);
+  }
+  // A free-pass code handed to a whole classroom is used by many families. Sync is
+  // keyed by code, so syncing would mix their children's progress together. Treat
+  // it like a promo code: valid, but no cross-device sync.
+  if (codeEntry && codeEntry.shared) {
+    return jsonResponse(action === 'download' ? { ok: true, data: null } : { ok: true }, 200, headers);
   }
 
   const progressKey = 'progress:' + code;

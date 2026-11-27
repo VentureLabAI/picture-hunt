@@ -25,7 +25,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 
   <link rel="preload" href="play/fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="landing.css?v=8">
+  <link rel="stylesheet" href="landing.css?v=9">
 </head>
 <body>
 
@@ -46,9 +46,10 @@
       <p class="hero-meta">Free to start, with Spanish included. One-time <b>$24.99</b> unlocks all 10 languages, every category, and every story. No subscription.</p>
     </div>
     <div class="hero-visual">
-      <div class="hero-fox-wrap">
-        <div class="hero-bubble">Can you find an apple?<span class="hero-bubble-es">🇪🇸 ¿una manzana?</span></div>
-        <img class="hero-fox" src="play/img/mascot/fox-hero.webp" width="577" height="640" fetchpriority="high" decoding="async" alt="Picture Hunt's friendly fox guide holding a magnifying glass">
+      <div class="hero-stage">
+        <div class="phone phone-back"><img src="img/hero-found.webp" width="520" height="1013" decoding="async" alt="The game celebrating: You found it! with the Spanish word manzana"></div>
+        <div class="phone phone-front"><img src="img/hero-prompt.webp" width="520" height="1013" fetchpriority="high" decoding="async" alt="The game asking: Can you find an apple? with the Spanish word manzana and a big camera button"></div>
+        <img class="hero-fox" src="play/img/mascot/fox-hero.webp" width="577" height="640" decoding="async" alt="Picture Hunt's friendly fox guide holding a magnifying glass">
       </div>
     </div>
   </div>
@@ -222,5 +223,6 @@
   <p>© 2026 Venture Lab · <a href="play/">Open the app</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:hello@picturehunt.app">hello@picturehunt.app</a></p>
 </footer>
 
+<script src="landing.js?v=1" defer></script>
 </body>
 </html>

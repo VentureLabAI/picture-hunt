@@ -1,9 +1,24 @@
 # Picture Hunt — Distribution Playbook
 
 **Owner:** Caleb
-**Last updated:** 2026-05-18
-**Prereq:** paywall live ($19.99 one-time wired through Stripe). Until then, these
-assets can be drafted/filmed but don't drive paid traffic yet.
+**Last updated:** 2026-11-26
+**Status:** measurement and free-pass codes are built (see "Links to use" and
+"Measurement"). Checkout is not live yet, so for now this playbook proves reach and
+engagement, not sales.
+
+## Links to use (each one is counted separately)
+
+| Where you post it | Link |
+|---|---|
+| TikTok bio | `https://picturehunt.app/?c=tiktok` |
+| Instagram bio | `https://picturehunt.app/?c=instagram` |
+| YouTube Shorts | `https://picturehunt.app/?c=youtube` |
+| Anywhere else | `https://picturehunt.app/?c=<short-name>` (lowercase letters, digits, dashes) |
+| A preschool | free-pass link + QR image from `node worker/mint-code.mjs <preschool-name>` |
+| One creator | `node worker/mint-code.mjs creator-<name> --personal` |
+
+The label after `?c=` is all that is recorded: no personal data. A plain
+`picturehunt.app` link still works; it just shows up as "(no label)".
 
 The goal of Phase 3 (see STRATEGY.md) is cheap, organic proof that this product
 can be distributed at all. We are NOT buying ads yet. The 30-day signal is one
@@ -29,7 +44,7 @@ for the one that hits the algorithm. Post the same video to all three platforms.
 - Vertical 9:16, shot on a phone, natural light. Polished = scrolls past.
 - Hook in the first 2 seconds (text on screen + the kid already in motion).
 - Show the kid's hands/back, never the face (privacy + relatability).
-- Real tablet audio audible — the Jessica voice saying "¿Una manzana?" is the moment.
+- Real tablet audio audible — the fox's voice saying "¿Una manzana?" is the moment.
 - 15-30 seconds. End on the celebration (confetti + sticker).
 - Caption is a sentence, not a pitch. Link in bio.
 
@@ -42,7 +57,7 @@ for the one that hits the algorithm. Post the same video to all three platforms.
 5. **"Things my kid learned this week without a worksheet:"** — text list overlay (manzana, pelota, perro...) over gameplay. Caption: "Real objects > flashcards at this age."
 6. **"Screen time I don't feel guilty about"** — the kid is physically moving the whole clip. Caption: "She's on her feet the entire time. That was the whole point."
 7. **"The app is in English AND Spanish and I don't even speak Spanish"** — parent voiceover, app does the talking. Caption: "I'm learning it too tbh."
-8. **"Grandma asked how the baby knows Spanish words now"** — cut between gameplay and a text-reveal of the answer. Caption: "$20 once. That's it. Link in bio."
+8. **"Grandma asked how the baby knows Spanish words now"** — cut between gameplay and a text-reveal of the answer. Caption: "Free to try. Link in bio."
 9. **"Rainy day = indoor scavenger hunt in Spanish"** — cozy indoor vibe. Caption: "Saved our whole afternoon."
 10. **"Stitch this with your kid's app screen time"** — duet/stitch bait. Caption: "Show me yours, here's ours."
 
@@ -71,7 +86,7 @@ your kid attends or you know personally.
 >
 > I'm a local dad — I built a little app called Picture Hunt for my 3-year-old.
 > It's a scavenger hunt where kids find real objects with a tablet camera, and
-> it teaches the words in English and Spanish as they go. She's picked up a
+> it says each word in English and Spanish as they go. She's picked up a
 > surprising number of Spanish words just by playing.
 >
 > I'd love to give [Preschool Name] free lifetime access for the classroom — no
@@ -85,8 +100,20 @@ your kid attends or you know personally.
 > Caleb
 > [link]
 
-**Fulfillment:** generate a batch of unlock codes (KV) and hand them over. Track
-which preschool each code set went to so you can attribute testimonials.
+**Fulfillment (built 2026-11-26):** one command per preschool.
+
+```
+node worker/mint-code.mjs sunny-days-preschool
+```
+
+It prints one code the whole class can share, a link that unlocks the app in one
+tap, and saves a QR image for the take-home flyer in
+`C:/assets/ventures/picture-hunt/free-pass-qr/`. `node worker/stats.mjs` then shows
+how many times each preschool's code was used, so you know who to ask for a
+testimonial. `node worker/mint-code.mjs --list` shows every code handed out.
+
+A shared class code does not sync progress between devices (it would mix
+different families' progress). Each family's progress stays on their own device.
 
 ---
 
@@ -103,7 +130,7 @@ parenting/screen-time-conscious niches.
 
 > Hi [Name]! I'm a dad who built a tiny app — Picture Hunt — that has toddlers
 > learn Spanish by finding real objects around the house with the tablet camera.
-> No ads, no data collection, $20 one-time (no subscription).
+> No ads, no accounts, no subscription.
 >
 > I'd love to give you a free lifetime unlock to try with [kid's name] — zero
 > obligation. If you end up liking it and want to share, that'd mean the world,
@@ -124,27 +151,39 @@ you can see which influencers actually drive installs.
   channel.)
 - **Do not buy ads yet.** Acquisition spend before organic proof is how indie
   apps die. Paid comes only after a video proves the concept can travel.
-- **Do not lower the $19.99 price to chase conversions.** If conversion is low,
+- **Do not lower the $24.99 price to chase conversions.** If conversion is low,
   the fix is the channel/message, not the price (see STRATEGY decision gate).
 
 ---
 
 ## Measurement (set up before posting)
 
-- **Plausible analytics** (privacy-friendly, ~$9/mo) on the landing page. Track:
-  landing visits, "Try Free" clicks, /play/ loads, paywall opens, Stripe clicks.
-- **Per-channel unlock codes** so testimonials/installs attribute to a source.
-- **Weekly funnel review:** views → profile/bio clicks → landing → try free →
-  paywall open → purchase. Find the biggest drop-off and fix that one step.
+Built 2026-11-26, no paid service and no outside tracker. Run:
+
+```
+node worker/stats.mjs        # last 14 days
+node worker/stats.mjs 30     # last 30 days
+```
+
+(or ask Claude in this folder "how is the funnel"). It shows, per day and per
+link label: landing visits, Try Free taps and the rate between them, photo checks
+run and found, and unlock codes used by label.
+
+- **What it can tell you:** which channel sends people, whether they tap Try
+  Free, and whether play volume is growing.
+- **What it cannot tell you:** whether the SAME family came back the next day.
+  That needs an anonymous count from inside the game, which is deliberately not
+  built (owner decision pending; see `context_handoff.md`).
+- **Weekly review:** views → profile/bio clicks (from the platform) → landing
+  visits → Try Free → photos checked. Find the biggest drop-off and fix that one
+  step.
 
 ---
 
 ## Sequencing
 
-1. Wire Stripe + Plausible (blocked on Boss Man).
-2. Re-record the 10 grammar-fixed MP3s with the good voice (blocked on EL key) —
-   do this before filming so demo audio is clean.
-3. Film + post the first 3-5 TikToks.
-4. Send the preschool emails (batch of 10).
-5. Seed 50 influencer DMs.
-6. Watch the funnel for 30 days → hit/miss the signals in STRATEGY.md.
+1. Play one round on your own iPhone on the current version.
+2. Film + post the first 3-5 videos, with the labelled link in each bio.
+3. Send the preschool emails (batch of 10), each with its own free pass.
+4. Seed 50 creator DMs.
+5. Run the stats once a week for 30 days → hit/miss the signals in STRATEGY.md.
