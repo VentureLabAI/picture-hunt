@@ -95,14 +95,14 @@ var CATEGORIES = {
       { name: 'shoe', emoji: '👟', d: 1 }, { name: 'cup', emoji: '🥤', d: 1 },
       { name: 'ball', emoji: '⚽', d: 1 }, { name: 'teddy bear', emoji: '🧸', d: 1 },
       { name: 'book', emoji: '📚', d: 1 }, { name: 'spoon', emoji: '🥄', d: 2 },
-      { name: 'pillow', emoji: '🛏️', img: 'img/pillow.png', d: 1 }, { name: 'blanket', emoji: '🧣', img: 'img/blanket.png', d: 2 },
-      { name: 'remote control', emoji: '📺', img: 'img/remote-control.png', d: 2 }, { name: 'toothbrush', emoji: '🪥', d: 1 },
+      { name: 'pillow', emoji: '🛏️', d: 1 }, { name: 'blanket', emoji: '🧣', d: 2 },
+      { name: 'remote control', emoji: '📺', d: 2 }, { name: 'toothbrush', emoji: '🪥', d: 1 },
       { name: 'chair', emoji: '🪑', d: 1 }, { name: 'sock', emoji: '🧦', d: 1 },
       { name: 'hat', emoji: '🧢', d: 1 }, { name: 'keys', emoji: '🔑', d: 2, speakOverride: 'Can you find keys?' },
-      { name: 'water bottle', emoji: '🍼', img: 'img/water-bottle.png', d: 2 }, { name: 'crayon', emoji: '🖍️', d: 2 },
-      { name: 'plate', emoji: '🍽️', d: 2 }, { name: 'towel', emoji: '🧻', img: 'img/towel.png', d: 2 },
-      { name: 'lamp', emoji: '💡', img: 'img/lamp.png', d: 3 }, { name: 'clock', emoji: '⏰', d: 3 },
-      { name: 'fork', emoji: '🍴', img: 'img/fork.png', d: 3 }, { name: 'brush', emoji: '💇', img: 'img/brush.png', d: 3 }
+      { name: 'water bottle', emoji: '🍼', d: 2 }, { name: 'crayon', emoji: '🖍️', d: 2 },
+      { name: 'plate', emoji: '🍽️', d: 2 }, { name: 'towel', emoji: '🧻', d: 2 },
+      { name: 'lamp', emoji: '💡', d: 3 }, { name: 'clock', emoji: '⏰', d: 3 },
+      { name: 'fork', emoji: '🍴', d: 3 }, { name: 'brush', emoji: '💇', d: 3 }
     ]
   },
   shapes: {
@@ -114,9 +114,9 @@ var CATEGORIES = {
       return 'Does this photo contain an object that has the shape of a ' + n + ' anywhere in the frame? It does not need to be perfectly geometric or centered — a toddler took this photo. Real objects have rounded edges and may appear at an angle. Ovals count as circles, elongated shapes count as rectangles. A plate is a circle, a book is a rectangle, a pizza slice is a triangle. But completely different shapes should be rejected. Respond with ONLY "Yes" or "No" on the first line. On the second line, describe what you see.';
     },
     items: [
-      { name: 'circle', emoji: '⭕', d: 1 }, { name: 'square', emoji: '🟦', img: 'img/square.png', d: 1 },
+      { name: 'circle', emoji: '⭕', d: 1 }, { name: 'square', emoji: '🟦', img: 'img/square.webp', d: 1 },
       { name: 'triangle', emoji: '🔺', d: 1 }, { name: 'star', emoji: '⭐', d: 1 },
-      { name: 'rectangle', emoji: '🟫', img: 'img/rectangle.png', d: 2 }, { name: 'heart', emoji: '❤️', d: 2 },
+      { name: 'rectangle', emoji: '🟫', img: 'img/rectangle.webp', d: 2 }, { name: 'heart', emoji: '❤️', d: 2 },
       { name: 'diamond', emoji: '🔷', d: 3 }
     ]
   },
@@ -183,7 +183,7 @@ var CATEGORIES = {
       { name: 'couch', emoji: '🛋️', d: 1 }, { name: 'bed', emoji: '🛏️', d: 1 },
       { name: 'TV', emoji: '📺', d: 1 }, { name: 'door', emoji: '🚪', d: 2 },
       { name: 'window', emoji: '🪟', d: 2 }, { name: 'shelf', emoji: '📚', d: 3 },
-      { name: 'lamp', emoji: '💡', img: 'img/lamp.png', d: 3 }
+      { name: 'lamp', emoji: '💡', d: 3 }
     ]
   },
   clothing: {
@@ -258,7 +258,7 @@ var CATEGORIES = {
 var CATEGORY_ORDER = ['household', 'animals', 'food', 'shapes', 'colors', 'furniture', 'clothing', 'halloween', 'christmas', 'spring'];
 
 // ─── Custom item illustrations ──────────────────────────────────
-// Items whose flat-sticker illustration exists at img/items/<slug>.png.
+// Items whose flat-sticker illustration exists at img/items/<slug>.webp.
 // Grown as the illustration set is produced; any item NOT listed falls back
 // to its emoji (so there are never broken-image 404s). Shared item names
 // (chair, lamp, hat, sock, bird, star) light up across every category at once.
@@ -291,7 +291,7 @@ var ITEM_ILLUSTRATIONS = {
     if (cid === 'shapes' || cid === 'colors') return;
     (CATEGORIES[cid].items || []).forEach(function(it) {
       var s = phSlug(it.name);
-      if (ITEM_ILLUSTRATIONS[s]) it.img = 'img/items/' + s + '.png';
+      if (ITEM_ILLUSTRATIONS[s]) it.img = 'img/items/' + s + '.webp';
     });
   });
 })();
@@ -681,7 +681,7 @@ function showHomeGreeting() {
   ov.id = 'home-greeting';
   ov.className = 'home-greeting';
   ov.innerHTML =
-    '<img class="home-greeting-fox" src="img/mascot/fox-hero.png" alt="" aria-hidden="true">'
+    '<img class="home-greeting-fox" src="img/mascot/fox-hero.webp" alt="" aria-hidden="true">'
     + '<div class="home-greeting-bubble">' + GREETING + '</div>'
     + '<div class="home-greeting-skip">tap to continue</div>';
   document.body.appendChild(ov);
@@ -716,7 +716,7 @@ function showFirstRunSetup(onDone) {
   ov.className = 'first-run-overlay';
   ov.innerHTML =
     '<div class="first-run-card" role="dialog" aria-modal="true" aria-label="Welcome, grown-ups">'
-    + '<img class="first-run-fox" src="img/mascot/fox-hero.png" alt="" aria-hidden="true">'
+    + '<img class="first-run-fox" src="img/mascot/fox-hero.webp" alt="" aria-hidden="true">'
     + '<h2 class="first-run-title">Welcome, grown-ups! 👋</h2>'
     + '<p class="first-run-privacy">Picture Hunt sends each photo to Google\'s vision AI just to find a match, then it\'s gone — <b>never stored</b>. Best pointed at things, not people.</p>'
     + '<div class="first-run-divider"></div>'
@@ -835,7 +835,7 @@ function renderSplash() {
       + 'data-cat-id="' + catId + '" '
       + (locked ? 'aria-label="' + cat.name + ', premium — tap to unlock" ' : '')
       + 'onclick="playCategory(\'' + catId + '\')">'
-      + '<div class="cat-emoji"><img class="cat-tile-img" src="img/tiles/' + catId + '.png" alt="" loading="lazy"></div>'
+      + '<div class="cat-emoji"><img class="cat-tile-img" src="img/tiles/' + catId + '.webp" alt="" loading="lazy"></div>'
       + '<div class="cat-info">'
       + '<div class="cat-name">' + cat.name + badge + '</div>'
       + '<div class="cat-progress">'
@@ -917,7 +917,7 @@ function renderStorylineFeature(premium) {
     return;
   }
   container.innerHTML = '<button class="storyline-hero" id="storyline-hero-btn">'
-    + '<img class="storyline-hero-fox" src="img/mascot/fox-point.png" alt="">'
+    + '<img class="storyline-hero-fox" src="img/mascot/fox-point.webp" alt="">'
     + '<span class="storyline-hero-text">'
     + '<span class="storyline-hero-title">Story Quests</span>'
     + '<span class="storyline-hero-sub">' + (premium ? 'Go on an adventure to find things!' : 'Go on an adventure — first quest free!') + '</span>'
@@ -1757,7 +1757,7 @@ function showMissResult() {
   var skipArea = document.querySelector('.skip-area');
   if (skipArea) skipArea.style.display = 'none';
 
-  feedbackArea.innerHTML = '<img class="miss-fox" src="img/mascot/fox-think.png" alt="" aria-hidden="true">'
+  feedbackArea.innerHTML = '<img class="miss-fox" src="img/mascot/fox-think.webp" alt="" aria-hidden="true">'
     + '<div class="result-msg fail">Not quite! Let\'s try again.</div>'
     + '<div class="result-buttons">'
     + '<button class="result-btn result-green" onclick="retakeFromMiss()" aria-label="Retake photo" title="Tap to retake · parents: hold to mark correct"><span class="result-icon" aria-hidden="true">📷</span></button>'

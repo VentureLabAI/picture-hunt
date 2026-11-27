@@ -171,7 +171,7 @@ var Paywall = (function() {
     overlay.innerHTML = ''
       + '<div class="paywall-modal" role="dialog" aria-modal="true" aria-label="Unlock Picture Hunt">'
       +   '<button class="paywall-close" onclick="Paywall.close()" aria-label="Close">×</button>'
-      +   '<img class="paywall-fox" src="img/mascot/fox-key.png" alt="" aria-hidden="true">'
+      +   '<img class="paywall-fox" src="img/mascot/fox-key.webp" alt="" aria-hidden="true">'
       +   '<h2 class="paywall-headline">' + headline + '</h2>'
       +   '<p class="paywall-sub">' + sub + '</p>'
 

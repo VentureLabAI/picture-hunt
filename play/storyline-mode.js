@@ -243,9 +243,9 @@ function initStorylineMode() {
 // See docs/ADVENTURE-TRAIL-NOTES.md.
 // ═══════════════════════════════════════════════════════════════
 function questFoxSrc(pose) {
-  if (pose === 'celebrate') return 'img/mascot/fox-celebrate.png';
-  if (pose === 'cover') return 'img/mascot/fox-hero.png';
-  return 'img/mascot/fox-point.png'; // 'guide'
+  if (pose === 'celebrate') return 'img/mascot/fox-celebrate.webp';
+  if (pose === 'cover') return 'img/mascot/fox-hero.webp';
+  return 'img/mascot/fox-point.webp'; // 'guide'
 }
 
 function ensureQuestChrome() {
@@ -375,7 +375,7 @@ function renderStorySelector() {
   // distinct from the category tiles. Fox hosts the shelf.
   var html = ''
     + '<div class="shelf-header">'
-    +   '<img class="shelf-fox" src="img/mascot/fox-point.png" alt="" aria-hidden="true">'
+    +   '<img class="shelf-fox" src="img/mascot/fox-point.webp" alt="" aria-hidden="true">'
     +   '<h1 class="home-title shelf-title">Pick an Adventure!</h1>'
     + '</div>';
   html += '<div class="story-shelf">';

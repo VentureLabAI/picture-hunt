@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://picture-hunt-api.aidevlab3.workers.dev https://generativelanguage.googleapis.com">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://picture-hunt-api.aidevlab3.workers.dev https://generativelanguage.googleapis.com">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Picture Hunt: a kids' scavenger hunt that introduces a new language</title>
   <meta name="description" content="A real-world scavenger hunt for kids as young as 2. They hear an everyday object named in two languages, then find the real thing with the camera. No reading required.">
@@ -24,10 +24,8 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="landing.css?v=7">
+  <link rel="preload" href="play/fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="landing.css?v=8">
 </head>
 <body>
 
@@ -50,7 +48,7 @@
     <div class="hero-visual">
       <div class="hero-fox-wrap">
         <div class="hero-bubble">Can you find an apple?<span class="hero-bubble-es">🇪🇸 ¿una manzana?</span></div>
-        <img class="hero-fox" src="play/img/mascot/fox-hero.png" width="577" height="640" fetchpriority="high" decoding="async" alt="Picture Hunt's friendly fox guide holding a magnifying glass">
+        <img class="hero-fox" src="play/img/mascot/fox-hero.webp" width="577" height="640" fetchpriority="high" decoding="async" alt="Picture Hunt's friendly fox guide holding a magnifying glass">
       </div>
     </div>
   </div>

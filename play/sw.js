@@ -24,8 +24,10 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v152';
+var CACHE_VERSION = 'ph-v153';
 var CACHE_NAME = CACHE_VERSION + '-static';
+// How many files the install step downloads at once (see the install handler).
+var PRECACHE_CONCURRENCY = 6;
 
 // All files to pre-cache on install
 var PRECACHE_URLS = [
@@ -54,108 +56,111 @@ var PRECACHE_URLS = [
   './progress-sync.js',
   './install-prompt.js',
   './sw-register.js',
-  // Shape PNGs — Shapes/Colors stay on emoji except square/rectangle, which keep
-  // their root img/<name>.png path (applyItemIllustrations skips those categories).
-  './img/square.png',
-  './img/rectangle.png',
+  // Self-hosted font (so it also works offline)
+  './fonts/fredoka-latin.woff2',
+  './fonts/fredoka-latin-ext.woff2',
+  // Shapes/Colors stay on emoji except square/rectangle, which keep their root
+  // img/ path (applyItemIllustrations skips those categories). All art is WebP;
+  // the PNG masters live in C:/assets/ventures/picture-hunt/art-masters.
+  './img/square.webp',
+  './img/rectangle.webp',
   // Custom item illustrations — the ACTUAL paths the app requests. app.js
   // applyItemIllustrations() rewrites each illustrated item's img to
-  // img/items/<slug>.png, so the old './img/<name>.png' entries never matched and
-  // these were missing from the cache. Generated from the on-disk img/items/ set.
-  './img/items/apple.png',
-  './img/items/ball.png',
-  './img/items/banana.png',
-  './img/items/bat.png',
-  './img/items/bed.png',
-  './img/items/bee.png',
-  './img/items/bird.png',
-  './img/items/black-cat.png',
-  './img/items/blanket.png',
-  './img/items/book.png',
-  './img/items/bread.png',
-  './img/items/brush.png',
-  './img/items/bunny.png',
-  './img/items/butterfly.png',
-  './img/items/candy-cane.png',
-  './img/items/candy.png',
-  './img/items/carrot.png',
-  './img/items/cat.png',
-  './img/items/cereal.png',
-  './img/items/chair.png',
-  './img/items/christmas-lights.png',
-  './img/items/christmas-tree.png',
-  './img/items/clock.png',
-  './img/items/cookie.png',
-  './img/items/couch.png',
-  './img/items/crayon.png',
-  './img/items/cup.png',
-  './img/items/dinosaur.png',
-  './img/items/dog.png',
-  './img/items/door.png',
-  './img/items/dress.png',
-  './img/items/duck.png',
-  './img/items/easter-egg.png',
-  './img/items/egg.png',
-  './img/items/elephant.png',
-  './img/items/fish.png',
-  './img/items/flower.png',
-  './img/items/fork.png',
-  './img/items/frog.png',
-  './img/items/ghost.png',
-  './img/items/gift.png',
-  './img/items/glove.png',
-  './img/items/hat.png',
-  './img/items/jacket.png',
-  './img/items/juice.png',
-  './img/items/keys.png',
-  './img/items/lamp.png',
-  './img/items/lion.png',
-  './img/items/milk.png',
-  './img/items/orange.png',
-  './img/items/ornament.png',
-  './img/items/pants.png',
-  './img/items/pig.png',
-  './img/items/pillow.png',
-  './img/items/plate.png',
-  './img/items/pumpkin.png',
-  './img/items/rabbit.png',
-  './img/items/rain-boots.png',
-  './img/items/rainbow.png',
-  './img/items/reindeer.png',
-  './img/items/remote-control.png',
-  './img/items/santa.png',
-  './img/items/scarf.png',
-  './img/items/shelf.png',
-  './img/items/shirt.png',
-  './img/items/shoe.png',
-  './img/items/skeleton.png',
-  './img/items/snowman.png',
-  './img/items/sock.png',
-  './img/items/spider-web.png',
-  './img/items/spider.png',
-  './img/items/spoon.png',
-  './img/items/star.png',
-  './img/items/stocking.png',
-  './img/items/sunshine.png',
-  './img/items/table.png',
-  './img/items/teddy-bear.png',
-  './img/items/toothbrush.png',
-  './img/items/towel.png',
-  './img/items/treat-bag.png',
-  './img/items/tv.png',
-  './img/items/umbrella.png',
-  './img/items/water-bottle.png',
-  './img/items/window.png',
-  './img/items/witch-hat.png',
-  './img/items/wreath.png',
-  './img/items/yogurt.png',
+  // img/items/<slug>.webp. Generated from the on-disk img/items/ set.
+  './img/items/apple.webp',
+  './img/items/ball.webp',
+  './img/items/banana.webp',
+  './img/items/bat.webp',
+  './img/items/bed.webp',
+  './img/items/bee.webp',
+  './img/items/bird.webp',
+  './img/items/black-cat.webp',
+  './img/items/blanket.webp',
+  './img/items/book.webp',
+  './img/items/bread.webp',
+  './img/items/brush.webp',
+  './img/items/bunny.webp',
+  './img/items/butterfly.webp',
+  './img/items/candy-cane.webp',
+  './img/items/candy.webp',
+  './img/items/carrot.webp',
+  './img/items/cat.webp',
+  './img/items/cereal.webp',
+  './img/items/chair.webp',
+  './img/items/christmas-lights.webp',
+  './img/items/christmas-tree.webp',
+  './img/items/clock.webp',
+  './img/items/cookie.webp',
+  './img/items/couch.webp',
+  './img/items/crayon.webp',
+  './img/items/cup.webp',
+  './img/items/dinosaur.webp',
+  './img/items/dog.webp',
+  './img/items/door.webp',
+  './img/items/dress.webp',
+  './img/items/duck.webp',
+  './img/items/easter-egg.webp',
+  './img/items/egg.webp',
+  './img/items/elephant.webp',
+  './img/items/fish.webp',
+  './img/items/flower.webp',
+  './img/items/fork.webp',
+  './img/items/frog.webp',
+  './img/items/ghost.webp',
+  './img/items/gift.webp',
+  './img/items/glove.webp',
+  './img/items/hat.webp',
+  './img/items/jacket.webp',
+  './img/items/juice.webp',
+  './img/items/keys.webp',
+  './img/items/lamp.webp',
+  './img/items/lion.webp',
+  './img/items/milk.webp',
+  './img/items/orange.webp',
+  './img/items/ornament.webp',
+  './img/items/pants.webp',
+  './img/items/pig.webp',
+  './img/items/pillow.webp',
+  './img/items/plate.webp',
+  './img/items/pumpkin.webp',
+  './img/items/rabbit.webp',
+  './img/items/rain-boots.webp',
+  './img/items/rainbow.webp',
+  './img/items/reindeer.webp',
+  './img/items/remote-control.webp',
+  './img/items/santa.webp',
+  './img/items/scarf.webp',
+  './img/items/shelf.webp',
+  './img/items/shirt.webp',
+  './img/items/shoe.webp',
+  './img/items/skeleton.webp',
+  './img/items/snowman.webp',
+  './img/items/sock.webp',
+  './img/items/spider-web.webp',
+  './img/items/spider.webp',
+  './img/items/spoon.webp',
+  './img/items/star.webp',
+  './img/items/stocking.webp',
+  './img/items/sunshine.webp',
+  './img/items/table.webp',
+  './img/items/teddy-bear.webp',
+  './img/items/toothbrush.webp',
+  './img/items/towel.webp',
+  './img/items/treat-bag.webp',
+  './img/items/tv.webp',
+  './img/items/umbrella.webp',
+  './img/items/water-bottle.webp',
+  './img/items/window.webp',
+  './img/items/witch-hat.webp',
+  './img/items/wreath.webp',
+  './img/items/yogurt.webp',
   // Mascot — Hunt-buddy fox poses
-  './img/mascot/fox-hero.png',
-  './img/mascot/fox-celebrate.png',
-  './img/mascot/fox-point.png',
-  './img/mascot/fox-search.png',
-  './img/mascot/fox-key.png',
-  './img/mascot/fox-think.png',
+  './img/mascot/fox-hero.webp',
+  './img/mascot/fox-celebrate.webp',
+  './img/mascot/fox-point.webp',
+  './img/mascot/fox-search.webp',
+  './img/mascot/fox-key.webp',
+  './img/mascot/fox-think.webp',
   // App icons
   './img/icon-192.png',
   './img/icon-512.png',
@@ -163,10 +168,10 @@ var PRECACHE_URLS = [
   './img/icon-32.png',
   './img/icon-16.png',
   // Category tiles (custom illustrations)
-  './img/tiles/household.png', './img/tiles/animals.png', './img/tiles/food.png',
-  './img/tiles/shapes.png', './img/tiles/colors.png', './img/tiles/furniture.png',
-  './img/tiles/clothing.png', './img/tiles/halloween.png', './img/tiles/christmas.png',
-  './img/tiles/spring.png',
+  './img/tiles/household.webp', './img/tiles/animals.webp', './img/tiles/food.webp',
+  './img/tiles/shapes.webp', './img/tiles/colors.webp', './img/tiles/furniture.webp',
+  './img/tiles/clothing.webp', './img/tiles/halloween.webp', './img/tiles/christmas.webp',
+  './img/tiles/spring.webp',
   // Audio — category intros
   './audio/cat-animals.mp3',
   './audio/cat-clothing.mp3',
@@ -296,9 +301,20 @@ self.addEventListener('install', function(event) {
       // Tolerant precache: cache each asset individually so a single missing/404
       // file can't abort the entire install (which would break offline-readiness
       // and wedge the cache-version upgrade). Skips are logged, not fatal.
-      return Promise.all(PRECACHE_URLS.map(function(u) {
-        return cache.add(u).catch(function(e) { console.warn('[SW] precache skip:', u, e && e.message); });
-      }));
+      // Paced: a few downloads at a time, in list order (app shell and art first,
+      // audio last). Firing all ~240 at once made the background download compete
+      // with the game's own first photo check and audio on a phone connection.
+      var queue = PRECACHE_URLS.slice();
+      function worker() {
+        var u = queue.shift();
+        if (!u) return Promise.resolve();
+        return cache.add(u)
+          .catch(function(e) { console.warn('[SW] precache skip:', u, e && e.message); })
+          .then(worker);
+      }
+      var lanes = [];
+      for (var i = 0; i < PRECACHE_CONCURRENCY; i++) lanes.push(worker());
+      return Promise.all(lanes);
     }).then(function() {
       // Skip waiting so new SW activates immediately
       return self.skipWaiting();

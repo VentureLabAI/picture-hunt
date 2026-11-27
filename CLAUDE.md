@@ -26,6 +26,11 @@ is the retention engine.** See STRATEGY.md.
 - Pre-generated MP3s in OpenAI `gpt-4o-mini-tts` voice "coral" (levelled to -16 LUFS),
   played via Web Audio API buffers + `speechSynthesis` fallback. Generation tooling
   lives outside this repo in `C:\dev\ph-tools\`.
+- Art is WebP only (items, fox, category tiles). The PNG masters are outside the repo in
+  `C:/assets/ventures/picture-hunt/art-masters/`; convert with `C:/dev/ph-tools/convert_art_webp.py`.
+  App icons, favicons and `og-image.png` stay PNG.
+- The Fredoka font is self-hosted in `play/fonts/` (no Google Fonts, no third-party requests
+  from any page). Keep it that way: the privacy policy says no third parties beyond Gemini.
 - localStorage for state; Cloudflare KV for cross-device sync + unlock codes
 - GitHub Pages hosting, served from `main`
 
@@ -111,6 +116,7 @@ Google's models or read by human reviewers — this is what makes the privacy cl
 false for photos of children's homes); (2) the free tier's ~250 requests/day global
 cap is gone, so traffic spikes won't silently fail recognition for everyone. If the
 key is ever re-created, re-enable billing and keep it on a billed project.
+A $100 monthly spend cap is set in Google AI Studio (seen 2026-11-26; real use is about $1 a month).
 
 ## Session opening rule
 
