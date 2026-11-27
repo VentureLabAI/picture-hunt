@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v153';
+var CACHE_VERSION = 'ph-v154';
 var CACHE_NAME = CACHE_VERSION + '-static';
 // How many files the install step downloads at once (see the install handler).
 var PRECACHE_CONCURRENCY = 6;
@@ -367,6 +367,23 @@ self.addEventListener('fetch', function(event) {
           }
         );
       })
+    );
+    return;
+  }
+
+  // Old art paths. Until cache v153 the art was PNG; it is WebP now and the PNGs are
+  // gone from the site. A page from an older version can still be open when this
+  // service worker takes over (it only reloads the page from the landing screen), and
+  // that page keeps asking for .png paths. Answer those with the matching .webp so
+  // nobody sees broken pictures mid-session. App icons stay PNG and are not matched.
+  // LESSON: never rename or delete a file an open older page may still request
+  // without an alias here.
+  if (url.origin === self.location.origin &&
+      (/\/img\/(items|mascot|tiles)\/[a-z0-9-]+\.png$/.test(url.pathname) ||
+       /\/img\/(square|rectangle)\.png$/.test(url.pathname))) {
+    var webpUrl = url.origin + url.pathname.replace(/\.png$/, '.webp');
+    event.respondWith(
+      caches.match(webpUrl).then(function(hit) { return hit || fetch(webpUrl); })
     );
     return;
   }
