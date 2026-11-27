@@ -453,6 +453,8 @@ function getProgress() {
 }
 function saveProgress(p) { lsSet('PH_PROGRESS', JSON.stringify(p)); } // storage-safe: a thrown setItem (Private mode / quota) must not brick a find mid-game
 function recordProgress(catId, itemName) {
+  // Anonymous "something was found today" count (play/counts.js). No item name is sent.
+  if (window.PHCount) window.PHCount.find();
   var p = getProgress();
   if (!p[catId]) p[catId] = [];
   if (p[catId].indexOf(itemName) === -1) { p[catId].push(itemName); saveProgress(p); }

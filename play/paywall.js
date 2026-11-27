@@ -115,6 +115,8 @@ var Paywall = (function() {
 
   function show(reason, catId) {
     if (document.getElementById('paywall-overlay')) return;
+    // Anonymous "unlock screen was shown today" count (play/counts.js).
+    if (window.PHCount) window.PHCount.paywall();
 
     var headline, sub;
     if (reason === 'locked-category') {

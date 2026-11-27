@@ -134,13 +134,20 @@ export default {
 // Two sources:
 //   - the landing page posts 'visit' and 'try_free' to /event (landing.js),
 //     optionally with the campaign label from a ?c=<label> link;
+//   - the game posts a handful of single-word counts (play/counts.js): opened
+//     today, first play, found something today, came back. "Came back" is worked
+//     out on the device from a date in its own storage; the server never sees
+//     anything that links two visits;
 //   - the Worker counts its own work: photo checks by outcome, code redemptions.
-// The game itself (/play/) sends no events.
 //
 // Read the totals with: node worker/stats.mjs
 // Disclosed in privacy.html ("Anonymous totals").
 
-const CLIENT_EVENTS = new Set(['visit', 'try_free']);
+const CLIENT_EVENTS = new Set([
+  'visit', 'try_free',                                   // landing.js
+  'play_open', 'play_new', 'first_find', 'find_day',     // play/counts.js
+  'back_d1', 'back_week', 'back_later', 'paywall_view'
+]);
 const CHANNEL_RE = /^[a-z0-9][a-z0-9-]{0,23}$/;
 // A flood of made-up channel labels could otherwise grow the table without limit.
 const MAX_ROWS_PER_DAY = 1000;

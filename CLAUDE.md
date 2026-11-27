@@ -33,8 +33,10 @@ is the retention engine.** See STRATEGY.md.
   from any page). Keep it that way: the privacy policy says no third parties beyond Gemini.
 - Anonymous daily totals in a Cloudflare D1 table (`picture-hunt-stats`, binding `STATS`): landing
   visits and Try Free taps by campaign label (`?c=<label>` links, sent by `landing.js`), plus the
-  Worker's own counts of photo checks and code use. No identifiers of any kind. The game (`/play/`)
-  sends no events. Read with `node worker/stats.mjs`. Any new event must stay identifier-free and
+  Worker's own counts of photo checks and code use, plus the game's own counts in `play/counts.js`
+  (opened today, first play, found something, came back; the ONLY thing the game sends besides
+  photo, code and sync calls). No identifiers of any kind: "came back" is computed on the device.
+  Read with `node worker/stats.mjs`. Any new event must stay identifier-free and
   be covered by the "Anonymous totals" paragraph in `privacy.html`.
 - Free-pass codes for preschools and creators: `node worker/mint-code.mjs <label>` (see its header).
 - localStorage for state; Cloudflare KV for cross-device sync + unlock codes

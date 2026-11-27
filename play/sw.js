@@ -24,7 +24,7 @@
 //   Old caches are auto-deleted on activation.
 // ============================================================
 
-var CACHE_VERSION = 'ph-v155';
+var CACHE_VERSION = 'ph-v156';
 var CACHE_NAME = CACHE_VERSION + '-static';
 // How many files the install step downloads at once (see the install handler).
 var PRECACHE_CONCURRENCY = 6;
@@ -36,6 +36,7 @@ var PRECACHE_URLS = [
   './manifest.json',
   './style.css',
   './app.js',
+  './counts.js',
   './hint-system.js',
   './storyline-mode.js',
   './parent-dashboard.js',

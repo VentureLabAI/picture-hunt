@@ -4,7 +4,7 @@
 // (when a button that opens the game is tapped), plus the label from a link such
 // as https://picturehunt.app/?c=tiktok if you arrived through one. No ID, no
 // cookie, no IP is stored (worker/worker.js, "Anonymous daily totals"). The game
-// itself (/play/) does not load this file and sends no events.
+// has its own, equally anonymous counts in play/counts.js.
 (function () {
   // Count the real site only, so local previews and tests never show up as visitors.
   if (!/^(www\.)?picturehunt\.app$/.test(location.hostname)) return;

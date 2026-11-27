@@ -1,6 +1,6 @@
 # Active Project Context: Picture Hunt
 
-**Last updated:** 2026-11-26 (cache v155, Worker version `eb841893`)
+**Last updated:** 2026-11-26 (cache v156)
 
 The full session-by-session log up to this date is preserved verbatim in
 `docs/archive/context-handoff-archive-2026-11-26.md` (100 KB). Nothing was deleted.
@@ -11,10 +11,10 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 
 ### Next steps, in order
 
-1. **Owner plays one round on his iPhone on v155.** Check: pictures show, the font looks the same, the fox speaks, a right photo celebrates, a wrong photo says "Not quite". Everything on 2026-11-26 was verified at phone size in a desktop browser only. If anything is off, that is the first fix.
+1. **Owner plays one round on his iPhone on v156.** Check: pictures show, the font looks the same, the fox speaks, a right photo celebrates, a wrong photo says "Not quite". Everything on 2026-11-26 was verified at phone size in a desktop browser only. If anything is off, that is the first fix.
 2. **Late January 2027: open the GitHub Actions tab and confirm "Recognition health probe" is still running every 6 hours.** It now re-enables itself on each run to beat GitHub's 60-day inactivity shut-off. That is the standard technique but it could not be proven in one day.
 3. **Distribution, owner's part** (`docs/DISTRIBUTION.md`): film and post the first videos with the labelled links, send the preschool emails with a free pass each (`node worker/mint-code.mjs <preschool-name>`), seed creators. The tooling for it was built 2026-11-26: anonymous totals (`node worker/stats.mjs`), `?c=<label>` links, free-pass codes with QR images, real game screens in the landing hero. Run the stats weekly and report the funnel in plain words.
-   - **Still missing from the launch layer:** a genuine parent quote on the landing page (must be real, never invented), and a way to see whether the same family comes back (open decision below).
+   - **Still missing from the launch layer:** a genuine parent quote on the landing page (must be real, never invented).
 4. **Payments phase, only after retention is proven** (hybrid path, below): checkout, fix the 365-day code expiry against the "yours forever" promise (`worker.js` webhook), deliver the code to the buyer (a `/claim?session_id=` redirect into the existing `?code=` auto-redeem), remove the public promo codes `LAUNCH2026` / `FOUNDERSPECIAL`, reinstate a finite free daily cap, Capacitor wrap + TestFlight. `docs/PAYWALL-DEPLOY.md` is referenced in places but does not exist; write it then.
 
 ### Constraints that bite
@@ -39,7 +39,6 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 
 | Decision | Default |
 |---|---|
-| Count anonymous events from INSIDE the game (game opened today, first find, came back on day 2 and day 7). Without it, retention, the thing the hybrid path is supposed to prove, cannot be measured. It would be the same identifier-free counter the landing page uses, but it runs on a child's device and the privacy policy would have to say so. | NOT built. The owner approved landing-page counting only. Recommended, but his call (customer-facing promise) |
 | Shrink the voice clips (10 MB of the 13.4 MB offline cache; about 4 MB to save) | Leave. Needs the owner's ear |
 | Lower the Gemini spend cap from $100 to $25 | Owner's call. Real use is about $1 a month |
 | Paywall bullet "Unlimited finds" while the free daily cap is off | Leave until payments |
@@ -50,14 +49,14 @@ fixed: `docs/AUDIT-2026-11-26.md`.
 
 ## Current state
 
-**Live on https://picturehunt.app (HTTPS enforced), cache v155.** Nothing is in flight.
+**Live on https://picturehunt.app (HTTPS enforced), cache v156.** Nothing is in flight.
 
 - **Free:** Things, Animals, Food; Spanish; Daily Challenge; one Story Quest (Bear's Breakfast). No daily cap.
 - **Premium (code only, no checkout yet):** all 10 categories, all 10 languages (all recorded in the fox voice), all 8 Story Quests, cross-device sync. Paywall shows "checkout opens soon" because `STRIPE_LINK` in `play/paywall.js` is a placeholder.
 - **Recognition:** app posts `{category, item, image, mimeType}` to the Worker's `/recognize`. Worker asks `gemini-3.5-flash-lite`, then `gemini-3.6-flash` once if that fails. About 0.8 s. Older cached app versions post the full prompt to `/`; the Worker accepts only our exact prompts.
 - **Monitoring:** `.github/workflows/recognition-health.yml` every 6 hours; needs "yes" for apple and "no" for banana on a real photo; GitHub emails the owner on failure.
 - **Privacy:** photos are shrunk to 1024 px and re-encoded on the device, which strips location data. A photo that cannot be re-encoded is not sent (v155). No cookies, no third-party requests, no identifiers.
-- **Anonymous totals (2026-11-26):** one Cloudflare D1 table, `counts(day, event, channel, n)`. The landing page (`landing.js`, real site only) sends `visit` (once per browser per day) and `try_free`, with the `?c=` label if any. The Worker counts its own photo checks (`check_yes/no/unclear/fail/fallback/old_app`), health checks separately (`probe_ok/fail`), and code use (`code_ok` by code label, `code_bad`). The game sends no events. Disclosed in `privacy.html` under "Anonymous totals". The owner approved landing-page counting; counting the Worker's own photo checks and code use was added on the same reasoning (no new data leaves any device) and he was told so.
+- **Anonymous totals (2026-11-26):** one Cloudflare D1 table, `counts(day, event, channel, n)`. The landing page (`landing.js`, real site only) sends `visit` (once per browser per day) and `try_free`, with the `?c=` label if any. The Worker counts its own photo checks (`check_yes/no/unclear/fail/fallback/old_app`), health checks separately (`probe_ok/fail`), and code use (`code_ok` by code label, `code_bad`). The game sends single-word counts from `play/counts.js` (v156, owner approved 2026-11-26): `play_open`, `play_new`, `first_find`, `find_day`, `back_d1`, `back_week`, `back_later`, `paywall_view`. "Came back" is worked out on the device from a first-play date in its own storage; the server gets no ID and nothing linking two visits. Browsers with Picture Hunt data from before v156 are marked `before` and left out of the new and came-back counts. Disclosed in `privacy.html` under "Anonymous totals". Reading the rates: came-back counts divided by `play_new` over the same period is an approximation, good enough at this scale.
 - **Landing hero:** two real game screens (`img/hero-prompt.webp`, `img/hero-found.webp`, captured from the live game at 390 x 760) with the fox in front. To refresh them after a UI change, re-capture with Playwright against the live site (set `bypass_csp=True`; the page's security policy blocks Playwright's wait helpers otherwise).
 - **Free passes:** `node worker/mint-code.mjs <label>` writes a code to KV with `label` and `shared: true`. Shared codes validate but never sync progress (sync is keyed by code and would mix families).
 - **Removed in v155:** the four cut game modes (Memory Hunt, Review Mode, Sorting Safari, Phonics Hunt) with their audio, and the old "paste your own Gemini key" screen. All in git history.

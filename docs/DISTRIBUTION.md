@@ -171,9 +171,12 @@ run and found, and unlock codes used by label.
 
 - **What it can tell you:** which channel sends people, whether they tap Try
   Free, and whether play volume is growing.
-- **What it cannot tell you:** whether the SAME family came back the next day.
-  That needs an anonymous count from inside the game, which is deliberately not
-  built (owner decision pending; see `context_handoff.md`).
+- **Coming back (added 2026-11-26):** of the browsers that played for the first
+  time, how many opened the game again the next day, within a week, or later.
+  This is the number the free launch has to prove.
+- **What it cannot tell you:** anything about one particular family. There are
+  no IDs, only totals. People who played before 2026-11-26 are left out of the
+  coming-back numbers on purpose.
 - **Weekly review:** views → profile/bio clicks (from the platform) → landing
   visits → Try Free → photos checked. Find the biggest drop-off and fix that one
   step.
